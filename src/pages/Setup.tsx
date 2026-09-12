@@ -1,4 +1,3 @@
-import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 type TopicProps = {
@@ -7,15 +6,13 @@ type TopicProps = {
 
 function AddInterest(
   topic: string,
-  interests: Array<string>,
   setInterests: React.Dispatch<React.SetStateAction<string[]>>,
 ) {
-  interests.push(topic);
-  setInterests(interests);
+  setInterests((prev) => [...prev, topic]);
 }
 
 export default function Setup({ topics }: TopicProps) {
-  const [interests, setInterests] = useState<string[]>([]);
+  const [, setInterests] = useState<string[]>([]);
   return (
     <div className="flex-col w-[1126px] mx-auto">
       <h1 className="text-[56px] tracking-[-1.68px] mb-5">
@@ -28,7 +25,7 @@ export default function Setup({ topics }: TopicProps) {
             key={t}
             value={t}
             onClick={(e) => {
-              AddInterest(e.currentTarget.value, interests, setInterests);
+              AddInterest(e.currentTarget.value, setInterests);
             }}
           >
             {t}
@@ -38,17 +35,17 @@ export default function Setup({ topics }: TopicProps) {
       <h1 className="text-[56px] tracking-[-1.68px] my-5">Risk Comfort</h1>
       <div className="flex flex-row text-xl justify-around mb-5">
         <label className="flex items-center gap-3">
-          <input type="radio" value="low" className="h-4 w-4" />
+          <input type="radio" name="risk" value="low" className="h-4 w-4" />
           Low
         </label>
 
         <label className="flex items-center gap-2">
-          <input type="radio" value="medium" className="h-4 w-4" />
+          <input type="radio" name="risk" value="medium" className="h-4 w-4" />
           Medium
         </label>
 
         <label className="flex items-center gap-2">
-          <input type="radio" value="high" className="h-4 w-4" />
+          <input type="radio" name="risk" value="high" className="h-4 w-4" />
           High
         </label>
       </div>

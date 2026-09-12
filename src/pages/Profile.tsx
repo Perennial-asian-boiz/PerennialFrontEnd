@@ -1,4 +1,3 @@
-import { Link, useNavigate } from "react-router-dom";
 import Sidebar from "../components/sidebar";
 import CompanyLogo from "../components/companyLogo";
 import { useState } from "react";
@@ -11,28 +10,8 @@ type accountInfo = {
   emailPreference: boolean;
 };
 
-function getAccountInfo(accountID: string) {
+function getAccountInfo() {
   return dummyAccountInfo;
-}
-
-function togglePhone(
-  setPhone: React.Dispatch<React.SetStateAction<boolean>>,
-  info: accountInfo,
-  setInfo: React.Dispatch<React.SetStateAction<accountInfo>>,
-) {
-  info.phonePreference = !info.phonePreference;
-  setInfo(info);
-  setPhone((prev) => !prev);
-}
-
-function toggleEmail(
-  setEmail: React.Dispatch<React.SetStateAction<boolean>>,
-  info: accountInfo,
-  setInfo: React.Dispatch<React.SetStateAction<accountInfo>>,
-) {
-  info.emailPreference = !info.emailPreference;
-  setInfo(info);
-  setEmail((prev) => !prev);
 }
 
 const dummyAccountInfo: accountInfo = {
@@ -43,22 +22,16 @@ const dummyAccountInfo: accountInfo = {
   emailPreference: true,
 };
 
-export default function Profile(accountID: string) {
-  const [info, setInfo] = useState<accountInfo>(getAccountInfo("dummyString"));
-  const [phone, setPhone] = useState<boolean>(
-    getAccountInfo("dummyString").phonePreference,
-  );
-  const [email, setEmail] = useState<boolean>(
-    getAccountInfo("dummyString").emailPreference,
-  );
-
-  let navigate = useNavigate();
+export default function Profile() {
+  const [info, setInfo] = useState<accountInfo>(getAccountInfo);
+  const phone = info.phonePreference;
+  const email = info.emailPreference;
   return (
     <div className="flex flex-col h-screen">
       <div className="flex flex-row grow-1 border-b">
         <CompanyLogo />
         <div className="flex grow-10 text-[2rem] justify-center items-center pl-5">
-          Your Settings
+          Your Profile
         </div>
       </div>
       <div className="flex flex-row w-screen grow-20">
@@ -83,10 +56,15 @@ export default function Profile(accountID: string) {
             </div>
             <div className="flex flex-col gap-5">
               <div className="flex flex-row justify-between">
-                <div className="text-[2rem]">Phone {phone}</div>
+                <div className="text-[2rem]">Phone</div>
                 <button
                   type="button"
-                  onClick={() => togglePhone(setPhone, info, setInfo)}
+                  onClick={() =>
+                    setInfo((prev) => ({
+                      ...prev,
+                      phonePreference: !prev.phonePreference,
+                    }))
+                  }
                   className={`relative w-14 h-8 rounded-full transition-colors duration-200 ${
                     phone ? "bg-sky-600" : "bg-gray-500"
                   }`}
@@ -102,7 +80,12 @@ export default function Profile(accountID: string) {
                 <div className="text-[2rem]">Email</div>
                 <button
                   type="button"
-                  onClick={() => toggleEmail(setEmail, info, setInfo)}
+                  onClick={() =>
+                    setInfo((prev) => ({
+                      ...prev,
+                      emailPreference: !prev.emailPreference,
+                    }))
+                  }
                   className={`relative w-14 h-8 rounded-full transition-colors duration-200 ${
                     email ? "bg-sky-600" : "bg-gray-500"
                   }`}

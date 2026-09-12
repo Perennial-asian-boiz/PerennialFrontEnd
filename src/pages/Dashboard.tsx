@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/sidebar";
 import CompanyLogo from "../components/companyLogo";
 import { useState } from "react";
@@ -11,8 +11,8 @@ function Search(
 }
 
 export default function Dashboard() {
-  let navigate = useNavigate();
-  const [content, setContent] = useState<string>("content");
+  const navigate = useNavigate();
+  const [content, setContent] = useState<string>("");
   return (
     <div className="flex flex-col h-screen">
       <div className="flex flex-row grow-1 border-b">

@@ -1,23 +1,12 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import CompanyLogo from "../components/companyLogo";
-import { useState } from "react";
 
 // TODO's
 // define insight type
 // determine how we get the company that we are displaying insight about
 
-type insight = {};
-
-function Back() {
-  return;
-}
-
-function GetCompanyInsights(CompanyName: string) {}
-
-export default function Insights(CompanyName: string) {
-  GetCompanyInsights(CompanyName);
-  const [insights, setInsights] = useState<insight>();
-  let navigate = useNavigate();
+export default function Insights() {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col h-screen">
       <div className="flex flex-row grow-1 border-b">
@@ -32,7 +21,7 @@ export default function Insights(CompanyName: string) {
             className="flex h-12 w-12 items-center justify-center rounded-full
              border border-white text-2xl
              hover:bg-white/20 cursor-pointer"
-            onClick={() => Back()}
+            onClick={() => navigate(-1)}
           >
             ←
           </button>

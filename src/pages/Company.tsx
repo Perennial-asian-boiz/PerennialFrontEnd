@@ -1,28 +1,11 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import CompanyLogo from "../components/companyLogo";
-import { useState } from "react";
 
-type details = {
-  name: string;
-  category: string;
-  stock: string;
-  score: number;
-  scoreBreakdown: Array<number>;
-  priceBreakdown: Array<number>;
-  //more stuff
-};
-
-function Back() {
-  return;
-}
-
-function getCompanyDetails() {
-  return;
-}
+// TODO: load company details — name, category, stock, score,
+// scoreBreakdown: number[], priceBreakdown: number[], and more
 
 export default function Company() {
-  const [insights, setInsights] = useState(getCompanyDetails());
-  let navigate = useNavigate();
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col min-h-screen mb-20">
       <div className="flex flex-row grow-1 border-b">
@@ -37,7 +20,7 @@ export default function Company() {
             className="flex h-12 w-12 items-center justify-center rounded-full
                border border-white text-2xl
                hover:bg-white/20 cursor-pointer"
-            onClick={() => Back()}
+            onClick={() => navigate(-1)}
           >
             ←
           </button>

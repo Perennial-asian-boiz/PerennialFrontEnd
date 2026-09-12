@@ -1,10 +1,9 @@
-import { use } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Update() {}
 
 export default function Confirmation() {
-  let navigate = useNavigate();
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col w-[1126px] mx-auto">
       <h1 className="text-[56px] tracking-[-1.68px] my-5">Confirmation</h1>

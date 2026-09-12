@@ -1,7 +1,6 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/sidebar";
 import CompanyLogo from "../components/companyLogo";
-import { useState } from "react";
 
 type CompanyOverview = {
   name: string;
@@ -35,8 +34,8 @@ const dummyOverviews: Array<CompanyOverview> = [
   },
 ];
 
-export default function Dashboard() {
-  let navigate = useNavigate();
+export default function Watchlist() {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col h-screen">
       <div className="flex flex-row grow-1 border-b">
@@ -83,7 +82,9 @@ export default function Dashboard() {
                   <div className="col-span-2">{d.name}</div>
                   <div className="col-span-4 flex flex-row gap-2 items-center">
                     {d.notes.map((m) => (
-                      <div className="bg-sky-500 p-1 rounded-md">{m}</div>
+                      <div key={m} className="bg-sky-500 p-1 rounded-md">
+                        {m}
+                      </div>
                     ))}
                   </div>
                   <div className="col-span-3">{d.sentiment}</div>

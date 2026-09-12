@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables — Vite exposes VITE_* to the browser bundle
+.env
+.env.*
+!.env.example
+
+# TypeScript build info
+*.tsbuildinfo

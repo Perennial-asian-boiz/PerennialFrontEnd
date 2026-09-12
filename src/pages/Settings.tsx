@@ -1,9 +1,9 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/sidebar";
 import CompanyLogo from "../components/companyLogo";
 
 export default function Settings() {
-  let navigate = useNavigate();
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col h-screen">
       <div className="flex flex-row grow-1 border-b">

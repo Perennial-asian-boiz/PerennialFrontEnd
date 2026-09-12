@@ -1,20 +1,10 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import CompanyLogo from "../components/companyLogo";
-import { useState } from "react";
-
-function Back() {
-  return;
-}
-
-function getWhyCompany() {
-  return;
-}
 
 const dummyReasons = ["reason 1", "reason 2", "reason 2"];
 
 export default function WhyCompany() {
-  const [insights, setInsights] = useState(getWhyCompany());
-  let navigate = useNavigate();
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col min-h-screen mb-20">
       <div className="flex flex-row grow-1 border-b">
@@ -29,7 +19,7 @@ export default function WhyCompany() {
             className="flex h-12 w-12 items-center justify-center rounded-full
                  border border-white text-2xl
                  hover:bg-white/20 cursor-pointer"
-            onClick={() => Back()}
+            onClick={() => navigate(-1)}
           >
             ←
           </button>
@@ -38,8 +28,8 @@ export default function WhyCompany() {
           <div className="flex flex-col border rounded-md w-[100%] gap-2">
             <div className="flex text-[3rem] justify-start">Key Reasons</div>
             <ul className="list-disc list-inside text-[3rem] marker:text-5xl">
-              {dummyReasons.map((r) => (
-                <li>{r}</li>
+              {dummyReasons.map((r, i) => (
+                <li key={i}>{r}</li>
               ))}
             </ul>
           </div>
