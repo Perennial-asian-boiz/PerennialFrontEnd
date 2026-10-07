@@ -1,44 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import CompanyLogo from "../components/companyLogo";
+import AppShell from "../components/AppShell";
 
-const dummyReasons = ["reason 1", "reason 2", "reason 2"];
-
-export default function WhyCompany() {
-  const navigate = useNavigate();
-  return (
-    <div className="flex flex-col min-h-screen mb-20">
-      <div className="flex flex-row grow-1 border-b">
-        <CompanyLogo />
-        <div className="flex grow-10 text-[2rem] justify-center items-center pl-5">
-          Why This Company
-        </div>
-      </div>
-      <div className="flex flex-col w-screen grow-20 px-[2rem]">
-        <div className="flex justify-start my-[2rem]">
-          <button
-            className="flex h-12 w-12 items-center justify-center rounded-full
-                 border border-white text-2xl
-                 hover:bg-white/20 cursor-pointer"
-            onClick={() => navigate(-1)}
-          >
-            ←
-          </button>
-        </div>
-        <div className="flex flex-col items-center gap-7">
-          <div className="flex flex-col border rounded-md w-[100%] gap-2">
-            <div className="flex text-[3rem] justify-start">Key Reasons</div>
-            <ul className="list-disc list-inside text-[3rem] marker:text-5xl">
-              {dummyReasons.map((r, i) => (
-                <li key={i}>{r}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="flex flex-col border rounded-md w-[100%] gap-2">
-            <div className="flex text-[3rem] justify-center">Finance</div>
-            <div className="text-[10rem]">Stuff</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+export default function WhyCompany() { const navigate = useNavigate(); return <AppShell title="Why NVIDIA?" subtitle="The signals behind the recommendation."><button className="btn-secondary" onClick={() => navigate("/company")}>← Back to company</button><div className="section-heading"><h2>Key reasons</h2></div><div className="page-grid"><div className="panel"><ul className="reason-list"><li>Strong exposure to the continued growth of AI computing.</li><li>Healthy demand across cloud, enterprise, and data-center customers.</li><li>Clear product leadership and a durable developer ecosystem.</li><li>Risk remains elevated because expectations are already high.</li></ul></div><div className="panel"><span className="eyebrow">Signal mix</span><h2 style={{ margin: "10px 0 20px" }}>Mostly positive</h2><div className="metric-row"><span className="metric-label">Fundamentals</span><strong>90</strong></div><div className="metric-row"><span className="metric-label">Momentum</span><strong>86</strong></div><div className="metric-row"><span className="metric-label">Sentiment</span><strong>84</strong></div></div></div></AppShell>; }

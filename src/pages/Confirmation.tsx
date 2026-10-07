@@ -1,34 +1,4 @@
 import { useNavigate } from "react-router-dom";
+import AppShell from "../components/AppShell";
 
-function Update() {}
-
-export default function Confirmation() {
-  const navigate = useNavigate();
-  return (
-    <div className="flex flex-col w-[1126px] mx-auto">
-      <h1 className="text-[56px] tracking-[-1.68px] my-5">Confirmation</h1>
-      <div className="text-3xl">
-        Lorem ipsum, dolor sit amet consectetur adipisicing elit. Error
-        praesentium architecto, porro eius reiciendis voluptatum autem rem nulla
-        natus corporis qui quibusdam consectetur provident hic. Rerum
-        perspiciatis itaque quia praesentium?
-      </div>
-      <div className="flex flex-row text-lg h-10 mt-10 justify-between">
-        <button
-          className="border w-30 rounded-lg cursor-pointer hover:bg-sky-700"
-          onClick={Update}
-        >
-          Update
-        </button>
-        <button
-          className="border w-30 rounded-lg cursor-pointer hover:bg-sky-700"
-          onClick={() => {
-            navigate("/");
-          }}
-        >
-          Dashboard
-        </button>
-      </div>
-    </div>
-  );
-}
+export default function Confirmation() { const navigate = useNavigate(); return <AppShell title="Confirmation & investment thesis" subtitle="Review your personalized research preferences before entering your workspace."><div className="form-card panel"><div className="confirmation-line"><div className="brand-mark" style={{ width: 35, height: 35, fontSize: 17 }}>✓</div><div><strong>Personalized allocation matrix prepared</strong><p style={{ margin: "4px 0 0" }}>Your preferences have been mapped into your active research stream.</p></div></div><div className="metric-row"><span className="metric-label">Risk profile</span><strong>Balanced</strong></div><div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 20 }}><button className="btn-secondary" onClick={() => navigate("/setup")}>Update preferences</button><button className="btn-primary" onClick={() => navigate("/")}>Go to dashboard</button></div></div></AppShell>; }

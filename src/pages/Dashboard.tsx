@@ -1,59 +1,18 @@
-import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/sidebar";
-import CompanyLogo from "../components/companyLogo";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import AppShell from "../components/AppShell";
 
-function Search(
-  term: string,
-  setter: React.Dispatch<React.SetStateAction<string>>,
-) {
-  setter(term);
-}
+const sections = [
+  { name: "Technology", items: [["Microsoft", "MSFT", "$496.03", "up"], ["Apple", "AAPL", "$233.27", "neutral"], ["NVIDIA", "NVDA", "$214.17", "up"]] },
+  { name: "Healthcare", items: [["Eli Lilly", "LLY", "$626.50", "down"], ["Vertex", "VRTX", "$527.12", "up"], ["GSK", "GSK", "$143.93", "down"]] },
+  { name: "Consumer Staples", items: [["Kraft Heinz", "KHC", "$37.72", "up"], ["Keurig Dr Pepper", "KDP", "$31.61", "neutral"], ["General Mills", "GIS", "$48.13", "down"]] },
+];
 
 export default function Dashboard() {
+  const [view, setView] = useState("Popular & Stable");
   const navigate = useNavigate();
-  const [content, setContent] = useState<string>("");
-  return (
-    <div className="flex flex-col h-screen">
-      <div className="flex flex-row grow-1 border-b">
-        <CompanyLogo />
-        <div className="flex grow-10 justify-start items-center pl-5">
-          <input
-            type="text"
-            placeholder="Search..."
-            value={content}
-            onChange={(e) => Search(e.target.value, setContent)}
-            className="border rounded-md w-[40%] px-3 py-2"
-          />
-        </div>
-      </div>
-      <div className="flex flex-row w-screen grow-20">
-        <div className="flex flex-col grow-2 justify-between items-center border-r">
-          <Sidebar navigations={["Watchlist", "Insight", "Settings"]} />
-          <div className="flex flex-col items-center mb-10 gap-2">
-            <button
-              className="border rounded-full h-[5rem] w-[5rem] cursor-pointer"
-              onClick={() => {
-                navigate("/profile");
-              }}
-            >
-              Profile
-            </button>
-            <div> Profile </div>
-          </div>
-        </div>
-        <div className="flex flex-col grow-10 pt-5">
-          <div className="flex flex-row justify-around">
-            <button className="border rounded-md h-[3rem] w-[15rem] cursor-pointer hover:bg-sky-700">
-              Affordable and Growing
-            </button>
-            <button className="border rounded-md h-[3rem] w-[15rem] cursor-pointer hover:bg-sky-700">
-              Popular and Stable
-            </button>
-          </div>
-          <div className="w-[90%] mx-auto py-[2rem]">{content}</div>
-        </div>
-      </div>
-    </div>
-  );
+  return <AppShell title="Market Health" subtitle="Curated market opportunities and sector trend monitors.">
+    <div className="market-toolbar"><span className="market-status">● Market Open · NYSE</span><div className="segmented"><button className={view === "Affordable & Growing" ? "selected" : ""} onClick={() => setView("Affordable & Growing")}>Affordable &amp; Growing</button><button className={view === "Popular & Stable" ? "selected" : ""} onClick={() => setView("Popular & Stable")}>Popular &amp; Stable</button></div></div>
+    <div className="market-sections">{sections.map((section) => <section className="market-section" key={section.name}><div className="market-section-heading"><span className="sector-pill">{section.name}</span><button className="view-all">View all →</button></div><div className="table-wrap"><table className="market-table"><thead><tr><th>Company / ticker</th><th>Signal status</th><th>Price</th><th>Action</th></tr></thead><tbody>{section.items.map(([name, ticker, price, signal]) => <tr key={ticker}><td><strong>{name}</strong><small>{ticker}</small></td><td><span className={signal === "neutral" ? "signal-neutral" : signal === "down" ? "signal-down" : "signal-up"}>{signal === "neutral" ? "—" : signal === "down" ? "↓" : "↑"}</span></td><td>{price}</td><td><button className="watch-button" onClick={() => navigate("/watchlist")}>＋ Watchlist</button></td></tr>)}</tbody></table></div></section>)}</div>
+  </AppShell>;
 }

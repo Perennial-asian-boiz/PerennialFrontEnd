@@ -1,3 +1,4 @@
-export default function Login() {
-  return <h1>Login</h1>;
-}
+import { useNavigate } from "react-router-dom";
+import { AuthShell } from "../components/AppShell";
+
+export default function Login() { const navigate = useNavigate(); return <AuthShell><div className="form-card"><span className="eyebrow">Welcome back</span><h2 style={{ marginTop: 8 }}>Log in to Perennial</h2><p>Pick up where you left off and keep learning about the market.</p><form className="form-grid" onSubmit={(event) => { event.preventDefault(); navigate("/"); }}><div className="form-field"><label htmlFor="email">Email</label><input id="email" type="email" placeholder="you@example.com" required /></div><div className="form-field"><label htmlFor="password">Password</label><input id="password" type="password" placeholder="Your password" required /></div><button className="btn-primary" type="submit">Log in</button><button className="btn-secondary" type="button" onClick={() => navigate("/signup")}>Create an account</button></form></div></AuthShell>; }

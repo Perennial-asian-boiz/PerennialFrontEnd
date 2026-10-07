@@ -1,63 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import AppShell from "../components/AppShell";
+import { topics } from "../data";
 
-type TopicProps = {
-  topics: Array<string>;
-};
-
-function AddInterest(
-  topic: string,
-  setInterests: React.Dispatch<React.SetStateAction<string[]>>,
-) {
-  setInterests((prev) => [...prev, topic]);
-}
-
-export default function Setup({ topics }: TopicProps) {
-  const [, setInterests] = useState<string[]>([]);
-  return (
-    <div className="flex-col w-[1126px] mx-auto">
-      <h1 className="text-[56px] tracking-[-1.68px] mb-5">
-        What Interests You
-      </h1>
-      <div className="grid grid-cols-5 gap-2">
-        {topics.map((t) => (
-          <button
-            className="border rounded-md h-15 cursor-pointer hover:bg-sky-700"
-            key={t}
-            value={t}
-            onClick={(e) => {
-              AddInterest(e.currentTarget.value, setInterests);
-            }}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-      <h1 className="text-[56px] tracking-[-1.68px] my-5">Risk Comfort</h1>
-      <div className="flex flex-row text-xl justify-around mb-5">
-        <label className="flex items-center gap-3">
-          <input type="radio" name="risk" value="low" className="h-4 w-4" />
-          Low
-        </label>
-
-        <label className="flex items-center gap-2">
-          <input type="radio" name="risk" value="medium" className="h-4 w-4" />
-          Medium
-        </label>
-
-        <label className="flex items-center gap-2">
-          <input type="radio" name="risk" value="high" className="h-4 w-4" />
-          High
-        </label>
-      </div>
-      <div className="flex justify-end">
-        <button
-          className="flex h-12 w-12 items-center justify-center rounded-full
-             border border-white text-2xl
-             hover:bg-white/20 cursor-pointer"
-        >
-          →
-        </button>
-      </div>
-    </div>
-  );
-}
+export default function Setup() { const [selected, setSelected] = useState<string[]>([]); const [risk, setRisk] = useState(""); const navigate = useNavigate(); return <AppShell title="Choose interest & risk comfort" subtitle="Tell us what you want to explore so Perennial can personalize your workspace."><div className="form-card panel"><span className="eyebrow">Onboarding</span><h2 style={{ marginTop: 8 }}>What are you curious about?</h2><p>Select the sectors you want to see more often.</p><div className="choice-grid">{topics.map((topic) => <button key={topic} className={`choice ${selected.includes(topic) ? "selected" : ""}`} onClick={() => setSelected((current) => current.includes(topic) ? current.filter((item) => item !== topic) : [...current, topic])}>{selected.includes(topic) ? "✓ " : ""}{topic}</button>)}</div><h2 style={{ margin: "28px 0 8px", fontSize: 18 }}>Risk comfort</h2><p>How much volatility are you comfortable exploring?</p><div className="choice-grid">{["Conservative", "Balanced", "Growth focused"].map((choice) => <button key={choice} className={`choice ${risk === choice ? "selected" : ""}`} onClick={() => setRisk(choice)}>{risk === choice ? "✓ " : ""}{choice}</button>)}</div><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}><button className="btn-secondary" onClick={() => navigate("/")}>Skip for now</button><button className="btn-primary" disabled={!selected.length || !risk} onClick={() => navigate("/confirmation")} style={{ opacity: selected.length && risk ? 1 : .55 }}>Save preferences →</button></div></div></AppShell>; }

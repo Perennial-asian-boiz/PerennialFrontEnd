@@ -1,32 +1,4 @@
-import { useNavigate } from "react-router-dom";
-import CompanyLogo from "../components/companyLogo";
+import AppShell from "../components/AppShell";
+import { insights } from "../data";
 
-// TODO's
-// define insight type
-// determine how we get the company that we are displaying insight about
-
-export default function Insights() {
-  const navigate = useNavigate();
-  return (
-    <div className="flex flex-col h-screen">
-      <div className="flex flex-row grow-1 border-b">
-        <CompanyLogo />
-        <div className="flex grow-10 text-[2rem] justify-center items-center pl-5">
-          Insight
-        </div>
-      </div>
-      <div className="flex flex-col w-screen grow-20">
-        <div className="flex justify-start ml-[2rem] mt-[2rem]">
-          <button
-            className="flex h-12 w-12 items-center justify-center rounded-full
-             border border-white text-2xl
-             hover:bg-white/20 cursor-pointer"
-            onClick={() => navigate(-1)}
-          >
-            ←
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+export default function Insights() { return <AppShell title="Insights" subtitle="Simple context for the decisions you are making."><div className="page-grid"><div><div className="section-heading"><h2>For you</h2><span className="tag">Updated today</span></div><div className="panel">{insights.map((insight) => <article className="insight-card" key={insight.title}><div className="insight-meta"><span className="eyebrow">{insight.category}</span><span>{insight.time}</span></div><h3>{insight.title}</h3><p>{insight.text}</p><button className="table-action" style={{ padding: "14px 0 0" }}>Read insight →</button></article>)}</div></div><div><div className="section-heading"><h2>Market themes</h2></div><div className="stats-card"><div className="metric-row"><div><div className="metric-label">Technology</div><div className="progress" style={{ marginTop: 8, width: 160 }}><span style={{ width: "82%" }} /></div></div><strong>82%</strong></div><div className="metric-row"><div><div className="metric-label">Healthcare</div><div className="progress" style={{ marginTop: 8, width: 160 }}><span style={{ width: "58%" }} /></div></div><strong>58%</strong></div><div className="metric-row"><div><div className="metric-label">Consumer</div><div className="progress" style={{ marginTop: 8, width: 160 }}><span style={{ width: "64%" }} /></div></div><strong>64%</strong></div></div></div></div></AppShell>; }
