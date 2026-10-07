@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { CSSProperties, ReactElement, ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
@@ -17,6 +17,10 @@ function Icon({ name }: { name: IconName }) {
 
 const navItems = [["dashboard", "Dashboard", "/"], ["watchlist", "Watchlist", "/watchlist"], ["insight", "Insight", "/insights"], ["setting", "Setting", "/settings"]] as const;
 
+export function PerennialLogo() {
+  return <div className="perennial-logo"><svg viewBox="0 0 42 42" fill="none" aria-hidden="true"><path d="M21 37V17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /><path d="M21 20C13.5 19.3 8.7 14.8 8.5 7.5 16.4 7.3 21.2 11.3 21 20Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /><path d="M21 25c7.5-.7 12.3-5.2 12.5-12.5C25.6 12.3 20.8 16.3 21 25Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /><path d="M21 31c-5.4-.3-9.3-2.8-11.3-7.4 6.5-.1 10.3 2.1 11.3 7.4Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg><span>PERENNIAL</span></div>;
+}
+
 type AppShellProps = { children: ReactNode; title: string; subtitle?: string };
 
 export default function AppShell({ children, title, subtitle }: AppShellProps) {
@@ -25,22 +29,31 @@ export default function AppShell({ children, title, subtitle }: AppShellProps) {
   return (
     <div className="app-shell">
       <aside className={`sidebar ${open ? "sidebar-open" : ""}`}>
-        <div className="brand" onClick={() => navigate("/")} role="button" tabIndex={0}><span className="brand-mark">P</span><span>perennial</span></div>
+        <div className="brand" onClick={() => navigate("/")} role="button" tabIndex={0}><PerennialLogo /></div>
         <div className="sidebar-label">Explore</div>
         <nav className="sidebar-nav">{navItems.map(([icon, label, path]) => <NavLink key={path} to={path} end={path === "/"} onClick={() => setOpen(false)} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}><span className="nav-icon"><Icon name={icon} /></span>{label}</NavLink>)}</nav>
         <div className="sidebar-footer"><button className="nav-link sidebar-logout" onClick={() => navigate("/login")}><span className="nav-icon"><Icon name="logout" /></span>Logout</button></div>
       </aside>
       {open && <button className="mobile-overlay" onClick={() => setOpen(false)} aria-label="Close menu" />}
       <main className="main-area">
-        <header className="topbar"><button className="menu-button" onClick={() => setOpen(true)} aria-label="Open menu">☰</button><div className="topbar-copy"><span className="page-kicker">Perennial</span><h1>{title}</h1>{subtitle && <p>{subtitle}</p>}</div><div className="topbar-actions"><button className="search-box" onClick={() => navigate("/watchlist")}><span>⌕</span><span>Search companies</span><kbd>⌘ K</kbd></button><button className="notification" aria-label="Notifications">♧</button><button className="avatar" onClick={() => navigate("/profile")}>PL</button></div></header>
+        <header className="topbar"><button className="menu-button" onClick={() => setOpen(true)} aria-label="Open menu">☰</button><div className="topbar-copy"><span className="page-kicker">Perennial</span><h1>{title}</h1>{subtitle && <p>{subtitle}</p>}</div><div className="topbar-actions"><button className="search-box" onClick={() => navigate("/watchlist")}><span>⌕</span><span>Search stocks, tickers, events (e.g. NVDA, RBLX)...</span></button><button className="profile-chip" onClick={() => navigate("/profile")}><span className="profile-avatar">AL</span><span className="profile-copy"><strong>Alexander Lane</strong><small>Verified Investor</small></span><span className="profile-chevron">⌄</span></button></div></header>
         <div className="page-content">{children}</div>
       </main>
     </div>
   );
 }
 
-export function AuthShell({ children }: { children: ReactNode }) { return <div className="auth-shell"><div className="auth-brand"><span className="brand-mark">P</span><span>perennial</span></div>{children}<p className="auth-footer">© 2026 Perennial · Built for better-informed decisions</p></div>; }
+export function AuthShell({ children }: { children: ReactNode }) { return <div className="auth-shell"><div className="auth-brand"><PerennialLogo /></div>{children}<p className="auth-footer">© 2026 Perennial · Built for better-informed decisions</p></div>; }
 
 export function ScoreRing({ score }: { score: number }) { return <div className="score-ring" style={{ "--score": `${score * 3.6}deg` } as CSSProperties}><div><strong>{score}</strong><span>/ 100</span></div></div>; }
 
 export function CompanyBadge({ company }: { company: { name: string; ticker: string } }) { return <div className="company-badge"><span className={`company-logo logo-${company.ticker.toLowerCase()}`}>{company.ticker.slice(0, 1)}</span><span><strong>{company.name}</strong><small>{company.ticker}</small></span></div>; }
+
+export function TrashIcon() {
+  return <svg className="trash-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16" /><path d="M10 11v6M14 11v6" /><path d="M6 7l1 13h10l1-13" /><path d="M9 7V4h6v3" /></svg>;
+}
+
+export function Toast({ type, message, onDone }: { type: "success" | "error"; message: string; onDone: () => void }) {
+  useEffect(() => { const timer = window.setTimeout(onDone, 3600); return () => window.clearTimeout(timer); }, [onDone]);
+  return <div className={`toast toast-${type}`} role="status"><span className="toast-icon">{type === "success" ? "✓" : "!"}</span><strong>{message}</strong></div>;
+}

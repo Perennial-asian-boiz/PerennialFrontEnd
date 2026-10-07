@@ -10,11 +10,12 @@ import Setup from "./pages/Setup";
 import Signup from "./pages/Signup";
 import Watchlist from "./pages/Watchlist";
 import WhyCompany from "./pages/WhyCompany";
+import { WatchlistProvider } from "./components/watchlistStore";
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <WatchlistProvider><Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
@@ -26,7 +27,7 @@ function App() {
         <Route path="/company" element={<Company />} />
         <Route path="/why" element={<WhyCompany />} />
         <Route path="/settings" element={<Settings />} />
-      </Routes>
+      </Routes></WatchlistProvider>
     </BrowserRouter>
   );
 }
