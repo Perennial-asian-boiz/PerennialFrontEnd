@@ -9,6 +9,14 @@ export type Company = {
   reason: string;
 };
 
+export type SignalStatus = "up" | "neutral" | "down";
+
+export function getSignalStatus(company: Company): SignalStatus {
+  if (company.change.startsWith("-")) return "down";
+  if (company.sentiment === "Neutral") return "neutral";
+  return "up";
+}
+
 export const companies: Company[] = [
   { name: "NVIDIA", ticker: "NVDA", price: "$214.17", sector: "Technology", score: 87, change: "+4.28%", sentiment: "Positive", reason: "Strong AI infrastructure demand" },
   { name: "Microsoft", ticker: "MSFT", price: "$496.03", sector: "Technology", score: 82, change: "+1.64%", sentiment: "Positive", reason: "Cloud growth and resilient margins" },

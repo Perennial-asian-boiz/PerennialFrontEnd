@@ -84,3 +84,21 @@ button, input { font: inherit; } button { cursor: pointer; }
   .watch-action { min-height: 32px; }
   .watch-button { padding: 8px 14px; font-size: 12px; }
 }
+
+@media (min-width: 651px) {
+  .app-shell { height: 100vh; min-height: 100vh; overflow: hidden; }
+  .sidebar { position: fixed; inset: 0 auto 0 0; height: 100vh; max-height: none; }
+  .main-area { height: 100vh; padding-top: 80px; overflow-x: hidden; overflow-y: auto; }
+  .topbar { position: fixed; top: 0; left: 176px; right: 0; z-index: 20; }
+}
+
+@media (min-width: 651px) and (max-width: 900px) {
+  .main-area { margin-left: 176px; }
+}
+
+@media (min-width: 901px) {
+  .main-area { margin-left: 190px; padding-top: 78px; }
+  .page-content { padding: 34px 42px 64px; }
+  .topbar { left: 190px; }
+  .page-heading { position: static; margin-bottom: 32px; padding: 0; background: transparent; }
+}
