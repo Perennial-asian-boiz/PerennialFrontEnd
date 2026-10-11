@@ -64,7 +64,7 @@ export const popularCompanies = [
 ];
 export const allCompanies = [...affordableCompanies, ...popularCompanies, ...companies].filter((company, index, list) => list.findIndex((item) => item.ticker === company.ticker) === index);
 
-export const topics = ["Technology", "Healthcare", "Financial Services", "Consumer", "Energy", "Industrials", "AI & Robotics", "Climate", "Travel", "Media"];
+export const topics = ["Technology", "Financials", "Healthcare", "Industrials", "Consumer Discretionary", "Consumer Staples", "Energy", "Utilities", "Materials", "Communication Services", "Real Estate"];
 
 export const insights = [
   { category: "Market pulse", title: "AI infrastructure remains the strongest theme", text: "Capital is continuing to move toward semiconductors, cloud platforms, and enterprise automation.", time: "Today" },
