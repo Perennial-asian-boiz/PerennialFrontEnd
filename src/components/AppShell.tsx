@@ -18,7 +18,7 @@ function Icon({ name }: { name: IconName }) {
 const navItems = [["dashboard", "Dashboard", "/"], ["watchlist", "Watchlist", "/watchlist"], ["insight", "Insight", "/insights"], ["setting", "Setting", "/settings"]] as const;
 
 export function PerennialLogo() {
-  return <div className="perennial-logo"><svg viewBox="0 0 42 42" fill="none" aria-hidden="true"><path d="M21 37V17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /><path d="M21 20C13.5 19.3 8.7 14.8 8.5 7.5 16.4 7.3 21.2 11.3 21 20Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /><path d="M21 25c7.5-.7 12.3-5.2 12.5-12.5C25.6 12.3 20.8 16.3 21 25Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /><path d="M21 31c-5.4-.3-9.3-2.8-11.3-7.4 6.5-.1 10.3 2.1 11.3 7.4Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg><span>PERENNIAL</span></div>;
+  return <div className="perennial-logo"><img src="/perennial-logo.svg" alt="" aria-hidden="true" /><span>PERENNIAL</span></div>;
 }
 
 type AppShellProps = { children: ReactNode; title: string; subtitle?: string };
