@@ -44,7 +44,16 @@ button, input { font: inherit; } button { cursor: pointer; }
 .watch-button { white-space: nowrap; }
 
 @media (min-width: 901px) {
-  .topbar-actions { display: grid; min-width: min(60vw, 720px); grid-template-columns: minmax(360px, 1fr) auto; }
+  .topbar-copy { flex: 0 1 clamp(360px, 40%, 620px); min-width: 360px; }
+  .topbar-actions { flex: 1 1 auto; display: grid; min-width: 0; grid-template-columns: minmax(0, 1fr) auto; }
   .search-box { width: 100%; }
   .search-box span:last-child { overflow: hidden; text-overflow: ellipsis; }
+  .market-company-column { width: 48%; }
+  .market-signal-column { width: 22%; }
+  .market-price-column { width: 18%; }
+  .market-action-column { width: 12%; }
+  .market-table th { font-size: 10px; }
+  .market-table td { font-size: 12px; }
+  .market-table td small { font-size: 10px; }
+  .watch-button { font-size: 10px; }
 }
