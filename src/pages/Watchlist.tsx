@@ -1,13 +1,13 @@
 import { useState } from "react";
 import AppShell, { CompanyBadge, Toast, TrashIcon } from "../components/AppShell";
 import { useWatchlist } from "../components/watchlistStore";
-import { companies, getSignalStatus } from "../data";
+import { allCompanies, getSignalStatus } from "../data";
 
 export default function Watchlist() {
   const [query, setQuery] = useState("");
   const [toast, setToast] = useState<"success" | "error" | null>(null);
   const { isWatched, remove } = useWatchlist();
-  const filtered = companies.filter((company) => isWatched(company.ticker) && `${company.name} ${company.ticker} ${company.sector}`.toLowerCase().includes(query.toLowerCase()));
+  const filtered = allCompanies.filter((company) => isWatched(company.ticker) && `${company.name} ${company.ticker} ${company.sector}`.toLowerCase().includes(query.toLowerCase()));
   const removeCompany = (ticker: string) => { remove(ticker); setToast("error"); };
 
   return <AppShell title="Your Watchlist" subtitle="Active items tracked for analysis.">
