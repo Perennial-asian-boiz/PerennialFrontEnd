@@ -44,10 +44,21 @@ button, input { font: inherit; } button { cursor: pointer; }
 .watch-button { white-space: nowrap; }
 
 @media (min-width: 901px) {
-  .topbar-copy { flex: 0 1 clamp(360px, 40%, 620px); min-width: 360px; }
-  .topbar-actions { flex: 1 1 auto; display: grid; min-width: 0; grid-template-columns: minmax(0, 1fr) auto; }
+  .sidebar { width: 190px; flex-basis: 190px; }
+  .brand { justify-content: center; padding: 0; }
+  .perennial-logo img { width: 80px; height: auto; }
+  .perennial-logo span { font-size: 14px; letter-spacing: .1em; }
+  .topbar { min-height: 78px; padding: 12px 42px; }
+  .topbar-actions { flex: 1 1 auto; display: grid; width: 100%; min-width: 0; grid-template-columns: minmax(0, 1fr) 190px; }
   .search-box { width: 100%; }
   .search-box span:last-child { overflow: hidden; text-overflow: ellipsis; }
+  .page-content { padding: 34px 42px 64px; }
+  .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 32px; }
+  .page-heading h1 { margin: 3px 0 0; color: #1d2a24; font-size: 34px; line-height: 1.1; font-weight: 700; letter-spacing: -.05em; }
+  .page-heading p { margin: 5px 0 0; color: #78877d; font-size: 16px; }
+  .page-heading .segmented { flex-shrink: 0; }
+  .market-toolbar { margin-bottom: 30px; }
+  .market-sections { gap: 20px; }
   .market-company-column { width: 48%; }
   .market-signal-column { width: 22%; }
   .market-price-column { width: 18%; }

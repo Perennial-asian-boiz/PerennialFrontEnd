@@ -21,9 +21,9 @@ export function PerennialLogo() {
   return <div className="perennial-logo"><img src="/perennial-logo.svg" alt="" aria-hidden="true" /><span>PERENNIAL</span></div>;
 }
 
-type AppShellProps = { children: ReactNode; title: string; subtitle?: string };
+type AppShellProps = { children: ReactNode; title: string; subtitle?: string; headerActions?: ReactNode };
 
-export default function AppShell({ children, title, subtitle }: AppShellProps) {
+export default function AppShell({ children, title, subtitle, headerActions }: AppShellProps) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   return (
@@ -36,8 +36,8 @@ export default function AppShell({ children, title, subtitle }: AppShellProps) {
       </aside>
       {open && <button className="mobile-overlay" onClick={() => setOpen(false)} aria-label="Close menu" />}
       <main className="main-area">
-        <header className="topbar"><button className="menu-button" onClick={() => setOpen(true)} aria-label="Open menu">☰</button><div className="topbar-copy"><span className="page-kicker">Perennial</span><h1>{title}</h1>{subtitle && <p>{subtitle}</p>}</div><div className="topbar-actions"><button className="search-box" onClick={() => navigate("/watchlist")}><span>⌕</span><span>Search stocks, tickers, events (e.g. NVDA, RBLX)...</span></button><button className="profile-chip" onClick={() => navigate("/profile")}><span className="profile-avatar">AL</span><span className="profile-copy"><strong>Alexander Lane</strong><small>Verified Investor</small></span><span className="profile-chevron">⌄</span></button></div></header>
-        <div className="page-content">{children}</div>
+        <header className="topbar"><button className="menu-button" onClick={() => setOpen(true)} aria-label="Open menu">☰</button><div className="topbar-actions"><button className="search-box" onClick={() => navigate("/watchlist")}><span>⌕</span><span>Search stocks, tickers, events (e.g. NVDA, RBLX)...</span></button><button className="profile-chip" onClick={() => navigate("/profile")}><span className="profile-avatar">AL</span><span className="profile-copy"><strong>Alexander Lane</strong><small>Verified Investor</small></span><span className="profile-chevron">⌄</span></button></div></header>
+        <div className="page-content"><div className="page-heading"><div className="page-heading-copy"><span className="page-kicker">Perennial</span><h1>{title}</h1>{subtitle && <p>{subtitle}</p>}</div>{headerActions}</div>{children}</div>
       </main>
     </div>
   );
