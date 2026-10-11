@@ -47,7 +47,7 @@ export default function AppShell({ children, title, subtitle, headerActions }: A
   );
 }
 
-export function AuthShell({ children }: { children: ReactNode }) { return <div className="auth-shell"><div className="auth-brand"><PerennialLogo /></div>{children}<p className="auth-footer">© 2026 Perennial · Built for better-informed decisions</p></div>; }
+export function AuthShell({ children, className = "" }: { children: ReactNode; className?: string }) { return <div className={`auth-shell ${className}`.trim()}><div className="auth-brand"><PerennialLogo /></div>{children}<p className="auth-footer">© 2026 Perennial · Built for better-informed decisions</p></div>; }
 
 export function ScoreRing({ score }: { score: number }) { return <div className="score-ring" style={{ "--score": `${score * 3.6}deg` } as CSSProperties}><div><strong>{score}</strong><span>/ 100</span></div></div>; }
 
