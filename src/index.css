@@ -321,27 +321,6 @@ button, input { font: inherit; } button { cursor: pointer; }
 
 .settings-alert-row .settings-toggle span, .profile-alert-row .settings-toggle span { display: block; width: 24px; height: 24px; flex: 0 0 24px; margin: 0; border-radius: 50%; background: #fff; color: transparent; font-size: 0; line-height: 1; }
 .settings-alert-row .settings-toggle.checked span, .profile-alert-row .settings-toggle.checked span { margin-left: auto; }
-.profile-sector-summary { flex-direction: row; justify-content: center; flex-wrap: wrap; column-gap: 8px; row-gap: 8px; }
-.profile-sector-summary strong { flex-basis: auto; }
-.profile-sector-summary span { padding: 6px 9px; border-radius: 4px; color: #347b4c; background: #edf8ec; font-size: 13px; }
-.profile-identity-card.profile-no-sectors { min-height: 155px; padding-bottom: 22px; }
-.profile-identity-card.profile-no-sectors > p { margin-bottom: 0; }
-
-@media (min-width: 651px) {
-  .profile-high-fidelity { gap: 22px; }
-  .profile-identity-card { min-height: 250px; padding: 24px 30px; }
-  .profile-identity-card h1 { font-size: 36px; }
-  .profile-identity-card > p { margin: 14px 0 18px; font-size: 17px; }
-  .profile-sector-summary { gap: 6px; font-size: 16px; }
-  .profile-sector-summary strong { font-size: 16px; }
-  .profile-notifications-card { padding: 24px 30px 22px; }
-  .profile-notifications-card h2 { margin-bottom: 18px; font-size: 24px; }
-  .profile-alert-list { gap: 12px; }
-  .profile-alert-row { min-height: 82px; padding: 14px 18px; }
-  .profile-alert-row strong { font-size: 13px; }
-  .profile-alert-row span { margin-top: 3px; font-size: 11px; }
-  .profile-sector-summary { flex-wrap: nowrap; }
-}
 
 .profile-high-fidelity { display: grid; gap: 40px; }
 .profile-identity-card, .profile-notifications-card { border: 1px solid #dce5dc; border-radius: 10px; background: #fff; box-shadow: 0 8px 18px rgba(35, 74, 45, .04); }
@@ -375,4 +354,29 @@ button, input { font: inherit; } button { cursor: pointer; }
   .profile-alert-row span { font-size: 11px; }
   .profile-alert-row .settings-toggle { margin-top: 2px; }
   .profile-desktop-break { display: none; }
+}
+
+/* Keep the profile cards compact after the shared profile rules above. */
+@media (min-width: 651px) {
+  .profile-high-fidelity { gap: 22px; }
+  .profile-identity-card { min-height: 250px; padding: 24px 30px; }
+  .profile-identity-card.profile-no-sectors { min-height: 155px; padding-bottom: 22px; }
+  .profile-identity-card h1 { font-size: 36px; }
+  .profile-identity-card > p { margin: 14px 0 18px; font-size: 17px; }
+  .profile-identity-card.profile-no-sectors > p { margin-bottom: 0; }
+  .profile-sector-summary { flex-direction: row; flex-wrap: nowrap; gap: 6px; font-size: 16px; }
+  .profile-sector-summary strong { flex-basis: auto; font-size: 16px; }
+  .profile-sector-summary span { display: inline-block; padding: 6px 9px; border-radius: 4px; color: #347b4c; background: #edf8ec; font-size: 13px; }
+  .profile-notifications-card { padding: 24px 30px 22px; }
+  .profile-notifications-card h2 { margin-bottom: 18px; font-size: 24px; }
+  .profile-alert-list { gap: 12px; }
+  .profile-alert-row { min-height: 82px; padding: 14px 18px; }
+  .profile-alert-row strong { font-size: 13px; }
+  .profile-alert-row span { margin-top: 3px; font-size: 11px; }
+}
+
+@media (max-width: 650px) {
+  .profile-identity-card.profile-no-sectors { min-height: 220px; padding-bottom: 24px; }
+  .profile-identity-card.profile-no-sectors > p { margin-bottom: 0; }
+  .profile-sector-summary span { display: inline-block; padding: 6px 9px; border-radius: 4px; color: #347b4c; background: #edf8ec; font-size: 13px; }
 }

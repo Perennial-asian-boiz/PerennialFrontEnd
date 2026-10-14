@@ -43,9 +43,14 @@ unused imports and variables fail the type check (`noUnusedLocals`).
 
 ## Connecting to the backend
 
-Nothing calls an API yet — every screen renders module-level dummy data. The
-dashboard's two buckets map directly to the backend pipeline's output in
-`consensus_watchlist.json`:
+The dashboard calls the backend when `VITE_API_URL` is configured. Copy
+`.env.example` to `.env` while running the local backend:
+
+```bash
+cp .env.example .env
+```
+
+The dashboard's two buckets map directly to the backend API:
 
 | Button | Backend bucket |
 |---|---|
@@ -54,18 +59,20 @@ dashboard's two buckets map directly to the backend pipeline's output in
 
 ### Dashboard JSON contract
 
-The frontend currently uses the fixture in `src/dashboardData.ts`. The backend can replace it with JSON using this shape:
+The backend endpoint is `GET /api/watchlist`. It returns this shape:
 
 ```json
 {
+  "schema_version": "1.0",
+  "generated_at": "2026-10-14T00:00:00+00:00",
   "affordable_growing": [
     {
       "name": "Example Company",
       "ticker": "EXMP",
-      "price": "$42.00",
       "sector": "Technology",
-      "score": 82,
-      "change": "+1.24%",
+      "price": 42.00,
+      "change_percent": 1.24,
+      "confidence_score": 82,
       "sentiment": "Positive",
       "reason": "Growth signals are improving across technology."
     }
@@ -74,11 +81,22 @@ The frontend currently uses the fixture in `src/dashboardData.ts`. The backend c
 }
 ```
 
-Each bucket can contain three companies per sector. The dashboard uses the sectors selected during onboarding; when the user skips onboarding, it displays all eleven sectors.
+The frontend converts the numeric API fields into the display strings used by
+the table. Each bucket can contain three companies per sector. The dashboard
+uses the sectors selected during onboarding; when the user skips onboarding,
+it displays all eleven sectors.
 
-When wiring this up, put the API base URL in `.env` as `VITE_API_URL` and read
-it with `import.meta.env.VITE_API_URL`. Anything prefixed `VITE_` ships to the
-browser, so never put a secret there.
+The backend currently returns temporary fixture data in development while the
+real company metadata pipeline is being completed. Anything prefixed `VITE_`
+ships to the browser, so never put a secret there.
+
+### Simple authentication client
+
+`src/api/auth.ts` contains the small typed client for the Sprint 1 account API.
+It covers signup, OTP verification/resend, login, preferences, and personal
+watchlist calls. Login and OTP verification save the returned opaque session
+token in `sessionStorage`; `clearSession()` removes it. The existing screens
+can call these helpers without adding another state-management library.
 
 ## Layout
 
