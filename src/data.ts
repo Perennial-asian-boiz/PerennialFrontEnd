@@ -11,6 +11,30 @@ export type Company = {
 
 export type SignalStatus = "up" | "neutral" | "down";
 
+export type RiskLevel = "Conservative" | "Moderate" | "High";
+
+export type OnboardingPreferences = {
+  sectors: string[];
+  risk: RiskLevel | "";
+};
+
+export const ONBOARDING_PREFERENCES_KEY = "perennial-onboarding-preferences";
+
+export const riskProfiles: Record<RiskLevel, { description: string; color: string }> = {
+  Conservative: {
+    description: "Prefer stability and smaller ups and downs; accept potentially lower returns.",
+    color: "conservative",
+  },
+  Moderate: {
+    description: "Comfortable with some market fluctuations while seeking a balance between growth and stability.",
+    color: "moderate",
+  },
+  High: {
+    description: "Comfortable with large short-term losses in pursuit of higher potential long-term growth.",
+    color: "high",
+  },
+};
+
 export function getSignalStatus(company: Company): SignalStatus {
   if (company.change.startsWith("-")) return "down";
   if (company.sentiment === "Neutral") return "neutral";
@@ -65,6 +89,10 @@ export const popularCompanies = [
 export const allCompanies = [...affordableCompanies, ...popularCompanies, ...companies].filter((company, index, list) => list.findIndex((item) => item.ticker === company.ticker) === index);
 
 export const topics = ["Technology", "Financials", "Healthcare", "Industrials", "Consumer Discretionary", "Consumer Staples", "Energy", "Utilities", "Materials", "Communication Services", "Real Estate"];
+
+export const confirmationSectorLabels: Record<string, string> = {
+  Technology: "Information Technology",
+};
 
 export const insights = [
   { category: "Market pulse", title: "AI infrastructure remains the strongest theme", text: "Capital is continuing to move toward semiconductors, cloud platforms, and enterprise automation.", time: "Today" },

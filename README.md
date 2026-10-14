@@ -30,9 +30,9 @@ unused imports and variables fail the type check (`noUnusedLocals`).
 
 | Route | Page | State |
 |---|---|---|
-| `/` | Dashboard | Layout only; bucket buttons not wired |
-| `/setup` | Onboarding — interests and risk comfort | Selections held in state, not saved |
-| `/confirmation` | Setup confirmation | Placeholder copy |
+| `/` | Dashboard | Sector-filtered dashboard using the frontend dashboard JSON contract |
+| `/setup` | Onboarding — interests and risk comfort | Selections saved locally for the frontend flow |
+| `/confirmation` | Setup confirmation | Shows selected sectors and risk profile |
 | `/watchlist` | Watchlist | Three hardcoded rows |
 | `/company` | Company detail | Placeholder values |
 | `/why` | Why this company | Placeholder values |
@@ -51,6 +51,30 @@ dashboard's two buckets map directly to the backend pipeline's output in
 |---|---|
 | Affordable and Growing | `affordable_growing` |
 | Popular and Stable | `popular_stable` |
+
+### Dashboard JSON contract
+
+The frontend currently uses the fixture in `src/dashboardData.ts`. The backend can replace it with JSON using this shape:
+
+```json
+{
+  "affordable_growing": [
+    {
+      "name": "Example Company",
+      "ticker": "EXMP",
+      "price": "$42.00",
+      "sector": "Technology",
+      "score": 82,
+      "change": "+1.24%",
+      "sentiment": "Positive",
+      "reason": "Growth signals are improving across technology."
+    }
+  ],
+  "popular_stable": []
+}
+```
+
+Each bucket can contain three companies per sector. The dashboard uses the sectors selected during onboarding; when the user skips onboarding, it displays all eleven sectors.
 
 When wiring this up, put the API base URL in `.env` as `VITE_API_URL` and read
 it with `import.meta.env.VITE_API_URL`. Anything prefixed `VITE_` ships to the
