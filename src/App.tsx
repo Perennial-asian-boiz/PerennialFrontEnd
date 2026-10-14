@@ -8,6 +8,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Insights from "./pages/Insights";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import PasswordReset from "./pages/PasswordReset";
 import PasswordEmailSent from "./pages/PasswordEmailSent";
 import Settings from "./pages/Settings";
 import Setup from "./pages/Setup";
@@ -34,6 +35,7 @@ function App() {
         <Route path="/setup" element={<Setup />} />
         <Route path="/confirmation" element={<Confirmation />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/settings/password" element={<PasswordReset />} />
         <Route path="/insights" element={<Insights />} />
         <Route path="/watchlist" element={<Watchlist />} />
         <Route path="/company" element={<Company />} />

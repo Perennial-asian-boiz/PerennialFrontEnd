@@ -28,9 +28,9 @@ function SearchIcon() {
   return <svg className="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>;
 }
 
-type AppShellProps = { children: ReactNode; title: string; subtitle?: string; headerActions?: ReactNode };
+type AppShellProps = { children: ReactNode; title: string; subtitle?: string; headerActions?: ReactNode; hidePageHeading?: boolean; hideSidebarLogout?: boolean };
 
-export default function AppShell({ children, title, subtitle, headerActions }: AppShellProps) {
+export default function AppShell({ children, title, subtitle, headerActions, hidePageHeading = false, hideSidebarLogout = false }: AppShellProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -63,12 +63,12 @@ export default function AppShell({ children, title, subtitle, headerActions }: A
         <div className="brand" onClick={() => navigate("/")} role="button" tabIndex={0}><PerennialLogo /></div>
         <div className="sidebar-label">Explore</div>
         <nav className="sidebar-nav">{navItems.map(([icon, label, path]) => <NavLink key={path} to={path} end={path === "/"} onClick={() => setOpen(false)} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}><span className="nav-icon"><Icon name={icon} /></span>{label}</NavLink>)}</nav>
-        <div className="sidebar-footer"><button className="nav-link sidebar-logout" onClick={() => navigate("/login")}><span className="nav-icon"><Icon name="logout" /></span>Logout</button></div>
+        {!hideSidebarLogout && <div className="sidebar-footer"><button className="nav-link sidebar-logout" onClick={() => navigate("/login")}><span className="nav-icon"><Icon name="logout" /></span>Logout</button></div>}
       </aside>
       {open && <button className="mobile-overlay" onClick={() => setOpen(false)} aria-label="Close menu" />}
       <main className="main-area">
         <header className="topbar"><button className="menu-button" onClick={() => setOpen(true)} aria-label="Open menu">☰</button><div className="topbar-actions"><div className="search-box" ref={searchBoxRef}><SearchIcon /><input aria-label="Search stocks, tickers, events" value={query} onFocus={() => setIsSearchOpen(true)} onChange={(event) => { setQuery(event.target.value); setIsSearchOpen(true); }} placeholder="Search stocks, tickers, events (e.g. NVDA, RBLX)..." />{isSearchOpen && searchResults.length > 0 && <div className="search-results" role="listbox">{searchResults.map((company) => <div className="search-result" key={company.ticker}><button className="search-result-main" type="button" onClick={() => selectSearchResult(company)}><strong>{company.name}</strong><span>{company.ticker} · {company.sector} · {company.price}</span></button>{isWatched(company.ticker) ? <span className="search-watched">In Watchlist</span> : <button className="search-result-action" type="button" onClick={() => add(company.ticker)}>＋ Watchlist</button>}</div>)}</div>}</div><button className="profile-chip" onClick={() => navigate("/profile")}><span className="profile-avatar">AL</span><span className="profile-copy"><strong>Alexander Lane</strong><small>Verified Investor</small></span><span className="profile-chevron">⌄</span></button></div></header>
-        <div className="page-content"><div className="page-heading"><div className="page-heading-copy"><h1>{title}</h1>{subtitle && <p>{subtitle}</p>}</div>{headerActions}</div>{children}</div>
+        <div className="page-content">{!hidePageHeading && <div className="page-heading"><div className="page-heading-copy"><h1>{title}</h1>{subtitle && <p>{subtitle}</p>}</div>{headerActions}</div>}{children}</div>
       </main>
     </div>
   );

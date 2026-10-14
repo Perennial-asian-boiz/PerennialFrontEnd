@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import RiskComfort from "../components/RiskComfort";
 import { topics, type RiskLevel } from "../data";
 import { readOnboardingPreferences, saveOnboardingPreferences } from "../onboarding";
@@ -8,7 +8,14 @@ export default function Setup() {
   const [selected, setSelected] = useState<string[]>(() => readOnboardingPreferences().sectors);
   const [risk, setRisk] = useState<RiskLevel | "">(() => readOnboardingPreferences().risk);
   const navigate = useNavigate();
+  const location = useLocation();
   const canContinue = selected.length > 0 && Boolean(risk);
+
+  useEffect(() => {
+    if (location.hash === "#risk-comfort") {
+      document.getElementById("risk-comfort")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [location.hash]);
 
   const handleContinue = () => {
     saveOnboardingPreferences({ sectors: selected, risk });
@@ -16,9 +23,13 @@ export default function Setup() {
   };
 
   const handleSkip = () => {
+    if (location.state?.returnToSettings) {
+      navigate("/settings");
+      return;
+    }
     saveOnboardingPreferences({ sectors: [], risk: "" });
     navigate("/");
   };
 
-  return <div className="onboarding-page setup-page"><main className="setup-panel"><section><h1>What Interests You</h1><p className="setup-section-copy">Select the industries you want to follow:</p><div className="interest-grid">{topics.map((topic) => <button key={topic} type="button" className={`interest-option ${selected.includes(topic) ? "selected" : ""}`} onClick={() => setSelected((current) => current.includes(topic) ? current.filter((item) => item !== topic) : [...current, topic])}>{topic}</button>)}</div></section><section className="risk-section"><h2>Risk Comfort</h2><p className="setup-section-copy">Choose your investment style:</p><RiskComfort value={risk} onChange={setRisk} /></section></main><div className="onboarding-actions"><button className="onboarding-skip" type="button" onClick={handleSkip}>Skip for now</button><button className="btn-primary onboarding-continue" type="button" disabled={!canContinue} onClick={handleContinue}>Continue to Confirmation</button></div></div>;
+  return <div className="onboarding-page setup-page"><main className="setup-panel"><section><h1>What Interests You</h1><p className="setup-section-copy">Select the industries you want to follow:</p><div className="interest-grid">{topics.map((topic) => <button key={topic} type="button" className={`interest-option ${selected.includes(topic) ? "selected" : ""}`} onClick={() => setSelected((current) => current.includes(topic) ? current.filter((item) => item !== topic) : [...current, topic])}>{topic}</button>)}</div></section><section className="risk-section" id="risk-comfort"><h2>Risk Comfort</h2><p className="setup-section-copy">Choose your investment style:</p><RiskComfort value={risk} onChange={setRisk} /></section></main><div className="onboarding-actions"><button className="onboarding-skip" type="button" onClick={handleSkip}>Skip for now</button><button className="btn-primary onboarding-continue" type="button" disabled={!canContinue} onClick={handleContinue}>Continue to Confirmation</button></div></div>;
 }
