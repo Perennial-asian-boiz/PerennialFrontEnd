@@ -4,7 +4,7 @@ import { useWatchlist } from "../components/watchlistStore";
 import { getSignalStatus } from "../data";
 import { dashboardPayload, getDashboardSections, type DashboardBucket } from "../dashboardData";
 import { loadDashboardPayload } from "../api/dashboard";
-import { readOnboardingPreferences } from "../onboarding";
+import { getPreferences, getSessionToken, isAuthApiConfigured } from "../api/auth";
 import { getMarketStatus } from "../marketStatus";
 
 export default function Dashboard() {
@@ -12,20 +12,30 @@ export default function Dashboard() {
   const [toast, setToast] = useState<"success" | "error" | null>(null);
   const [payload, setPayload] = useState(dashboardPayload);
   const [marketStatus, setMarketStatus] = useState(() => getMarketStatus());
+  const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
   const { isWatched, add } = useWatchlist();
-  const preferences = readOnboardingPreferences();
   const bucket: DashboardBucket = view === "Popular & Stable" ? "popular_stable" : "affordable_growing";
-  const sections = getDashboardSections(payload, preferences.sectors, bucket);
+  const sections = getDashboardSections(payload, selectedSectors, bucket);
   useEffect(() => {
     const controller = new AbortController();
     loadDashboardPayload(controller.signal).then(setPayload).catch((error: unknown) => {
       if (error instanceof DOMException && error.name === "AbortError") return;
       setPayload(dashboardPayload);
     });
+    const loadPreferences = () => {
+      if (!isAuthApiConfigured() || !getSessionToken()) {
+        setSelectedSectors([]);
+        return;
+      }
+      getPreferences().then((preferences) => setSelectedSectors(preferences.sectors)).catch(() => setSelectedSectors([]));
+    };
+    loadPreferences();
+    window.addEventListener("perennial-auth-changed", loadPreferences);
     const timer = window.setInterval(() => setMarketStatus(getMarketStatus()), 30_000);
     return () => {
       controller.abort();
       window.clearInterval(timer);
+      window.removeEventListener("perennial-auth-changed", loadPreferences);
     };
   }, []);
   return <AppShell title="Market Health" subtitle="Curated market opportunities and sector trend monitors." headerActions={<div className="segmented"><button className={view === "Affordable & Growing" ? "selected" : ""} onClick={() => setView("Affordable & Growing")}>Affordable &amp; Growing</button><button className={view === "Popular & Stable" ? "selected" : ""} onClick={() => setView("Popular & Stable")}>Popular &amp; Stable</button></div>}>

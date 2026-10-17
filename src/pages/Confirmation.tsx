@@ -1,16 +1,14 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { confirmationSectorLabels, riskProfiles, type OnboardingPreferences, type RiskLevel } from "../data";
-import { readOnboardingPreferences } from "../onboarding";
 
 type ConfirmationState = Partial<OnboardingPreferences>;
 
 export default function Confirmation() {
   const navigate = useNavigate();
   const location = useLocation();
-  const savedPreferences = readOnboardingPreferences();
   const routeState = (location.state as ConfirmationState | null) ?? {};
-  const sectors = routeState.sectors ?? savedPreferences.sectors;
-  const risk = (routeState.risk ?? savedPreferences.risk) as RiskLevel | "";
+  const sectors = routeState.sectors ?? [];
+  const risk = (routeState.risk ?? "") as RiskLevel | "";
   const riskProfile = risk ? riskProfiles[risk] : null;
   const dashboardState: OnboardingPreferences = { sectors, risk };
 

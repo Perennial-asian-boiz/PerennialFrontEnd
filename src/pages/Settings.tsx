@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppShell from "../components/AppShell";
+import { clearSession } from "../api/auth";
 
 type SettingsIconName = "notifications" | "profile" | "preferences" | "security" | "logout";
 
@@ -38,7 +39,7 @@ export default function Settings() {
       <button className="settings-card settings-action-card" type="button" onClick={() => navigate("/profile")}><div className="settings-card-heading"><SettingsIcon name="profile" /><div><h2>Your Profile</h2><p>Primary mandates, institutional affiliation, and terminal seat ID</p></div></div><span className="settings-action-link">Edit Contact</span></button>
       <button className="settings-card settings-action-card" type="button" onClick={() => navigate("/setup#risk-comfort", { state: { returnToSettings: true } })}><div className="settings-card-heading"><SettingsIcon name="preferences" /><div><h2>Update Preference</h2><p>Sectors of interest, risk tolerance recalibration.</p></div></div></button>
       <button className="settings-card settings-action-card" type="button" onClick={() => navigate("/settings/password")}><div className="settings-card-heading"><SettingsIcon name="security" /><div><div className="settings-title-line"><h2>Change your password &amp; Security</h2><span className="settings-badge">2FA: Enabled</span></div><p>Hardware keys, authenticator apps, and rotation cycles</p></div></div><span className="settings-security-button">Update Security</span></button>
-      <button className="settings-card settings-logout-card" type="button" onClick={() => navigate("/login")}><SettingsIcon name="logout" /><span>Log out</span></button>
+      <button className="settings-card settings-logout-card" type="button" onClick={() => { clearSession(); navigate("/login", { replace: true }); }}><SettingsIcon name="logout" /><span>Log out</span></button>
     </div>
   </AppShell>;
 }

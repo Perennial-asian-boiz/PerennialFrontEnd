@@ -94,9 +94,28 @@ ships to the browser, so never put a secret there.
 
 `src/api/auth.ts` contains the small typed client for the Sprint 1 account API.
 It covers signup, OTP verification/resend, login, preferences, and personal
-watchlist calls. Login and OTP verification save the returned opaque session
-token in `sessionStorage`; `clearSession()` removes it. The existing screens
-can call these helpers without adding another state-management library.
+watchlist calls. Login and OTP verification save only the returned opaque
+session token in `sessionStorage`; `clearSession()` removes it. Preferences,
+watchlist items, and account identity are read from and written to the backend
+database through the API. They are not stored in `localStorage`.
+
+### Run the two repositories together
+
+Clone `PerennialFrontEnd` and `PerennialBackend` as sibling directories. Start
+the backend database and API using the backend README, then configure this
+frontend with:
+
+```bash
+cp .env.example .env
+npm ci
+npm run dev
+```
+
+The checked-in `.env.example` points to `http://127.0.0.1:8000`. The app opens
+at Login, validates the session with `GET /me`, and redirects unauthenticated
+users away from Dashboard, Setup, Profile, Settings, and Watchlist. The
+backend's temporary dashboard fixture is still used until the real company
+pipeline is ready; it follows the same API response contract.
 
 ## Layout
 

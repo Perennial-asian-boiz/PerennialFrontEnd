@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AppShell from "../components/AppShell";
 import { confirmationSectorLabels } from "../data";
-import { readOnboardingPreferences } from "../onboarding";
+import { getMe, getPreferences, getSessionToken, isAuthApiConfigured } from "../api/auth";
 
 type ProfileIconName = "shield" | "user";
 
@@ -19,14 +19,24 @@ function ProfileToggle({ checked, onChange, label }: { checked: boolean; onChang
 export default function Profile() {
   const [moatAlerts, setMoatAlerts] = useState(true);
   const [earningsAlerts, setEarningsAlerts] = useState(true);
-  const preferences = readOnboardingPreferences();
-  const sectors = preferences.sectors;
+  const [sectors, setSectors] = useState<string[]>([]);
+  const [name, setName] = useState("Alexander Lane");
+  const [email, setEmail] = useState("demo@student.csulb.edu");
+
+  useEffect(() => {
+    if (!isAuthApiConfigured() || !getSessionToken()) return;
+    getPreferences().then((preferences) => setSectors(preferences.sectors)).catch(() => setSectors([]));
+    getMe().then((user) => {
+      setName(user.full_name);
+      setEmail(user.email);
+    }).catch(() => undefined);
+  }, []);
 
   return <AppShell title="Your Profile" hidePageHeading>
     <div className="profile-high-fidelity">
       <section className={`profile-identity-card ${sectors.length === 0 ? "profile-no-sectors" : ""}`}>
-        <h1>Alexander Lane</h1>
-        <p>demo@student.csulb.edu</p>
+        <h1>{name}</h1>
+        <p>{email}</p>
         {sectors.length > 0 && <div className="profile-sector-summary"><strong>Sector:</strong>{sectors.map((sector) => <span key={sector}>{confirmationSectorLabels[sector] ?? sector}</span>)}</div>}
       </section>
       <section className="profile-notifications-card">

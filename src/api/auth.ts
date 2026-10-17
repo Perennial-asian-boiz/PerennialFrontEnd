@@ -7,6 +7,8 @@
  */
 
 const SESSION_KEY = "perennial.access_token";
+const PENDING_EMAIL_KEY = "perennial.pending_email";
+const PENDING_CODE_KEY = "perennial.pending_code";
 
 export type User = {
   id: number;
@@ -72,10 +74,41 @@ export function getSessionToken() {
 
 export function clearSession() {
   sessionStorage.removeItem(SESSION_KEY);
+  window.dispatchEvent(new Event("perennial-auth-changed"));
+}
+
+export function isAuthApiConfigured() {
+  return Boolean(import.meta.env.VITE_API_URL?.trim());
+}
+
+export function getPendingEmail() {
+  return sessionStorage.getItem(PENDING_EMAIL_KEY) ?? "";
+}
+
+export function setPendingEmail(email: string) {
+  sessionStorage.setItem(PENDING_EMAIL_KEY, email);
+}
+
+export function clearPendingEmail() {
+  sessionStorage.removeItem(PENDING_EMAIL_KEY);
+}
+
+export function getPendingDevelopmentCode() {
+  return sessionStorage.getItem(PENDING_CODE_KEY) ?? "";
+}
+
+export function setPendingDevelopmentCode(code: string | null) {
+  if (code) sessionStorage.setItem(PENDING_CODE_KEY, code);
+  else sessionStorage.removeItem(PENDING_CODE_KEY);
+}
+
+export function clearPendingDevelopmentCode() {
+  sessionStorage.removeItem(PENDING_CODE_KEY);
 }
 
 function saveSession(response: AuthResponse) {
   sessionStorage.setItem(SESSION_KEY, response.access_token);
+  window.dispatchEvent(new Event("perennial-auth-changed"));
   return response;
 }
 

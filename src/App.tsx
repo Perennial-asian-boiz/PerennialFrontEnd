@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import type { ReactNode } from "react";
 import Company from "./pages/Company";
 import Confirmation from "./pages/Confirmation";
 import AccountCreated from "./pages/AccountCreated";
@@ -18,12 +19,17 @@ import VerifyCode from "./pages/VerifyCode";
 import Welcome from "./pages/Welcome";
 import WhyCompany from "./pages/WhyCompany";
 import { WatchlistProvider } from "./components/watchlistStore";
+import RequireAuth from "./components/RequireAuth";
+
+function Protected({ children }: { children: ReactNode }) {
+  return <RequireAuth>{children}</RequireAuth>;
+}
 
 function App() {
   return (
     <BrowserRouter>
       <WatchlistProvider><Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<Protected><Dashboard /></Protected>} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -31,16 +37,16 @@ function App() {
         <Route path="/verify-code" element={<VerifyCode />} />
         <Route path="/account-created" element={<AccountCreated />} />
         <Route path="/access-granted" element={<AccessGranted />} />
-        <Route path="/welcome" element={<Welcome />} />
-        <Route path="/setup" element={<Setup />} />
-        <Route path="/confirmation" element={<Confirmation />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings/password" element={<PasswordReset />} />
-        <Route path="/insights" element={<Insights />} />
-        <Route path="/watchlist" element={<Watchlist />} />
-        <Route path="/company" element={<Company />} />
-        <Route path="/why" element={<WhyCompany />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/welcome" element={<Protected><Welcome /></Protected>} />
+        <Route path="/setup" element={<Protected><Setup /></Protected>} />
+        <Route path="/confirmation" element={<Protected><Confirmation /></Protected>} />
+        <Route path="/profile" element={<Protected><Profile /></Protected>} />
+        <Route path="/settings/password" element={<Protected><PasswordReset /></Protected>} />
+        <Route path="/insights" element={<Protected><Insights /></Protected>} />
+        <Route path="/watchlist" element={<Protected><Watchlist /></Protected>} />
+        <Route path="/company" element={<Protected><Company /></Protected>} />
+        <Route path="/why" element={<Protected><WhyCompany /></Protected>} />
+        <Route path="/settings" element={<Protected><Settings /></Protected>} />
       </Routes></WatchlistProvider>
     </BrowserRouter>
   );

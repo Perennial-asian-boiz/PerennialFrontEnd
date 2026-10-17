@@ -18,8 +18,6 @@ export type OnboardingPreferences = {
   risk: RiskLevel | "";
 };
 
-export const ONBOARDING_PREFERENCES_KEY = "perennial-onboarding-preferences";
-
 export const riskProfiles: Record<RiskLevel, { description: string; color: string }> = {
   Conservative: {
     description: "Prefer stability and smaller ups and downs; accept potentially lower returns.",
