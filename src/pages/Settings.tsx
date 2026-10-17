@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppShell from "../components/AppShell";
-import { clearSession } from "../api/auth";
+import { clearSession, getNotificationSettings, getSessionToken, isAuthApiConfigured, logout, saveNotificationSettings } from "../api/auth";
 
 type SettingsIconName = "notifications" | "profile" | "preferences" | "security" | "logout";
 
@@ -25,21 +25,55 @@ export default function Settings() {
   const navigate = useNavigate();
   const [confidenceAlerts, setConfidenceAlerts] = useState(true);
   const [earningsAlerts, setEarningsAlerts] = useState(true);
+  const [notificationsError, setNotificationsError] = useState("");
+  const [savingNotifications, setSavingNotifications] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthApiConfigured() || !getSessionToken()) return;
+    getNotificationSettings().then((settings) => {
+      setConfidenceAlerts(settings.confidence_score_enabled);
+      setEarningsAlerts(settings.earnings_alerts_enabled);
+    }).catch(() => setNotificationsError("Unable to load notification settings."));
+  }, []);
+
+  const updateNotifications = (nextConfidence: boolean, nextEarnings: boolean) => {
+    const previous = { confidence: confidenceAlerts, earnings: earningsAlerts };
+    setConfidenceAlerts(nextConfidence);
+    setEarningsAlerts(nextEarnings);
+    setNotificationsError("");
+    setSavingNotifications(true);
+    saveNotificationSettings({
+      confidence_score_enabled: nextConfidence,
+      earnings_alerts_enabled: nextEarnings,
+    }).catch(() => {
+      setConfidenceAlerts(previous.confidence);
+      setEarningsAlerts(previous.earnings);
+      setNotificationsError("Unable to save notification settings.");
+    }).finally(() => setSavingNotifications(false));
+  };
+
+  const handleLogout = () => {
+    void logout().catch(() => undefined).finally(() => {
+      clearSession();
+      navigate("/login", { replace: true });
+    });
+  };
 
   return <AppShell title="Settings" hidePageHeading hideSidebarLogout>
     <div className="settings-high-fidelity">
       <section className="settings-card settings-notifications-card">
         <div className="settings-card-heading"><SettingsIcon name="notifications" /><div><div className="settings-title-line"><h2>Notification Settings</h2><span className="settings-badge">Daily &amp; Weekly Digest</span></div><p>Alert cadences, qualitative research triggers, and price boundary signals</p></div></div>
-        <div className="settings-alert-list">
-          <div className="settings-alert-row"><div><strong>Confidence Score <em>High Impact</em></strong><span>Real-time alerts when Confidence Score changes.</span></div><Toggle checked={confidenceAlerts} onChange={() => setConfidenceAlerts((current) => !current)} label="Toggle confidence score alerts" /></div>
-          <div className="settings-alert-row"><div><strong>Earnings Alerts</strong><span>Trigger instant summaries when normalized EPS or free cash flow deviates ±5%<br className="settings-desktop-break" /> from consensus estimates.</span></div><Toggle checked={earningsAlerts} onChange={() => setEarningsAlerts((current) => !current)} label="Toggle earnings alerts" /></div>
+        {notificationsError && <p className="settings-inline-error" role="alert">{notificationsError}</p>}
+        <div className="settings-alert-list" aria-busy={savingNotifications}>
+          <div className="settings-alert-row"><div><strong>Confidence Score <em>High Impact</em></strong><span>Real-time alerts when Confidence Score changes.</span></div><Toggle checked={confidenceAlerts} onChange={() => updateNotifications(!confidenceAlerts, earningsAlerts)} label="Toggle confidence score alerts" /></div>
+          <div className="settings-alert-row"><div><strong>Earnings Alerts</strong><span>Trigger instant summaries when normalized EPS or free cash flow deviates ±5%<br className="settings-desktop-break" /> from consensus estimates.</span></div><Toggle checked={earningsAlerts} onChange={() => updateNotifications(confidenceAlerts, !earningsAlerts)} label="Toggle earnings alerts" /></div>
         </div>
       </section>
 
       <button className="settings-card settings-action-card" type="button" onClick={() => navigate("/profile")}><div className="settings-card-heading"><SettingsIcon name="profile" /><div><h2>Your Profile</h2><p>Primary mandates, institutional affiliation, and terminal seat ID</p></div></div><span className="settings-action-link">Edit Contact</span></button>
       <button className="settings-card settings-action-card" type="button" onClick={() => navigate("/setup#risk-comfort", { state: { returnToSettings: true } })}><div className="settings-card-heading"><SettingsIcon name="preferences" /><div><h2>Update Preference</h2><p>Sectors of interest, risk tolerance recalibration.</p></div></div></button>
       <button className="settings-card settings-action-card" type="button" onClick={() => navigate("/settings/password")}><div className="settings-card-heading"><SettingsIcon name="security" /><div><div className="settings-title-line"><h2>Change your password &amp; Security</h2><span className="settings-badge">2FA: Enabled</span></div><p>Hardware keys, authenticator apps, and rotation cycles</p></div></div><span className="settings-security-button">Update Security</span></button>
-      <button className="settings-card settings-logout-card" type="button" onClick={() => { clearSession(); navigate("/login", { replace: true }); }}><SettingsIcon name="logout" /><span>Log out</span></button>
+      <button className="settings-card settings-logout-card" type="button" onClick={handleLogout}><SettingsIcon name="logout" /><span>Log out</span></button>
     </div>
   </AppShell>;
 }

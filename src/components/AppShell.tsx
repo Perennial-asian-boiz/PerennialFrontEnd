@@ -3,7 +3,7 @@ import type { CSSProperties, ReactElement, ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { allCompanies, type Company } from "../data";
 import { dashboardCompanies } from "../dashboardData";
-import { clearSession } from "../api/auth";
+import { clearSession, logout } from "../api/auth";
 import { useWatchlist } from "./watchlistStore";
 
 type IconName = "dashboard" | "watchlist" | "insight" | "setting" | "logout";
@@ -58,13 +58,20 @@ export default function AppShell({ children, title, subtitle, headerActions, hid
     navigate("/");
   };
 
+  const handleLogout = () => {
+    void logout().catch(() => undefined).finally(() => {
+      clearSession();
+      navigate("/login", { replace: true });
+    });
+  };
+
   return (
     <div className="app-shell">
       <aside className={`sidebar ${open ? "sidebar-open" : ""}`}>
         <div className="brand" onClick={() => navigate("/")} role="button" tabIndex={0}><PerennialLogo /></div>
         <div className="sidebar-label">Explore</div>
         <nav className="sidebar-nav">{navItems.map(([icon, label, path]) => <NavLink key={path} to={path} end={path === "/"} onClick={() => setOpen(false)} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}><span className="nav-icon"><Icon name={icon} /></span>{label}</NavLink>)}</nav>
-        {!hideSidebarLogout && <div className="sidebar-footer"><button className="nav-link sidebar-logout" onClick={() => { clearSession(); navigate("/login", { replace: true }); }}><span className="nav-icon"><Icon name="logout" /></span>Logout</button></div>}
+        {!hideSidebarLogout && <div className="sidebar-footer"><button className="nav-link sidebar-logout" onClick={handleLogout}><span className="nav-icon"><Icon name="logout" /></span>Logout</button></div>}
       </aside>
       {open && <button className="mobile-overlay" onClick={() => setOpen(false)} aria-label="Close menu" />}
       <main className="main-area">

@@ -112,6 +112,7 @@ button, input { font: inherit; } button { cursor: pointer; }
 .settings-alert-row strong { color: #1b2b21; font-size: 16px; font-weight: 600; }
 .settings-alert-row strong em { margin-left: 14px; color: #52755a; font-size: 13px; font-style: normal; font-weight: 700; }
 .settings-alert-row span { margin-top: 4px; color: #7b8c80; font-size: 14px; line-height: 1.35; }
+.settings-inline-error { margin: 18px 0 -10px; color: #c92d35; font-size: 13px; font-weight: 700; }
 .settings-toggle { width: 58px; height: 32px; flex: 0 0 58px; display: flex; align-items: center; justify-content: flex-start; overflow: hidden; padding: 4px; border: 0; border-radius: 99px; background: #b7c4b9; }
 .settings-toggle span { display: block; width: 24px; height: 24px; flex: 0 0 24px; margin: 0; border-radius: 50%; background: #fff; color: transparent; font-size: 0; line-height: 1; transition: margin-left .18s ease; }
 .settings-toggle.checked { background: #075d2b; }
@@ -135,6 +136,7 @@ button, input { font: inherit; } button { cursor: pointer; }
 .password-reset-error { margin: -4px 0 16px; color: #e5252d; font-size: 14px; font-weight: 700; }
 .password-reset-actions { display: flex; justify-content: flex-end; gap: 14px; margin-top: 22px; }
 .password-reset-actions button, .password-success-card button { min-width: 125px; min-height: 48px; font-size: 15px; }
+.password-reset-actions button:disabled { cursor: wait; opacity: .65; }
 .password-success-card { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 
 @media (max-width: 650px) {

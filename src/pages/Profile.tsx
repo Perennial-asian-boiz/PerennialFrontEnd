@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import AppShell from "../components/AppShell";
 import { confirmationSectorLabels } from "../data";
-import { getMe, getPreferences, getSessionToken, isAuthApiConfigured } from "../api/auth";
+import { getMe, getNotificationSettings, getPreferences, getSessionToken, isAuthApiConfigured, saveNotificationSettings } from "../api/auth";
 
 type ProfileIconName = "shield" | "user";
 
@@ -22,15 +22,37 @@ export default function Profile() {
   const [sectors, setSectors] = useState<string[]>([]);
   const [name, setName] = useState("Alexander Lane");
   const [email, setEmail] = useState("demo@student.csulb.edu");
+  const [notificationsError, setNotificationsError] = useState("");
+  const [savingNotifications, setSavingNotifications] = useState(false);
 
   useEffect(() => {
     if (!isAuthApiConfigured() || !getSessionToken()) return;
     getPreferences().then((preferences) => setSectors(preferences.sectors)).catch(() => setSectors([]));
+    getNotificationSettings().then((settings) => {
+      setMoatAlerts(settings.confidence_score_enabled);
+      setEarningsAlerts(settings.earnings_alerts_enabled);
+    }).catch(() => setNotificationsError("Unable to load notification settings."));
     getMe().then((user) => {
       setName(user.full_name);
       setEmail(user.email);
     }).catch(() => undefined);
   }, []);
+
+  const updateNotifications = (nextMoat: boolean, nextEarnings: boolean) => {
+    const previous = { moat: moatAlerts, earnings: earningsAlerts };
+    setMoatAlerts(nextMoat);
+    setEarningsAlerts(nextEarnings);
+    setNotificationsError("");
+    setSavingNotifications(true);
+    saveNotificationSettings({
+      confidence_score_enabled: nextMoat,
+      earnings_alerts_enabled: nextEarnings,
+    }).catch(() => {
+      setMoatAlerts(previous.moat);
+      setEarningsAlerts(previous.earnings);
+      setNotificationsError("Unable to save notification settings.");
+    }).finally(() => setSavingNotifications(false));
+  };
 
   return <AppShell title="Your Profile" hidePageHeading>
     <div className="profile-high-fidelity">
@@ -41,9 +63,10 @@ export default function Profile() {
       </section>
       <section className="profile-notifications-card">
         <h2>Investment Notification</h2>
-        <div className="profile-alert-list">
-          <div className="profile-alert-row"><ProfileIcon name="shield" /><div><strong>Moat rating upgrade or downgrade announcements</strong><span>Morningstar &amp; Perennial consensus revisions triggered on<br className="profile-desktop-break" /> quantitative durability thresholds.</span></div><ProfileToggle checked={moatAlerts} onChange={() => setMoatAlerts((current) => !current)} label="Toggle moat rating notifications" /></div>
-          <div className="profile-alert-row"><ProfileIcon name="user" /><div><strong>Quarterly Earnings Call transcription synthesis &amp; sentiment shift</strong><span>Real-time LLM-driven extracts comparing executive guidance tone against prior 8-quarter average.</span></div><ProfileToggle checked={earningsAlerts} onChange={() => setEarningsAlerts((current) => !current)} label="Toggle quarterly earnings notifications" /></div>
+        {notificationsError && <p className="settings-inline-error" role="alert">{notificationsError}</p>}
+        <div className="profile-alert-list" aria-busy={savingNotifications}>
+          <div className="profile-alert-row"><ProfileIcon name="shield" /><div><strong>Moat rating upgrade or downgrade announcements</strong><span>Morningstar &amp; Perennial consensus revisions triggered on<br className="profile-desktop-break" /> quantitative durability thresholds.</span></div><ProfileToggle checked={moatAlerts} onChange={() => updateNotifications(!moatAlerts, earningsAlerts)} label="Toggle moat rating notifications" /></div>
+          <div className="profile-alert-row"><ProfileIcon name="user" /><div><strong>Quarterly Earnings Call transcription synthesis &amp; sentiment shift</strong><span>Real-time LLM-driven extracts comparing executive guidance tone against prior 8-quarter average.</span></div><ProfileToggle checked={earningsAlerts} onChange={() => updateNotifications(moatAlerts, !earningsAlerts)} label="Toggle quarterly earnings notifications" /></div>
         </div>
       </section>
     </div>

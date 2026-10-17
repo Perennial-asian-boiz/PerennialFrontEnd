@@ -34,6 +34,11 @@ export type Preferences = {
   risk_level: "Conservative" | "Moderate" | "High" | null;
 };
 
+export type NotificationSettings = {
+  confidence_score_enabled: boolean;
+  earnings_alerts_enabled: boolean;
+};
+
 export type WatchlistItem = { ticker: string };
 
 export class AuthApiError extends Error {
@@ -140,6 +145,10 @@ export function login(email: string, password: string) {
   }).then(saveSession);
 }
 
+export function logout(token = getSessionToken()) {
+  return request<void>("/auth/logout", { method: "POST" }, token ?? undefined);
+}
+
 export function getMe(token = getSessionToken()) {
   return request<User>("/me", {}, token ?? undefined);
 }
@@ -152,6 +161,24 @@ export function savePreferences(preferences: Preferences, token = getSessionToke
   return request<Preferences>("/me/preferences", {
     method: "PUT",
     body: JSON.stringify(preferences),
+  }, token ?? undefined);
+}
+
+export function getNotificationSettings(token = getSessionToken()) {
+  return request<NotificationSettings>("/me/notifications", {}, token ?? undefined);
+}
+
+export function saveNotificationSettings(settings: NotificationSettings, token = getSessionToken()) {
+  return request<NotificationSettings>("/me/notifications", {
+    method: "PUT",
+    body: JSON.stringify(settings),
+  }, token ?? undefined);
+}
+
+export function changePassword(oldPassword: string, newPassword: string, token = getSessionToken()) {
+  return request<{ message: string }>("/me/password", {
+    method: "PUT",
+    body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
   }, token ?? undefined);
 }
 
