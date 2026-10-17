@@ -9,6 +9,7 @@
 const SESSION_KEY = "perennial.access_token";
 const PENDING_EMAIL_KEY = "perennial.pending_email";
 const PENDING_CODE_KEY = "perennial.pending_code";
+const PENDING_FLOW_KEY = "perennial.pending_auth_flow";
 
 export type User = {
   id: number;
@@ -24,6 +25,12 @@ export type AuthResponse = {
 };
 
 export type SignupResponse = {
+  user: User;
+  verification_required: boolean;
+  development_code: string | null;
+};
+
+export type LoginResponse = {
   user: User;
   verification_required: boolean;
   development_code: string | null;
@@ -111,6 +118,18 @@ export function clearPendingDevelopmentCode() {
   sessionStorage.removeItem(PENDING_CODE_KEY);
 }
 
+export function getPendingAuthFlow() {
+  return sessionStorage.getItem(PENDING_FLOW_KEY) ?? "signup";
+}
+
+export function setPendingAuthFlow(flow: "login" | "signup") {
+  sessionStorage.setItem(PENDING_FLOW_KEY, flow);
+}
+
+export function clearPendingAuthFlow() {
+  sessionStorage.removeItem(PENDING_FLOW_KEY);
+}
+
 function saveSession(response: AuthResponse) {
   sessionStorage.setItem(SESSION_KEY, response.access_token);
   window.dispatchEvent(new Event("perennial-auth-changed"));
@@ -139,10 +158,10 @@ export function resendOtp(email: string) {
 }
 
 export function login(email: string, password: string) {
-  return request<AuthResponse>("/auth/login", {
+  return request<LoginResponse>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
-  }).then(saveSession);
+  });
 }
 
 export function logout(token = getSessionToken()) {
