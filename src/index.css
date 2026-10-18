@@ -128,6 +128,10 @@ button, input { font: inherit; } button { cursor: pointer; }
 .password-reset-card, .password-success-card { padding: 30px; border: 1px solid #dce4dc; border-radius: 12px; background: #fff; box-shadow: 0 8px 22px rgba(35, 74, 45, .07); }
 .password-reset-card h1, .password-success-card h1 { margin: 0; color: #101510; font-size: 30px; letter-spacing: -.04em; }
 .password-reset-form { max-width: 740px; margin-top: 26px; }
+.field-error { margin: 0; color: #c5222c !important; font-size: 13px !important; line-height: 1.45; font-weight: 600; }
+.field-hint { margin: 0; color: #627067; font-size: 12px; line-height: 1.45; }
+.signup-card input[aria-invalid="true"] { border-color: #c5222c; }
+.signup-card input[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px rgba(197, 34, 44, .12); }
 .password-reset-form .form-field { gap: 8px; margin-bottom: 20px; }
 .password-reset-form .form-field label { color: #3b413d; font-size: 15px; }
 .password-reset-form .form-field input { min-height: 54px; padding: 13px 15px; border: 1px solid #d8ded8; border-radius: 9px; background: #fff; color: #1e2b23; }
@@ -251,7 +255,6 @@ button, input { font: inherit; } button { cursor: pointer; }
   .auth-card .form-field input:focus, .verification-grid input:focus { border-color: #168c43; box-shadow: 0 0 0 3px rgba(22, 140, 67, .12); outline: 0; }
   .auth-card .form-field input[aria-invalid="true"], .verification-grid input[aria-invalid="true"] { border-color: #ef3038; }
   .auth-card .form-field input::placeholder { color: #a7a7a7; }
-  .field-error { margin: 0; color: #e5252d !important; font-size: 14px !important; font-weight: 700; }
   .auth-submit { min-height: 54px; border-radius: 9px; font-size: 17px; }
   .auth-text-link { justify-self: center; padding: 0; border: 0; background: transparent; color: #168c43; font-size: 16px; font-weight: 700; }
   .auth-error { margin: -4px 0 0; color: #e5252d !important; font-size: 14px !important; font-weight: 700; }

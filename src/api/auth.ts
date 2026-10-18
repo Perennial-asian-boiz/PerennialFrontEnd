@@ -48,13 +48,19 @@ export type NotificationSettings = {
 
 export type WatchlistItem = { ticker: string };
 
+export type AuthFieldErrors = Partial<Record<"full_name" | "email" | "password" | "new_password" | "old_password" | "code", string>>;
+
 export class AuthApiError extends Error {
   status: number;
+  code?: string;
+  fieldErrors: AuthFieldErrors;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, code?: string, fieldErrors: AuthFieldErrors = {}) {
     super(message);
     this.name = "AuthApiError";
     this.status = status;
+    this.code = code;
+    this.fieldErrors = fieldErrors;
   }
 }
 
@@ -92,12 +98,20 @@ async function request<T>(path: string, init: RequestInit = {}, token?: string, 
     const session = await refreshing;
     return request<T>(path, init, session.access_token, false);
   }
-  const body = await response.json().catch(() => null) as { detail?: string } | T | null;
+  const body = await response.json().catch(() => null) as { detail?: string; code?: unknown; field_errors?: unknown } | T | null;
   if (!response.ok) {
     const message = body && typeof body === "object" && "detail" in body && typeof body.detail === "string"
       ? body.detail
       : "The request could not be completed.";
-    throw new AuthApiError(response.status, message);
+    const fieldErrors: AuthFieldErrors = {};
+    if (body && typeof body === "object" && "field_errors" in body && body.field_errors && typeof body.field_errors === "object") {
+      for (const name of ["full_name", "email", "password", "new_password", "old_password", "code"] as const) {
+        const value = (body.field_errors as Record<string, unknown>)[name];
+        if (typeof value === "string" && value.length <= 500) fieldErrors[name] = value;
+      }
+    }
+    const code = body && typeof body === "object" && "code" in body && typeof body.code === "string" ? body.code : undefined;
+    throw new AuthApiError(response.status, message, code, fieldErrors);
   }
   return body as T;
 }

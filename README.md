@@ -108,6 +108,11 @@ only **Back to sign in**. Email confirmation is independent: the user clicks
 the signup link later, `/auth/confirm` validates it and returns to Sign in.
 There is no six-digit signup screen and confirmation does not sign the user
 into Dashboard. Duplicate email registration shows an error instead of success.
+Signup validates each field before sending, shows errors under the affected
+input, and focuses the first invalid field. `src/lib/signupValidation.ts`
+matches the API baseline (8–200 password characters; Unicode names allowed).
+The client consumes the backend's safe `code`/`field_errors` contract; provider
+email-delivery problems remain form-level errors rather than blaming passwords.
 Codes last 15 minutes, resend waits 60 seconds, and the backend limits failed
 attempts and email requests. There is no displayed development code or fake
 account fallback. Real email testing requires Resend SMTP and Supabase's

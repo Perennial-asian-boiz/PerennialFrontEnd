@@ -59,6 +59,51 @@ test("duplicate email errors do not become account-created success", async () =>
   assert.equal(api.getSessionToken(), null);
 });
 
+test("signup exposes safe per-field errors without saving an account or challenge", async () => {
+  const { api } = await client(async () => reply({
+    detail: "Choose a longer password.", code: "weak_password",
+    field_errors: { password: "Choose a longer password.", email: 123, unknown: "ignored" },
+  }, 422));
+  await assert.rejects(api.signup("new@example.com", "Ád", "password123"), (error) => {
+    assert.equal(error.status, 422);
+    assert.equal(error.code, "weak_password");
+    assert.deepEqual(error.fieldErrors, { password: "Choose a longer password." });
+    return true;
+  });
+  assert.equal(api.getPendingChallenge(), "");
+  assert.equal(api.getSessionToken(), null);
+});
+
+test("email delivery setup errors remain general errors, not password errors", async () => {
+  const message = "Email verification isn't fully set up yet. Please try again later or contact support.";
+  const { api } = await client(async () => reply({ detail: message, code: "email_address_not_authorized", field_errors: {} }, 503));
+  await assert.rejects(api.signup("new@example.com", "New User", "password123"), (error) => {
+    assert.equal(error.message, message);
+    assert.deepEqual(error.fieldErrors, {});
+    return true;
+  });
+});
+
+test("signup validation identifies each field, accepts Unicode names, and never includes the password", async () => {
+  const source = await readFile(new URL("../src/lib/signupValidation.ts", import.meta.url), "utf8");
+  const compiled = ts.transpileModule(source, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
+  }).outputText;
+  const { validateSignup } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
+  const valid = { full_name: "Ád Nguyễn", email: "one@example.com", password: "password123", confirmPassword: "password123" };
+  assert.deepEqual(validateSignup(valid), {});
+  const empty = validateSignup({ full_name: "   ", email: "", password: "", confirmPassword: "" });
+  assert.deepEqual(Object.keys(empty), ["full_name", "email", "password", "confirmPassword"]);
+  const errors = validateSignup({ ...valid, email: "bad-email", password: "secret" });
+  assert.match(errors.email, /valid email/);
+  assert.match(errors.password, /at least 8/);
+  assert.match(errors.confirmPassword, /do not match/);
+  assert.equal(JSON.stringify(errors).includes("secret"), false);
+  assert.match(validateSignup({ ...valid, password: "x".repeat(201) }).password, /no more than 200/);
+  assert.match(validateSignup({ ...valid, full_name: "x".repeat(201) }).full_name, /no more than 200/);
+  assert.match(validateSignup({ ...valid, email: "<name>@example.com" }).email, /valid email/);
+});
+
 test("confirming an emailed token never stores its credentials as an app login", async () => {
   const { api, storage } = await client(async (url, init) => {
     assert.ok(url.endsWith("/auth/confirm-email"));
