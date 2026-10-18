@@ -5,6 +5,10 @@ import { AuthApiError, getPendingChallenge, getPendingEmail, getResendSeconds, r
 
 export default function VerifyCode() {
   const navigate = useNavigate();
+  // The API clears the pending challenge once verification succeeds. Keep the
+  // entry guard stable until navigation completes so a rerender cannot send a
+  // newly authenticated user back to the sign-in page.
+  const [openedWithChallenge] = useState(() => Boolean(getPendingChallenge() && getPendingEmail()));
   const [code, setCode] = useState(Array<string>(6).fill(""));
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -43,7 +47,7 @@ export default function VerifyCode() {
     } finally { setBusy(false); }
   }
 
-  if (!getPendingChallenge() || !getPendingEmail()) return <Navigate to="/login" replace />;
+  if (!openedWithChallenge) return <Navigate to="/login" replace />;
   return <AuthShell><div className="auth-card verify-card">
     <h1>Check your email</h1><p>Enter the 6-digit code sent to {getPendingEmail()}. It expires in 15 minutes.</p>
     <form className="form-grid" onSubmit={submit}>
