@@ -103,11 +103,19 @@ The backend README contains the Supabase/Resend owner setup checklist.
 Login checks the password first but returns only a pending challenge. Every
 login requires the emailed six-digit OTP; new users then choose preferences,
 while existing users who completed/skipped onboarding go to Dashboard.
-Account creation continues to verification without asking for a second email.
+Registration immediately shows the compact **Account created** screen with
+only **Back to sign in**. Email confirmation is independent: the user clicks
+the signup link later, `/auth/confirm` validates it and returns to Sign in.
+There is no six-digit signup screen and confirmation does not sign the user
+into Dashboard. Duplicate email registration shows an error instead of success.
 Codes last 15 minutes, resend waits 60 seconds, and the backend limits failed
 attempts and email requests. There is no displayed development code or fake
 account fallback. Real email testing requires Resend SMTP and Supabase's
-signup, login-OTP and recovery templates to be configured first.
+signup-link, login-OTP and recovery templates to be configured correctly first.
+Signup uses `{{ .ConfirmationURL }}`; login/recovery use `{{ .Token }}`.
+The callback URL must be allowlisted in Supabase; the backend README explains
+the setup. SMTP/template work is still required for real login/recovery OTP
+delivery; default Supabase emails may contain links until it is configured.
 
 Only access/refresh tokens and the pending challenge live in tab-scoped
 `sessionStorage`; `clearSession()` removes both tokens. Expired access tokens

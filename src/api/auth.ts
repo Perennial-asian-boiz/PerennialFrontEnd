@@ -1,7 +1,6 @@
 /**
  * Small client for the Sprint 1 backend account API.
  *
- * The existing auth screens can call these functions directly. There is no
  * Tokens live only in this tab's sessionStorage; account data lives in the
  * backend database. Supabase/Resend credentials never enter the frontend.
  */
@@ -34,6 +33,7 @@ export type ChallengeResponse = {
   flow: "signup" | "login" | "recovery";
   verification_required: boolean;
   resend_after_seconds: number;
+  verification_method: "email_link" | "email_otp";
 };
 
 export type Preferences = {
@@ -164,6 +164,24 @@ export function signup(email: string, fullName: string, password: string) {
   return request<ChallengeResponse>("/auth/signup", {
     method: "POST",
     body: JSON.stringify({ email, full_name: fullName, password }),
+  }).then((response) => saveChallenge(email, response));
+}
+
+export function confirmEmailLink(accessToken: string) {
+  // Confirmed email is NOT an app login. Never save the emailed JWT/refresh token.
+  return request<{ email_confirmed: boolean }>("/auth/confirm-email", {
+    method: "POST", body: JSON.stringify({ access_token: accessToken }),
+  }).then((response) => {
+    if (!response.email_confirmed) throw new AuthApiError(400, "Unable to confirm this email.");
+    clearChallenge();
+    clearSession();
+    return response;
+  });
+}
+
+export function resendConfirmation(email: string) {
+  return request<ChallengeResponse>("/auth/resend-confirmation", {
+    method: "POST", body: JSON.stringify({ email, challenge_id: getPendingChallenge() }),
   }).then((response) => saveChallenge(email, response));
 }
 

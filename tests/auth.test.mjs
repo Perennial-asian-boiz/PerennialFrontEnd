@@ -41,6 +41,36 @@ test("password login stores a challenge, never an authenticated session", async 
   assert.ok(api.getResendSeconds() > 0);
 });
 
+test("signup remains an email-link flow and does not sign the user in", async () => {
+  const { api } = await client(async (url, init) => {
+    assert.ok(url.endsWith("/auth/signup"));
+    assert.deepEqual(JSON.parse(init.body), { email: "new@example.com", full_name: "New User", password: "password123" });
+    return reply({ ...challenge, flow: "signup", verification_method: "email_link" }, 201);
+  });
+  const result = await api.signup("new@example.com", "New User", "password123");
+  assert.equal(result.verification_method, "email_link");
+  assert.equal(api.getSessionToken(), null);
+});
+
+test("duplicate email errors do not become account-created success", async () => {
+  const { api } = await client(async () => reply({ detail: "This email is already registered. Please sign in instead." }, 409));
+  await assert.rejects(api.signup("one@example.com", "One", "password123"), (error) => error.status === 409);
+  assert.equal(api.getPendingChallenge(), "");
+  assert.equal(api.getSessionToken(), null);
+});
+
+test("confirming an emailed token never stores its credentials as an app login", async () => {
+  const { api, storage } = await client(async (url, init) => {
+    assert.ok(url.endsWith("/auth/confirm-email"));
+    assert.equal(init.headers.has("Authorization"), false);
+    assert.deepEqual(JSON.parse(init.body), { access_token: "email-only-token" });
+    return reply({ email_confirmed: true });
+  });
+  assert.equal((await api.confirmEmailLink("email-only-token")).email_confirmed, true);
+  assert.equal(api.getSessionToken(), null);
+  assert.equal(storage.has("perennial.refresh_token"), false);
+});
+
 test("verification submits the challenge and saves both tokens, without a development code", async () => {
   const { api, storage } = await client(async (url, init) => {
     if (url.endsWith("/auth/login")) return reply(challenge);

@@ -268,7 +268,6 @@ button, input { font: inherit; } button { cursor: pointer; }
   .verification-grid input { width: 100%; min-height: 78px; padding: 8px; border: 2px solid #cfcfcf; border-radius: 11px; background: #fff; color: #222; font-size: 28px; text-align: center; }
   .verify-card .auth-muted-line { margin: -2px 0 0; text-align: center; }
   .verify-card .auth-text-link { margin-top: -2px; }
-  .account-created-card { padding-top: 30px; padding-bottom: 34px; }
   .access-card .auth-submit { width: 100%; margin-top: 28px; }
   .access-redirect-copy { margin-top: 26px !important; }
   .auth-footer { display: none; }
@@ -381,4 +380,50 @@ button, input { font: inherit; } button { cursor: pointer; }
   .profile-identity-card.profile-no-sectors { min-height: 220px; padding-bottom: 24px; }
   .profile-identity-card.profile-no-sectors > p { margin-bottom: 0; }
   .profile-sector-summary span { display: inline-block; padding: 6px 9px; border-radius: 4px; color: #347b4c; background: #edf8ec; font-size: 13px; }
+}
+
+/* Keep the result screen compact at desktop, split-pane and phone widths. */
+.auth-shell.account-created-shell {
+  min-height: 100svh;
+  height: auto;
+  overflow: visible;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 32px 20px;
+  background: #f3faf1;
+}
+.account-created-shell .auth-brand { margin: 0; }
+.account-created-shell .perennial-logo { gap: 12px; }
+.account-created-shell .perennial-logo img { display: block; width: 142px; height: auto; }
+.account-created-shell .perennial-logo span { color: #16823d; font-size: 30px; letter-spacing: .035em; }
+.account-created-shell .account-created-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  width: min(100%, 480px);
+  max-width: 480px;
+  margin: 0;
+  padding: 30px 32px 32px;
+  border: 1px solid #d9dfd9;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgb(35 74 45 / 10%);
+  text-align: center;
+}
+.account-created-shell .success-icon { display: grid; place-items: center; flex-shrink: 0; width: 48px; height: 48px; margin: 0; border-radius: 50%; color: #16823d; background: #c5ead3; }
+.account-created-shell .success-icon svg { width: 26px; height: 26px; }
+.account-created-shell .account-created-card h1 { margin: 0; color: #101a13; font-size: clamp(26px, 4vw, 32px); font-weight: 700; line-height: 1.2; letter-spacing: -.025em; }
+.account-created-shell .account-created-card > p { margin: 0; color: #637066; font-size: 15px; line-height: 1.6; }
+.account-created-actions { display: grid; justify-items: center; gap: 18px; width: 100%; margin-top: 2px; }
+.account-created-shell .account-created-actions .auth-text-link { margin: 0; padding: 4px 8px; border: 0; background: transparent; color: #16823d; font-size: 14px; font-weight: 600; }
+.account-created-shell .auth-footer { display: none; }
+.auth-confirmation-notice { padding: 12px 14px; border: 1px solid #c8e5d1; border-radius: 8px; background: #edf8ef; color: #176c36 !important; font-size: 14px !important; line-height: 1.5; }
+
+@media (max-width: 480px) {
+  .auth-shell.account-created-shell { gap: 20px; padding: 24px 16px; }
+  .account-created-shell .perennial-logo img { width: 108px; }
+  .account-created-shell .perennial-logo span { font-size: 25px; }
+  .account-created-shell .account-created-card { gap: 20px; padding: 26px 20px; }
 }

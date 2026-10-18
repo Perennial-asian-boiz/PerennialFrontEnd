@@ -16,6 +16,7 @@ import Setup from "./pages/Setup";
 import Signup from "./pages/Signup";
 import Watchlist from "./pages/Watchlist";
 import VerifyCode from "./pages/VerifyCode";
+import EmailConfirmation from "./pages/EmailConfirmation";
 import Welcome from "./pages/Welcome";
 import WhyCompany from "./pages/WhyCompany";
 import { WatchlistProvider } from "./components/watchlistStore";
@@ -31,6 +32,7 @@ function App() {
       <WatchlistProvider><Routes>
         <Route path="/" element={<Protected><Dashboard /></Protected>} />
         <Route path="/login" element={<Login />} />
+        <Route path="/auth/confirm" element={<EmailConfirmation />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<RecoveryPassword />} />
