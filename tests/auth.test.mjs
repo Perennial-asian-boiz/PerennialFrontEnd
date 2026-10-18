@@ -39,6 +39,8 @@ test("password login stores a challenge, never an authenticated session", async 
   assert.equal(api.getPendingChallenge(), "test-challenge");
   assert.equal(api.getPendingEmail(), "one@example.com");
   assert.ok(api.getResendSeconds() > 0);
+  assert.equal(api.hasPendingLoginCode("one@example.com"), true);
+  assert.equal(api.hasPendingLoginCode("other@example.com"), false);
 });
 
 test("signup remains an email-link flow and does not sign the user in", async () => {
@@ -50,6 +52,14 @@ test("signup remains an email-link flow and does not sign the user in", async ()
   const result = await api.signup("new@example.com", "New User", "password123");
   assert.equal(result.verification_method, "email_link");
   assert.equal(api.getSessionToken(), null);
+  assert.equal(api.hasPendingLoginCode("new@example.com"), false);
+});
+
+test("an expired challenge cannot be resumed from the sign-in page", async () => {
+  const { api, storage } = await client(async () => reply(challenge));
+  await api.login("one@example.com", "password123");
+  storage.set("perennial.challenge_expires_at", String(Date.now() - 1));
+  assert.equal(api.hasPendingLoginCode("one@example.com"), false);
 });
 
 test("duplicate email errors do not become account-created success", async () => {
@@ -129,6 +139,7 @@ test("verification submits the challenge and saves both tokens, without a develo
   assert.equal(storage.get("perennial.refresh_token"), "refresh");
   assert.equal(api.getPendingChallenge(), "");
   assert.equal(api.getPendingEmail(), "");
+  assert.equal(api.hasPendingLoginCode("one@example.com"), false);
   api.clearSession();
   assert.equal(api.getSessionToken(), null);
   assert.equal(storage.has("perennial.refresh_token"), false);

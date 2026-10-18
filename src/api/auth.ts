@@ -10,6 +10,8 @@ const REFRESH_KEY = "perennial.refresh_token";
 const PENDING_EMAIL_KEY = "perennial.pending_email";
 const CHALLENGE_KEY = "perennial.pending_challenge";
 const RESEND_AT_KEY = "perennial.resend_at";
+const PENDING_FLOW_KEY = "perennial.pending_flow";
+const CHALLENGE_EXPIRES_AT_KEY = "perennial.challenge_expires_at";
 
 export type User = {
   id: string;
@@ -147,6 +149,15 @@ export function getPendingChallenge() {
   return sessionStorage.getItem(CHALLENGE_KEY) ?? "";
 }
 
+export function hasPendingLoginCode(email: string) {
+  return Boolean(
+    getPendingChallenge()
+    && getPendingEmail() === email.trim().toLowerCase()
+    && sessionStorage.getItem(PENDING_FLOW_KEY) === "login"
+    && Number(sessionStorage.getItem(CHALLENGE_EXPIRES_AT_KEY)) > Date.now()
+  );
+}
+
 export function getResendSeconds() {
   return Math.max(0, Math.ceil((Number(sessionStorage.getItem(RESEND_AT_KEY)) - Date.now()) / 1000));
 }
@@ -155,14 +166,18 @@ function clearChallenge() {
   clearPendingEmail();
   sessionStorage.removeItem(CHALLENGE_KEY);
   sessionStorage.removeItem(RESEND_AT_KEY);
+  sessionStorage.removeItem(PENDING_FLOW_KEY);
+  sessionStorage.removeItem(CHALLENGE_EXPIRES_AT_KEY);
   sessionStorage.removeItem("perennial.pending_auth_flow");
   sessionStorage.removeItem("perennial.pending_code"); // Retired development OTP.
 }
 
 function saveChallenge(email: string, response: ChallengeResponse) {
-  setPendingEmail(email);
+  setPendingEmail(email.trim().toLowerCase());
   sessionStorage.setItem(CHALLENGE_KEY, response.challenge_id);
   sessionStorage.setItem(RESEND_AT_KEY, String(Date.now() + response.resend_after_seconds * 1000));
+  sessionStorage.setItem(PENDING_FLOW_KEY, response.flow);
+  sessionStorage.setItem(CHALLENGE_EXPIRES_AT_KEY, String(Date.now() + 15 * 60 * 1000));
   return response;
 }
 
