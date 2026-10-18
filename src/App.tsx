@@ -10,7 +10,7 @@ import Insights from "./pages/Insights";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import PasswordReset from "./pages/PasswordReset";
-import PasswordEmailSent from "./pages/PasswordEmailSent";
+import RecoveryPassword from "./pages/RecoveryPassword";
 import Settings from "./pages/Settings";
 import Setup from "./pages/Setup";
 import Signup from "./pages/Signup";
@@ -33,7 +33,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/forgot-password/sent" element={<PasswordEmailSent />} />
+        <Route path="/reset-password" element={<RecoveryPassword />} />
         <Route path="/verify-code" element={<VerifyCode />} />
         <Route path="/account-created" element={<AccountCreated />} />
         <Route path="/access-granted" element={<AccessGranted />} />

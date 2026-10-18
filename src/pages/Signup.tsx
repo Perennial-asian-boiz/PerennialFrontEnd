@@ -1,12 +1,39 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthShell } from "../components/AppShell";
-import { AuthApiError, isAuthApiConfigured, setPendingAuthFlow, setPendingDevelopmentCode, setPendingEmail, signup as signupApi } from "../api/auth";
+import { AuthApiError, signup } from "../api/auth";
 
 export default function Signup() {
   const navigate = useNavigate();
-  const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string; confirmPassword?: string }>({});
-  const [apiError, setApiError] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  return <AuthShell className="signup-auth-shell"><div className="form-card signup-card"><h1>Create your account</h1><p>Get started with Perennial.</p><form className="form-grid" noValidate onSubmit={async (event) => { event.preventDefault(); const formElement = event.currentTarget; const form = new FormData(formElement); const name = String(form.get("name") ?? "").trim(); const email = String(form.get("email") ?? "").trim(); const password = String(form.get("password") ?? ""); const confirmPassword = String(form.get("confirmPassword") ?? ""); const nextErrors: { name?: string; email?: string; password?: string; confirmPassword?: string } = {}; if (!name) nextErrors.name = "Name is not valid."; if (!email) nextErrors.email = "Email is not valid."; else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) nextErrors.email = "Email is not valid."; if (!password || password.length < 8) nextErrors.password = "Password must be at least 8 characters."; if (!confirmPassword) nextErrors.confirmPassword = "Password is not valid."; else if (password !== confirmPassword) nextErrors.confirmPassword = "Password is not valid."; if (Object.keys(nextErrors).length) { (formElement.elements.namedItem("name") as HTMLInputElement).value = ""; (formElement.elements.namedItem("email") as HTMLInputElement).value = ""; (formElement.elements.namedItem("password") as HTMLInputElement).value = ""; (formElement.elements.namedItem("confirmPassword") as HTMLInputElement).value = ""; setErrors({ name: nextErrors.name ?? "Name is not valid.", email: nextErrors.email ?? "Email is not valid.", password: nextErrors.password ?? "Password must be at least 8 characters.", confirmPassword: nextErrors.confirmPassword ?? "Password is not valid." }); return; } setErrors({}); setApiError(""); if (!isAuthApiConfigured()) { setApiError("Backend connection is not configured."); return; } setPendingEmail(email); setPendingAuthFlow("signup"); try { const response = await signupApi(email, name, password); setPendingDevelopmentCode(response.development_code); navigate("/account-created"); } catch (error: unknown) { setApiError(error instanceof AuthApiError ? error.message : "Unable to create your account."); } }}><div className="form-field"><label htmlFor="name">Full Name</label><input id="name" name="name" placeholder="Enter your full name" onFocus={() => setErrors((current) => ({ ...current, name: undefined }))} aria-invalid={Boolean(errors.name)} />{errors.name && <p className="field-error" role="alert">{errors.name}</p>}</div><div className="form-field"><label htmlFor="signup-email">Email Address</label><input id="signup-email" name="email" type="email" placeholder="Enter your email" onFocus={() => setErrors((current) => ({ ...current, email: undefined }))} aria-invalid={Boolean(errors.email)} />{errors.email && <p className="field-error" role="alert">{errors.email}</p>}</div><div className="form-field"><label htmlFor="signup-password">Password</label><input id="signup-password" name="password" type="password" placeholder="Create a password" onFocus={() => setErrors((current) => ({ ...current, password: undefined }))} aria-invalid={Boolean(errors.password)} />{errors.password && <p className="field-error" role="alert">{errors.password}</p>}</div><div className="form-field"><label htmlFor="confirm-password">Confirm Password</label><input id="confirm-password" name="confirmPassword" type="password" placeholder="Re-enter your password" onFocus={() => setErrors((current) => ({ ...current, confirmPassword: undefined }))} aria-invalid={Boolean(errors.confirmPassword)} />{errors.confirmPassword && <p className="field-error" role="alert">{errors.confirmPassword}</p>}</div>{apiError && <p className="auth-error" role="alert">{apiError}</p>}<div className="signup-actions"><button className="btn-primary" type="submit">Create account</button></div><p className="signup-login">Already have an account? <button className="inline-link" type="button" onClick={() => navigate("/login")}>Sign in</button></p></form></div></AuthShell>;
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+    const form = new FormData(event.currentTarget);
+    const password = String(form.get("password"));
+    if (password !== String(form.get("confirmPassword"))) { setError("Passwords do not match."); return; }
+    setError("");
+    setBusy(true);
+    try {
+      await signup(String(form.get("email")).trim(), String(form.get("name")).trim(), password);
+      navigate("/account-created");
+    } catch (caught) {
+      setError(caught instanceof AuthApiError ? caught.message : "Unable to create your account. Please try again.");
+    } finally { setBusy(false); }
+  }
+
+  return <AuthShell className="signup-auth-shell"><div className="form-card signup-card">
+    <h1>Create your account</h1><p>Get started with Perennial.</p>
+    <form className="form-grid" onSubmit={submit}>
+      <div className="form-field"><label htmlFor="name">Full Name</label><input id="name" name="name" autoComplete="name" required maxLength={200} placeholder="Enter your full name" /></div>
+      <div className="form-field"><label htmlFor="signup-email">Email Address</label><input id="signup-email" name="email" type="email" autoComplete="username" required maxLength={320} placeholder="Enter your email" /></div>
+      <div className="form-field"><label htmlFor="signup-password">Password</label><input id="signup-password" name="password" type="password" autoComplete="new-password" required minLength={8} maxLength={200} placeholder="Create a password" /></div>
+      <div className="form-field"><label htmlFor="confirm-password">Confirm Password</label><input id="confirm-password" name="confirmPassword" type="password" autoComplete="new-password" required minLength={8} maxLength={200} placeholder="Re-enter your password" /></div>
+      {error && <p className="auth-error" role="alert">{error}</p>}
+      <div className="signup-actions"><button className="btn-primary" type="submit" disabled={busy}>{busy ? "Creating account..." : "Create account"}</button></div>
+      <p className="signup-login">Already have an account? <button className="inline-link" type="button" onClick={() => navigate("/login")}>Sign in</button></p>
+    </form>
+  </div></AuthShell>;
 }

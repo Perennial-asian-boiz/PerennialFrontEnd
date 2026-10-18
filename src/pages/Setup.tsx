@@ -11,6 +11,7 @@ export default function Setup() {
   const [apiError, setApiError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+  const isEditing = Boolean(location.state?.returnToSettings);
   const canContinue = selected.length > 0 && Boolean(risk);
 
   useEffect(() => {
@@ -43,6 +44,7 @@ export default function Setup() {
   };
 
   const handleSkip = async () => {
+    if (isEditing) { navigate("/settings"); return; }
     setApiError("");
     setIsSaving(true);
     try {
@@ -57,5 +59,5 @@ export default function Setup() {
     }
   };
 
-  return <div className="onboarding-page setup-page"><main className="setup-panel"><section><h1>What Interests You</h1><p className="setup-section-copy">Select the industries you want to follow:</p><div className="interest-grid">{topics.map((topic) => <button key={topic} type="button" className={`interest-option ${selected.includes(topic) ? "selected" : ""}`} onClick={() => setSelected((current) => current.includes(topic) ? current.filter((item) => item !== topic) : [...current, topic])}>{topic}</button>)}</div></section><section className="risk-section" id="risk-comfort"><h2>Risk Comfort</h2><p className="setup-section-copy">Choose your investment style:</p><RiskComfort value={risk} onChange={setRisk} /></section></main>{apiError && <p className="auth-error setup-api-error" role="alert">{apiError}</p>}<div className="onboarding-actions"><button className="onboarding-skip" type="button" onClick={handleSkip} disabled={isSaving}>Skip for now</button><button className="btn-primary onboarding-continue" type="button" disabled={!canContinue || isSaving} onClick={handleContinue}>{isSaving ? "Saving..." : "Continue to Confirmation"}</button></div></div>;
+  return <div className="onboarding-page setup-page"><main className="setup-panel"><section><h1>What Interests You</h1><p className="setup-section-copy">Select the industries you want to follow:</p><div className="interest-grid">{topics.map((topic) => <button key={topic} type="button" className={`interest-option ${selected.includes(topic) ? "selected" : ""}`} onClick={() => setSelected((current) => current.includes(topic) ? current.filter((item) => item !== topic) : [...current, topic])}>{topic}</button>)}</div></section><section className="risk-section" id="risk-comfort"><h2>Risk Comfort</h2><p className="setup-section-copy">Choose your investment style:</p><RiskComfort value={risk} onChange={setRisk} /></section></main>{apiError && <p className="auth-error setup-api-error" role="alert">{apiError}</p>}<div className="onboarding-actions"><button className="onboarding-skip" type="button" onClick={handleSkip} disabled={isSaving}>{isEditing ? "Cancel" : "Skip for now"}</button><button className="btn-primary onboarding-continue" type="button" disabled={!canContinue || isSaving} onClick={handleContinue}>{isSaving ? "Saving..." : "Continue to Confirmation"}</button></div></div>;
 }

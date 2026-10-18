@@ -2,38 +2,38 @@
  * Small client for the Sprint 1 backend account API.
  *
  * The existing auth screens can call these functions directly. There is no
- * global auth framework here: the opaque session token is kept in
- * sessionStorage and sent as a Bearer token for account-owned data.
+ * Tokens live only in this tab's sessionStorage; account data lives in the
+ * backend database. Supabase/Resend credentials never enter the frontend.
  */
 
 const SESSION_KEY = "perennial.access_token";
+const REFRESH_KEY = "perennial.refresh_token";
 const PENDING_EMAIL_KEY = "perennial.pending_email";
-const PENDING_CODE_KEY = "perennial.pending_code";
-const PENDING_FLOW_KEY = "perennial.pending_auth_flow";
+const CHALLENGE_KEY = "perennial.pending_challenge";
+const RESEND_AT_KEY = "perennial.resend_at";
 
 export type User = {
-  id: number;
+  id: string;
   email: string;
   full_name: string;
   is_verified: boolean;
+  onboarding_completed: boolean;
 };
 
 export type AuthResponse = {
   access_token: string;
+  refresh_token: string;
+  expires_at: number;
+  flow: "signup" | "login" | "recovery";
   token_type: "bearer";
   user: User;
 };
 
-export type SignupResponse = {
-  user: User;
+export type ChallengeResponse = {
+  challenge_id: string;
+  flow: "signup" | "login" | "recovery";
   verification_required: boolean;
-  development_code: string | null;
-};
-
-export type LoginResponse = {
-  user: User;
-  verification_required: boolean;
-  development_code: string | null;
+  resend_after_seconds: number;
 };
 
 export type Preferences = {
@@ -64,12 +64,34 @@ function getApiBaseUrl() {
   return value.replace(/\/$/, "");
 }
 
-async function request<T>(path: string, init: RequestInit = {}, token?: string): Promise<T> {
+let refreshing: Promise<AuthResponse> | null = null;
+let sessionGeneration = 0;
+
+async function request<T>(path: string, init: RequestInit = {}, token?: string, retry = true): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
   const response = await fetch(`${getApiBaseUrl()}${path}`, { ...init, headers });
+  if (response.status === 401 && token && retry && sessionStorage.getItem(REFRESH_KEY)) {
+    // Concurrent account requests share one refresh; never replay a rotated token.
+    const latest = getSessionToken();
+    if (latest && latest !== token) return request<T>(path, init, latest, false);
+    if (!refreshing) {
+      const generation = sessionGeneration;
+      refreshing = request<AuthResponse>("/auth/refresh", {
+        method: "POST", body: JSON.stringify({ refresh_token: sessionStorage.getItem(REFRESH_KEY) }),
+      }, undefined, false).then((session) => {
+        if (generation !== sessionGeneration) throw new AuthApiError(401, "Session changed. Please sign in again.");
+        return saveSession(session);
+      }).catch((error: unknown) => {
+        if (generation === sessionGeneration && error instanceof AuthApiError && error.status === 401) clearSession();
+        throw error;
+      }).finally(() => { refreshing = null; });
+    }
+    const session = await refreshing;
+    return request<T>(path, init, session.access_token, false);
+  }
   const body = await response.json().catch(() => null) as { detail?: string } | T | null;
   if (!response.ok) {
     const message = body && typeof body === "object" && "detail" in body && typeof body.detail === "string"
@@ -85,7 +107,9 @@ export function getSessionToken() {
 }
 
 export function clearSession() {
+  sessionGeneration += 1;
   sessionStorage.removeItem(SESSION_KEY);
+  sessionStorage.removeItem(REFRESH_KEY);
   window.dispatchEvent(new Event("perennial-auth-changed"));
 }
 
@@ -105,63 +129,75 @@ export function clearPendingEmail() {
   sessionStorage.removeItem(PENDING_EMAIL_KEY);
 }
 
-export function getPendingDevelopmentCode() {
-  return sessionStorage.getItem(PENDING_CODE_KEY) ?? "";
+export function getPendingChallenge() {
+  return sessionStorage.getItem(CHALLENGE_KEY) ?? "";
 }
 
-export function setPendingDevelopmentCode(code: string | null) {
-  if (code) sessionStorage.setItem(PENDING_CODE_KEY, code);
-  else sessionStorage.removeItem(PENDING_CODE_KEY);
+export function getResendSeconds() {
+  return Math.max(0, Math.ceil((Number(sessionStorage.getItem(RESEND_AT_KEY)) - Date.now()) / 1000));
 }
 
-export function clearPendingDevelopmentCode() {
-  sessionStorage.removeItem(PENDING_CODE_KEY);
+function clearChallenge() {
+  clearPendingEmail();
+  sessionStorage.removeItem(CHALLENGE_KEY);
+  sessionStorage.removeItem(RESEND_AT_KEY);
+  sessionStorage.removeItem("perennial.pending_auth_flow");
+  sessionStorage.removeItem("perennial.pending_code"); // Retired development OTP.
 }
 
-export function getPendingAuthFlow() {
-  return sessionStorage.getItem(PENDING_FLOW_KEY) ?? "signup";
-}
-
-export function setPendingAuthFlow(flow: "login" | "signup") {
-  sessionStorage.setItem(PENDING_FLOW_KEY, flow);
-}
-
-export function clearPendingAuthFlow() {
-  sessionStorage.removeItem(PENDING_FLOW_KEY);
+function saveChallenge(email: string, response: ChallengeResponse) {
+  setPendingEmail(email);
+  sessionStorage.setItem(CHALLENGE_KEY, response.challenge_id);
+  sessionStorage.setItem(RESEND_AT_KEY, String(Date.now() + response.resend_after_seconds * 1000));
+  return response;
 }
 
 function saveSession(response: AuthResponse) {
+  sessionGeneration += 1;
   sessionStorage.setItem(SESSION_KEY, response.access_token);
+  sessionStorage.setItem(REFRESH_KEY, response.refresh_token);
   window.dispatchEvent(new Event("perennial-auth-changed"));
   return response;
 }
 
 export function signup(email: string, fullName: string, password: string) {
-  return request<SignupResponse>("/auth/signup", {
+  return request<ChallengeResponse>("/auth/signup", {
     method: "POST",
     body: JSON.stringify({ email, full_name: fullName, password }),
-  });
+  }).then((response) => saveChallenge(email, response));
 }
 
 export function verifyOtp(email: string, code: string) {
   return request<AuthResponse>("/auth/verify-otp", {
     method: "POST",
-    body: JSON.stringify({ email, code }),
-  }).then(saveSession);
+    body: JSON.stringify({ email, code, challenge_id: getPendingChallenge() }),
+  }).then((response) => { clearChallenge(); return saveSession(response); });
 }
 
 export function resendOtp(email: string) {
-  return request<{ verification_required: boolean; development_code: string | null }>("/auth/resend-otp", {
+  return request<ChallengeResponse>("/auth/resend-otp", {
     method: "POST",
-    body: JSON.stringify({ email }),
-  });
+    body: JSON.stringify({ email, challenge_id: getPendingChallenge() }),
+  }).then((response) => saveChallenge(email, response));
 }
 
 export function login(email: string, password: string) {
-  return request<LoginResponse>("/auth/login", {
+  return request<ChallengeResponse>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
-  });
+  }).then((response) => saveChallenge(email, response));
+}
+
+export function forgotPassword(email: string) {
+  return request<ChallengeResponse>("/auth/forgot-password", {
+    method: "POST", body: JSON.stringify({ email }),
+  }).then((response) => saveChallenge(email, response));
+}
+
+export function resetPassword(newPassword: string) {
+  return request<{ message: string }>("/auth/reset-password", {
+    method: "POST", body: JSON.stringify({ new_password: newPassword }),
+  }, getSessionToken() ?? undefined).then((response) => { clearSession(); return response; });
 }
 
 export function logout(token = getSessionToken()) {

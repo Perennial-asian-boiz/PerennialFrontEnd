@@ -21,6 +21,7 @@ npm run dev        # http://localhost:5173
 | `npm run dev` | Dev server with hot reload |
 | `npm run build` | Type-check (`tsc -b`), then production build into `dist/` |
 | `npm run lint` | ESLint over `src/` |
+| `npm test` | Offline auth-client contract and refresh/recovery tests |
 | `npm run preview` | Serve the production build locally |
 
 `npm run build` and `npm run lint` both pass on `main`. Keep them that way —
@@ -31,15 +32,16 @@ unused imports and variables fail the type check (`noUnusedLocals`).
 | Route | Page | State |
 |---|---|---|
 | `/` | Dashboard | Sector-filtered dashboard using the frontend dashboard JSON contract |
-| `/setup` | Onboarding — interests and risk comfort | Selections saved locally for the frontend flow |
+| `/setup` | Onboarding — interests and risk comfort | Saved to the signed-in account through FastAPI |
 | `/confirmation` | Setup confirmation | Shows selected sectors and risk profile |
-| `/watchlist` | Watchlist | Three hardcoded rows |
+| `/watchlist` | Watchlist | Account-owned tickers from the backend; temporary company metadata |
 | `/company` | Company detail | Placeholder values |
 | `/why` | Why this company | Placeholder values |
 | `/insights` | Insights | Empty |
-| `/profile` | Profile and notification toggles | Dummy account |
-| `/settings` | Settings menu | Menu items not wired |
-| `/login`, `/signup` | Auth | Stubs |
+| `/profile` | Profile and notification toggles | Verified identity and saved sectors |
+| `/settings` | Settings menu | Backend notification/password APIs and preference editor |
+| `/login`, `/signup`, `/verify-code` | Auth | Supabase-backed password + email OTP through FastAPI |
+| `/forgot-password`, `/reset-password` | Recovery | OTP-gated password recovery; not a dummy success screen |
 
 ## Connecting to the backend
 
@@ -93,11 +95,32 @@ ships to the browser, so never put a secret there.
 ### Simple authentication client
 
 `src/api/auth.ts` contains the small typed client for the Sprint 1 account API.
-It covers signup, OTP verification/resend, login, preferences, and personal
-watchlist calls. Login and OTP verification save only the returned opaque
-session token in `sessionStorage`; `clearSession()` removes it. Preferences,
-watchlist items, and account identity are read from and written to the backend
-database through the API. They are not stored in `localStorage`.
+It covers signup, OTP verification/resend, login, recovery, notification and
+password changes, preferences and personal watchlists. The matching backend
+branch is `codex/supabase-auth-resend`; use that branch in **both repos**.
+The backend README contains the Supabase/Resend owner setup checklist.
+
+Login checks the password first but returns only a pending challenge. Every
+login requires the emailed six-digit OTP; new users then choose preferences,
+while existing users who completed/skipped onboarding go to Dashboard.
+Account creation continues to verification without asking for a second email.
+Codes last 15 minutes, resend waits 60 seconds, and the backend limits failed
+attempts and email requests. There is no displayed development code or fake
+account fallback. Real email testing requires Resend SMTP and Supabase's
+signup, login-OTP and recovery templates to be configured first.
+
+Only access/refresh tokens and the pending challenge live in tab-scoped
+`sessionStorage`; `clearSession()` removes both tokens. Expired access tokens
+refresh through the backend once; concurrent requests share a refresh.
+Invalid/revoked sessions redirect to Login. A temporary network/provider outage
+shows a retry option rather than erasing the session. Preferences, watchlist
+items and settings live in the backend database, not `localStorage`.
+Recovery sessions cannot access app data. Password changes and logout revoke
+sessions on the backend, including refresh access.
+
+Old opaque tokens are incompatible; sign in again. Users in the legacy custom
+auth database need to register with Supabase or use a separately reviewed
+account migration. No passwords are copied into the frontend or a new database.
 
 ### Run the two repositories together
 
