@@ -15,7 +15,7 @@ export function validateSignup(values: SignupValues): SignupErrors {
   else if (values.full_name.length > 200) errors.full_name = "Use no more than 200 characters for your name.";
   if (!values.email.trim()) errors.email = "Enter your email address.";
   else if (values.email.trim().length > 320 || !/^[^\s@<>(),;]+@[^\s@<>(),;]+\.[^\s@<>(),;]+$/.test(values.email.trim())) {
-    errors.email = "Enter a valid email address, such as name@example.com.";
+    errors.email = "Enter a valid email address in the format name@domain.com.";
   }
   if (!values.password) errors.password = "Create a password.";
   else if (values.password.length < 8) errors.password = "Use at least 8 characters for your password.";
