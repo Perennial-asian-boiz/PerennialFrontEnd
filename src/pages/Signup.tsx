@@ -29,6 +29,11 @@ export default function Signup() {
       confirmPassword: String(form.get("confirmPassword") ?? ""),
     };
     setError("");
+    if (Object.values(values).some((value) => !value)) {
+      element.reset();
+      showFields(element, validateSignup({ full_name: "", email: "", password: "", confirmPassword: "" }));
+      return;
+    }
     const invalid = validateSignup(values);
     showFields(element, invalid);
     if (Object.keys(invalid).length) return;
