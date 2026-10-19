@@ -92,8 +92,3 @@ export const confirmationSectorLabels: Record<string, string> = {
   Technology: "Information Technology",
 };
 
-export const insights = [
-  { category: "Market pulse", title: "AI infrastructure remains the strongest theme", text: "Capital is continuing to move toward semiconductors, cloud platforms, and enterprise automation.", time: "Today" },
-  { category: "Your watchlist", title: "NVIDIA score moved up 3 points", text: "Positive earnings momentum and sector strength improved the company’s confidence score.", time: "Yesterday" },
-  { category: "Learn", title: "What does sentiment mean?", text: "Sentiment combines recent news, market movement, and analyst signals into one readable view.", time: "2 days ago" },
-];

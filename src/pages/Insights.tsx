@@ -1,4 +1,12 @@
 import AppShell from "../components/AppShell";
-import { insights } from "../data";
 
-export default function Insights() { return <AppShell title="Insights" subtitle="Simple context for the decisions you are making."><div className="page-grid"><div><div className="section-heading"><h2>For you</h2><span className="tag">Updated today</span></div><div className="panel">{insights.map((insight) => <article className="insight-card" key={insight.title}><div className="insight-meta"><span className="eyebrow">{insight.category}</span><span>{insight.time}</span></div><h3>{insight.title}</h3><p>{insight.text}</p><button className="table-action" style={{ padding: "14px 0 0" }}>Read insight →</button></article>)}</div></div><div><div className="section-heading"><h2>Market themes</h2></div><div className="stats-card"><div className="metric-row"><div><div className="metric-label">Technology</div><div className="progress" style={{ marginTop: 8, width: 160 }}><span style={{ width: "82%" }} /></div></div><strong>82%</strong></div><div className="metric-row"><div><div className="metric-label">Healthcare</div><div className="progress" style={{ marginTop: 8, width: 160 }}><span style={{ width: "58%" }} /></div></div><strong>58%</strong></div><div className="metric-row"><div><div className="metric-label">Consumer</div><div className="progress" style={{ marginTop: 8, width: 160 }}><span style={{ width: "64%" }} /></div></div><strong>64%</strong></div></div></div></div></AppShell>; }
+export default function Insights() {
+  return (
+    <AppShell title="Insights" subtitle="Company insights will appear here when the data is ready.">
+      <div className="panel empty-state">
+        <h2>No insights yet</h2>
+        <p>Insights will appear when company and sector data is available.</p>
+      </div>
+    </AppShell>
+  );
+}
