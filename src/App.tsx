@@ -28,7 +28,7 @@ function Protected({ children }: { children: ReactNode }) {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "") || "/"}>
       <WatchlistProvider><Routes>
         <Route path="/" element={<Protected><Dashboard /></Protected>} />
         <Route path="/login" element={<Login />} />
