@@ -17,7 +17,7 @@ export default function ForgotPassword() {
     catch (caught) { setError(caught instanceof AuthApiError ? caught.message : "Unable to send a reset link. Please try again."); }
     finally { setBusy(false); }
   }
-  return <AuthShell><div className="auth-card forgot-card"><h1>{sent ? "Check your email" : "Forgot password?"}</h1><p>{sent ? "If an account exists for that address, follow the link in the email to choose a new password." : "Enter your email and we’ll send a password reset link if your account exists."}</p>{!sent && <form className="form-grid" onSubmit={submit}>
+  return <AuthShell><div className="auth-card forgot-card"><h1>{sent ? "Request received" : "Forgot password?"}</h1><p>{sent ? "If an account matches this email, password reset instructions will be sent shortly." : "Enter your email and we’ll send a password reset link if your account exists."}</p>{!sent && <form className="form-grid" onSubmit={submit}>
     <div className="form-field"><label htmlFor="forgot-email">Email Address</label><input id="forgot-email" name="email" type="email" autoComplete="email" required maxLength={320} placeholder="Enter your email" /></div>
     {error && <p className="auth-error" role="alert">{error}</p>}
     <button className="btn-primary auth-submit" type="submit" disabled={busy}>{busy ? "Sending..." : "Send reset link"}</button>
