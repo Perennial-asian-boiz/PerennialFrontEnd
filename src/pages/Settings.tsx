@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppShell from "../components/AppShell";
-import { clearSession, getNotificationSettings, getSessionToken, isAuthApiConfigured, logout, saveNotificationSettings } from "../api/auth";
+import { clearSession, getCachedNotificationSettings, getNotificationSettings, getSessionToken, isAuthApiConfigured, logout, saveNotificationSettings } from "../api/auth";
+import "../components/NotificationLoading.css";
 
 type SettingsIconName = "notifications" | "profile" | "preferences" | "security" | "logout";
 
@@ -23,9 +24,13 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: () =
 
 export default function Settings() {
   const navigate = useNavigate();
-  const [confidenceAlerts, setConfidenceAlerts] = useState(true);
-  const [earningsAlerts, setEarningsAlerts] = useState(true);
+  const cachedSettings = getCachedNotificationSettings();
+  const hasSession = isAuthApiConfigured() && Boolean(getSessionToken());
+  const [confidenceAlerts, setConfidenceAlerts] = useState(cachedSettings?.confidence_score_enabled ?? true);
+  const [earningsAlerts, setEarningsAlerts] = useState(cachedSettings?.earnings_alerts_enabled ?? true);
   const [notificationsError, setNotificationsError] = useState("");
+  const [notificationsLoaded, setNotificationsLoaded] = useState(() => !hasSession || Boolean(cachedSettings));
+  const [notificationsAvailable, setNotificationsAvailable] = useState(() => !hasSession || Boolean(cachedSettings));
   const [savingNotifications, setSavingNotifications] = useState(false);
 
   useEffect(() => {
@@ -33,7 +38,9 @@ export default function Settings() {
     getNotificationSettings().then((settings) => {
       setConfidenceAlerts(settings.confidence_score_enabled);
       setEarningsAlerts(settings.earnings_alerts_enabled);
-    }).catch(() => setNotificationsError("Unable to load notification settings."));
+      setNotificationsAvailable(true);
+    }).catch(() => setNotificationsError("Unable to load notification settings."))
+      .finally(() => setNotificationsLoaded(true));
   }, []);
 
   const updateNotifications = (nextConfidence: boolean, nextEarnings: boolean) => {
@@ -64,9 +71,11 @@ export default function Settings() {
       <section className="settings-card settings-notifications-card">
         <div className="settings-card-heading"><SettingsIcon name="notifications" /><div><div className="settings-title-line"><h2>Notification Settings</h2><span className="settings-badge">Daily &amp; Weekly Digest</span></div><p>Alert cadences, qualitative research triggers, and price boundary signals</p></div></div>
         {notificationsError && <p className="settings-inline-error" role="alert">{notificationsError}</p>}
-        <div className="settings-alert-list" aria-busy={savingNotifications}>
+        <div className="settings-notification-content" aria-busy={!notificationsLoaded || savingNotifications}>
+        {!notificationsLoaded ? <div className="notification-loading-list" role="status" aria-label="Loading notification settings">{[0, 1].map((row) => <div className="notification-loading-row" key={row}><div className="notification-loading-copy"><span className="notification-loading-line" /><span className="notification-loading-line" /></div><span className="notification-loading-switch" /></div>)}</div> : notificationsAvailable && <div className="settings-alert-list">
           <div className="settings-alert-row"><div><strong>Confidence Score <em>High Impact</em></strong><span>Real-time alerts when Confidence Score changes.</span></div><Toggle checked={confidenceAlerts} onChange={() => updateNotifications(!confidenceAlerts, earningsAlerts)} label="Toggle confidence score alerts" /></div>
           <div className="settings-alert-row"><div><strong>Earnings Alerts</strong><span>Trigger instant summaries when normalized EPS or free cash flow deviates ±5%<br className="settings-desktop-break" /> from consensus estimates.</span></div><Toggle checked={earningsAlerts} onChange={() => updateNotifications(confidenceAlerts, !earningsAlerts)} label="Toggle earnings alerts" /></div>
+        </div>}
         </div>
       </section>
 

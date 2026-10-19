@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import RiskComfort from "../components/RiskComfort";
 import { topics, type RiskLevel } from "../data";
-import { getPreferences, getSessionToken, isAuthApiConfigured, savePreferences } from "../api/auth";
+import { getCachedPreferences, getPreferences, getSessionToken, isAuthApiConfigured, savePreferences } from "../api/auth";
 
 export default function Setup() {
-  const [selected, setSelected] = useState<string[]>([]);
-  const [risk, setRisk] = useState<RiskLevel | "">("");
+  const [selected, setSelected] = useState<string[]>(() => getCachedPreferences()?.sectors ?? []);
+  const [risk, setRisk] = useState<RiskLevel | "">(() => getCachedPreferences()?.risk_level ?? "");
   const [isSaving, setIsSaving] = useState(false);
   const [apiError, setApiError] = useState("");
   const navigate = useNavigate();

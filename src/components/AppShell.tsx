@@ -4,6 +4,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { allCompanies, type Company } from "../data";
 import { dashboardCompanies } from "../dashboardData";
 import { clearSession, logout } from "../api/auth";
+import { useAuthUser } from "./authUserContext";
 import { useWatchlist } from "./watchlistStore";
 
 type IconName = "dashboard" | "watchlist" | "insight" | "setting" | "logout";
@@ -37,6 +38,12 @@ export default function AppShell({ children, title, subtitle, headerActions, hid
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchBoxRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const user = useAuthUser();
+  const profileName = user?.full_name.trim() || user?.email || "Account";
+  const nameParts = profileName.split(/\s+/);
+  const initials = (nameParts.length > 1
+    ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`
+    : profileName.slice(0, 2)).toUpperCase();
   const { isWatched, add } = useWatchlist();
   const searchableCompanies = useMemo(() => [...dashboardCompanies, ...allCompanies].filter((company, index, companies) => companies.findIndex((item) => item.ticker === company.ticker) === index), []);
   const searchResults = query.trim() ? searchableCompanies.filter((company) => `${company.name} ${company.ticker} ${company.sector}`.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8) : [];
@@ -75,7 +82,7 @@ export default function AppShell({ children, title, subtitle, headerActions, hid
       </aside>
       {open && <button className="mobile-overlay" onClick={() => setOpen(false)} aria-label="Close menu" />}
       <main className="main-area">
-        <header className="topbar"><button className="menu-button" onClick={() => setOpen(true)} aria-label="Open menu">☰</button><div className="topbar-actions"><div className="search-box" ref={searchBoxRef}><SearchIcon /><input aria-label="Search stocks, tickers, events" value={query} onFocus={() => setIsSearchOpen(true)} onChange={(event) => { setQuery(event.target.value); setIsSearchOpen(true); }} placeholder="Search stocks, tickers, events (e.g. NVDA, RBLX)..." />{isSearchOpen && searchResults.length > 0 && <div className="search-results" role="listbox">{searchResults.map((company) => <div className="search-result" key={company.ticker}><button className="search-result-main" type="button" onClick={() => selectSearchResult(company)}><strong>{company.name}</strong><span>{company.ticker} · {company.sector} · {company.price}</span></button>{isWatched(company.ticker) ? <span className="search-watched">In Watchlist</span> : <button className="search-result-action" type="button" onClick={() => add(company.ticker)}>＋ Watchlist</button>}</div>)}</div>}</div><button className="profile-chip" onClick={() => navigate("/profile")}><span className="profile-avatar">AL</span><span className="profile-copy"><strong>Alexander Lane</strong><small>Verified Investor</small></span><span className="profile-chevron">⌄</span></button></div></header>
+        <header className="topbar"><button className="menu-button" onClick={() => setOpen(true)} aria-label="Open menu">☰</button><div className="topbar-actions"><div className="search-box" ref={searchBoxRef}><SearchIcon /><input aria-label="Search stocks, tickers, events" value={query} onFocus={() => setIsSearchOpen(true)} onChange={(event) => { setQuery(event.target.value); setIsSearchOpen(true); }} placeholder="Search stocks, tickers, events (e.g. NVDA, RBLX)..." />{isSearchOpen && searchResults.length > 0 && <div className="search-results" role="listbox">{searchResults.map((company) => <div className="search-result" key={company.ticker}><button className="search-result-main" type="button" onClick={() => selectSearchResult(company)}><strong>{company.name}</strong><span>{company.ticker} · {company.sector} · {company.price}</span></button>{isWatched(company.ticker) ? <span className="search-watched">In Watchlist</span> : <button className="search-result-action" type="button" onClick={() => add(company.ticker)}>＋ Watchlist</button>}</div>)}</div>}</div><button className="profile-chip" onClick={() => navigate("/profile")}><span className="profile-avatar">{initials}</span><span className="profile-copy"><strong>{profileName}</strong><small>{user?.is_verified ? "Verified Investor" : "Investor"}</small></span><span className="profile-chevron">⌄</span></button></div></header>
         <div className="page-content">{!hidePageHeading && <div className="page-heading"><div className="page-heading-copy"><h1>{title}</h1>{subtitle && <p>{subtitle}</p>}</div>{headerActions}</div>}{children}</div>
       </main>
     </div>

@@ -1,0 +1,50 @@
+.settings-notification-content,
+.profile-notification-content {
+  display: grid;
+  align-items: center;
+  min-height: 190px;
+  margin-top: 12px;
+}
+
+.settings-notification-content .settings-alert-list { margin-top: 0; }
+
+.notification-loading-list {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.notification-loading-row {
+  position: relative;
+  display: flex;
+  min-height: 70px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  overflow: hidden;
+  padding: 14px 16px;
+  border-radius: 5px;
+  background: #f0f6ef;
+}
+
+.profile-notification-content .notification-loading-row { min-height: 82px; }
+
+.notification-loading-copy { display: grid; flex: 1; gap: 10px; }
+.notification-loading-line { display: block; width: min(260px, 68%); height: 12px; border-radius: 99px; background: #e2ebe1; }
+.notification-loading-line:last-child { width: min(360px, 86%); height: 9px; opacity: .75; }
+.notification-loading-switch { width: 58px; height: 32px; flex: 0 0 58px; border-radius: 99px; background: #e1e9e0; }
+
+.settings-notification-content > [role="status"],
+.profile-notification-content > [role="status"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 650px) {
+  .settings-notification-content,
+  .profile-notification-content { min-height: 210px; }
+}

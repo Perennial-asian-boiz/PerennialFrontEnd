@@ -13,6 +13,9 @@ const RESEND_AT_KEY = "perennial.resend_at";
 const PENDING_FLOW_KEY = "perennial.pending_flow";
 const CHALLENGE_EXPIRES_AT_KEY = "perennial.challenge_expires_at";
 const RECOVERY_ONLY_KEY = "perennial.recovery_only";
+const USER_CACHE_KEY = "perennial.user_cache";
+const PREFERENCES_CACHE_KEY = "perennial.preferences_cache";
+const NOTIFICATION_SETTINGS_CACHE_KEY = "perennial.notification_settings_cache";
 
 export type User = {
   id: string;
@@ -132,7 +135,25 @@ export function clearSession() {
   sessionStorage.removeItem(SESSION_KEY);
   sessionStorage.removeItem(REFRESH_KEY);
   sessionStorage.removeItem(RECOVERY_ONLY_KEY);
+  sessionStorage.removeItem(USER_CACHE_KEY);
+  sessionStorage.removeItem(PREFERENCES_CACHE_KEY);
+  sessionStorage.removeItem(NOTIFICATION_SETTINGS_CACHE_KEY);
   window.dispatchEvent(new Event("perennial-auth-changed"));
+}
+
+export function getCachedUser(): User | null {
+  try {
+    const user = JSON.parse(sessionStorage.getItem(USER_CACHE_KEY) ?? "null") as Partial<User> | null;
+    return user && typeof user.id === "string" && typeof user.email === "string"
+      && typeof user.full_name === "string" && typeof user.is_verified === "boolean"
+      && typeof user.onboarding_completed === "boolean" ? user as User : null;
+  } catch {
+    return null;
+  }
+}
+
+export function cacheUser(user: User) {
+  sessionStorage.setItem(USER_CACHE_KEY, JSON.stringify(user));
 }
 
 export function isAuthApiConfigured() {
@@ -198,6 +219,7 @@ function storeTokens(accessToken: string, refreshToken: string, flow: AuthRespon
 
 function saveSession(response: AuthResponse) {
   storeTokens(response.access_token, response.refresh_token, response.flow);
+  cacheUser(response.user);
   return response;
 }
 
@@ -277,26 +299,60 @@ export function getMe(token = getSessionToken()) {
   return request<User>("/me", {}, token ?? undefined);
 }
 
+export function getCachedPreferences(): Preferences | null {
+  try {
+    const preferences = JSON.parse(sessionStorage.getItem(PREFERENCES_CACHE_KEY) ?? "null") as Partial<Preferences> | null;
+    return preferences && Array.isArray(preferences.sectors)
+      && preferences.sectors.every((sector) => typeof sector === "string")
+      && (preferences.risk_level === null || preferences.risk_level === "Conservative" || preferences.risk_level === "Moderate" || preferences.risk_level === "High")
+      ? preferences as Preferences : null;
+  } catch {
+    return null;
+  }
+}
+
 export function getPreferences(token = getSessionToken()) {
-  return request<Preferences>("/me/preferences", {}, token ?? undefined);
+  return request<Preferences>("/me/preferences", {}, token ?? undefined).then((preferences) => {
+    sessionStorage.setItem(PREFERENCES_CACHE_KEY, JSON.stringify(preferences));
+    return preferences;
+  });
 }
 
 export function savePreferences(preferences: Preferences, token = getSessionToken()) {
   return request<Preferences>("/me/preferences", {
     method: "PUT",
     body: JSON.stringify(preferences),
-  }, token ?? undefined);
+  }, token ?? undefined).then((savedPreferences) => {
+    sessionStorage.setItem(PREFERENCES_CACHE_KEY, JSON.stringify(savedPreferences));
+    return savedPreferences;
+  });
+}
+
+export function getCachedNotificationSettings(): NotificationSettings | null {
+  try {
+    const settings = JSON.parse(sessionStorage.getItem(NOTIFICATION_SETTINGS_CACHE_KEY) ?? "null") as Partial<NotificationSettings> | null;
+    return settings && typeof settings.confidence_score_enabled === "boolean"
+      && typeof settings.earnings_alerts_enabled === "boolean" ? settings as NotificationSettings : null;
+  } catch {
+    return null;
+  }
 }
 
 export function getNotificationSettings(token = getSessionToken()) {
-  return request<NotificationSettings>("/me/notifications", {}, token ?? undefined);
+  return request<NotificationSettings>("/me/notifications", {}, token ?? undefined).then((settings) => {
+    sessionStorage.setItem(NOTIFICATION_SETTINGS_CACHE_KEY, JSON.stringify(settings));
+    return settings;
+  });
 }
 
 export function saveNotificationSettings(settings: NotificationSettings, token = getSessionToken()) {
   return request<NotificationSettings>("/me/notifications", {
     method: "PUT",
     body: JSON.stringify(settings),
-  }, token ?? undefined);
+  }, token ?? undefined).then((savedSettings) => {
+    sessionStorage.setItem(NOTIFICATION_SETTINGS_CACHE_KEY, JSON.stringify(savedSettings));
+    return savedSettings;
+  });
 }
 
 export function changePassword(oldPassword: string, newPassword: string, token = getSessionToken()) {
