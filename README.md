@@ -41,7 +41,7 @@ unused imports and variables fail the type check (`noUnusedLocals`).
 | `/profile` | Profile and notification toggles | Verified identity and saved sectors |
 | `/settings` | Settings menu | Backend notification/password APIs and preference editor |
 | `/login`, `/signup`, `/verify-code` | Auth | Supabase-backed password + email OTP through FastAPI |
-| `/forgot-password`, `/reset-password` | Recovery | OTP-gated password recovery; not a dummy success screen |
+| `/forgot-password`, `/reset-password` | Recovery | Email-link password recovery through FastAPI |
 
 ## Connecting to the backend
 
@@ -117,10 +117,9 @@ Codes last 15 minutes, resend waits 60 seconds, and the backend limits failed
 attempts and email requests. There is no displayed development code or fake
 account fallback. Real email testing requires Resend SMTP and Supabase's
 signup-link, login-OTP and recovery templates to be configured correctly first.
-Signup uses `{{ .ConfirmationURL }}`; login/recovery use `{{ .Token }}`.
+Signup and password recovery use `{{ .ConfirmationURL }}`; login uses `{{ .Token }}`.
 The callback URL must be allowlisted in Supabase; the backend README explains
-the setup. SMTP/template work is still required for real login/recovery OTP
-delivery; default Supabase emails may contain links until it is configured.
+the setup. SMTP/template work is still required for real login OTP delivery.
 
 Only access/refresh tokens and the pending challenge live in tab-scoped
 `sessionStorage`; `clearSession()` removes both tokens. Expired access tokens
