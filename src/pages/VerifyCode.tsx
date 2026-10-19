@@ -27,7 +27,7 @@ export default function VerifyCode() {
     setError("");
     try {
       const response = await verifyOtp(getPendingEmail(), code.join(""));
-      navigate(response.flow === "recovery" ? "/reset-password" : response.user.onboarding_completed ? "/" : "/access-granted", { replace: true });
+      navigate(response.user.onboarding_completed ? "/" : "/access-granted", { replace: true });
     } catch (caught) {
       setError(caught instanceof AuthApiError ? caught.message : "Unable to verify. Please try again.");
     } finally { setBusy(false); }

@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { addToWatchlist, getSessionToken, getWatchlist, isAuthApiConfigured, removeFromWatchlist } from "../api/auth";
+import { addToWatchlist, getSessionToken, getWatchlist, isAuthApiConfigured, isRecoverySession, removeFromWatchlist } from "../api/auth";
 
 type WatchlistContextValue = { isWatched: (ticker: string) => boolean; add: (ticker: string) => void; remove: (ticker: string) => void };
 const WatchlistContext = createContext<WatchlistContextValue | null>(null);
@@ -11,7 +11,7 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const loadWatchlist = () => {
-      if (!isAuthApiConfigured() || !getSessionToken()) {
+      if (!isAuthApiConfigured() || !getSessionToken() || isRecoverySession()) {
         setTickers([]);
         return;
       }
@@ -27,13 +27,13 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
     add: (ticker: string) => {
       if (tickers.includes(ticker)) return;
       setTickers((current) => [...current, ticker]);
-      if (isAuthApiConfigured() && getSessionToken()) {
+      if (isAuthApiConfigured() && getSessionToken() && !isRecoverySession()) {
         void addToWatchlist(ticker).catch(() => setTickers((current) => current.filter((item) => item !== ticker)));
       }
     },
     remove: (ticker: string) => {
       setTickers((current) => current.filter((item) => item !== ticker));
-      if (isAuthApiConfigured() && getSessionToken()) {
+      if (isAuthApiConfigured() && getSessionToken() && !isRecoverySession()) {
         void removeFromWatchlist(ticker).catch(() => setTickers((current) => current.includes(ticker) ? current : [...current, ticker]));
       }
     },

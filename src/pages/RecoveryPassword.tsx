@@ -1,13 +1,14 @@
 import { useState, type FormEvent } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { AuthShell } from "../components/AppShell";
-import { AuthApiError, getSessionToken, resetPassword } from "../api/auth";
+import { AuthApiError, isRecoverySession, resetPassword } from "../api/auth";
 
 export default function RecoveryPassword() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [complete, setComplete] = useState(false);
+  const [openedWithRecovery] = useState(isRecoverySession);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
@@ -19,7 +20,7 @@ export default function RecoveryPassword() {
     catch (caught) { setError(caught instanceof AuthApiError ? caught.message : "Unable to reset your password."); }
     finally { setBusy(false); }
   }
-  if (!complete && !getSessionToken()) return <Navigate to="/forgot-password" replace />;
+  if (!complete && !openedWithRecovery) return <Navigate to="/forgot-password" replace />;
   return <AuthShell><div className="auth-card">
     {complete ? <><h1>Password reset successfully</h1><p>Sign in with your new password.</p><button className="btn-primary" onClick={() => navigate("/login", { replace: true })}>Back to sign in</button></> : <>
       <h1>Reset password</h1><p>Choose a new password for your account.</p>

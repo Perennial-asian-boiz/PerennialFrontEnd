@@ -12,6 +12,7 @@ const CHALLENGE_KEY = "perennial.pending_challenge";
 const RESEND_AT_KEY = "perennial.resend_at";
 const PENDING_FLOW_KEY = "perennial.pending_flow";
 const CHALLENGE_EXPIRES_AT_KEY = "perennial.challenge_expires_at";
+const RECOVERY_ONLY_KEY = "perennial.recovery_only";
 
 export type User = {
   id: string;
@@ -122,10 +123,15 @@ export function getSessionToken() {
   return sessionStorage.getItem(SESSION_KEY);
 }
 
+export function isRecoverySession() {
+  return Boolean(getSessionToken()) && sessionStorage.getItem(RECOVERY_ONLY_KEY) === "1";
+}
+
 export function clearSession() {
   sessionGeneration += 1;
   sessionStorage.removeItem(SESSION_KEY);
   sessionStorage.removeItem(REFRESH_KEY);
+  sessionStorage.removeItem(RECOVERY_ONLY_KEY);
   window.dispatchEvent(new Event("perennial-auth-changed"));
 }
 
@@ -181,11 +187,17 @@ function saveChallenge(email: string, response: ChallengeResponse) {
   return response;
 }
 
-function saveSession(response: AuthResponse) {
+function storeTokens(accessToken: string, refreshToken: string, flow: AuthResponse["flow"]) {
   sessionGeneration += 1;
-  sessionStorage.setItem(SESSION_KEY, response.access_token);
-  sessionStorage.setItem(REFRESH_KEY, response.refresh_token);
+  sessionStorage.setItem(SESSION_KEY, accessToken);
+  sessionStorage.setItem(REFRESH_KEY, refreshToken);
+  if (flow === "recovery") sessionStorage.setItem(RECOVERY_ONLY_KEY, "1");
+  else sessionStorage.removeItem(RECOVERY_ONLY_KEY);
   window.dispatchEvent(new Event("perennial-auth-changed"));
+}
+
+function saveSession(response: AuthResponse) {
+  storeTokens(response.access_token, response.refresh_token, response.flow);
   return response;
 }
 
@@ -205,6 +217,16 @@ export function confirmEmailLink(accessToken: string) {
     clearChallenge();
     clearSession();
     return response;
+  });
+}
+
+export function acceptRecoveryLink(accessToken: string, refreshToken: string) {
+  return request<{ recovery_ready: boolean }>("/auth/accept-recovery-link", {
+    method: "POST", body: JSON.stringify({ access_token: accessToken }),
+  }).then((response) => {
+    if (!response.recovery_ready) throw new AuthApiError(400, "This reset link is invalid or expired.");
+    clearChallenge();
+    storeTokens(accessToken, refreshToken, "recovery");
   });
 }
 
@@ -238,7 +260,7 @@ export function login(email: string, password: string) {
 export function forgotPassword(email: string) {
   return request<ChallengeResponse>("/auth/forgot-password", {
     method: "POST", body: JSON.stringify({ email }),
-  }).then((response) => saveChallenge(email, response));
+  }).then(() => { clearChallenge(); });
 }
 
 export function resetPassword(newPassword: string) {
