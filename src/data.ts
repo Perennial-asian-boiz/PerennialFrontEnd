@@ -91,4 +91,3 @@ export const topics = ["Technology", "Financials", "Healthcare", "Industrials", 
 export const confirmationSectorLabels: Record<string, string> = {
   Technology: "Information Technology",
 };
-
