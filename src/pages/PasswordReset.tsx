@@ -3,6 +3,8 @@ import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import AppShell, { Toast } from "../components/AppShell";
 import { AuthApiError, changePassword, clearSession, getSessionToken, isAuthApiConfigured } from "../api/auth";
+import PasswordRequirements from "../components/PasswordRequirements";
+import { isPasswordValid, passwordRequirementsMessage } from "../lib/passwordRequirements";
 
 type PasswordFields = { oldPassword: string; newPassword: string; confirmPassword: string };
 
@@ -13,6 +15,7 @@ export default function PasswordReset() {
   const [isComplete, setIsComplete] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [newPasswordFocused, setNewPasswordFocused] = useState(false);
 
   const updateField = (field: keyof PasswordFields, value: string) => {
     setFields((current) => ({ ...current, [field]: value }));
@@ -25,8 +28,8 @@ export default function PasswordReset() {
       setError("All password fields are required.");
       return;
     }
-    if (fields.newPassword.length < 8) {
-      setError("New password must be at least 8 characters.");
+    if (!isPasswordValid(fields.newPassword)) {
+      setError(passwordRequirementsMessage());
       return;
     }
     if (fields.newPassword !== fields.confirmPassword) {
@@ -56,7 +59,7 @@ export default function PasswordReset() {
     <div className="password-reset-shell">
       {!isComplete ? <section className="password-reset-card"><h1>Reset Password</h1><form className="password-reset-form" noValidate onSubmit={handleSubmit}>
         <div className="form-field"><label htmlFor="old-password">Old Password</label><input id="old-password" type="password" value={fields.oldPassword} onChange={(event) => updateField("oldPassword", event.target.value)} placeholder="Enter your old password" aria-invalid={Boolean(error)} /></div>
-        <div className="form-field"><label htmlFor="new-password">New Password</label><input id="new-password" type="password" value={fields.newPassword} onChange={(event) => updateField("newPassword", event.target.value)} placeholder="Enter your new password" aria-invalid={Boolean(error)} /></div>
+        <div className="form-field password-field-with-popover"><label htmlFor="new-password">New Password</label><div className="password-input-anchor"><input id="new-password" type="password" value={fields.newPassword} onChange={(event) => updateField("newPassword", event.target.value)} onFocus={() => setNewPasswordFocused(true)} onBlur={() => setNewPasswordFocused(false)} placeholder="Enter your new password" minLength={8} maxLength={200} aria-invalid={Boolean(error)} aria-describedby={newPasswordFocused ? "password-requirements" : undefined} /><PasswordRequirements password={fields.newPassword} visible={newPasswordFocused} /></div></div>
         <div className="form-field"><label htmlFor="confirm-new-password">Confirm Password</label><input id="confirm-new-password" type="password" value={fields.confirmPassword} onChange={(event) => updateField("confirmPassword", event.target.value)} placeholder="Re-enter your password" aria-invalid={Boolean(error)} /></div>
         {error && <p className="password-reset-error" role="alert">{error}</p>}
         <div className="password-reset-actions"><button className="btn-secondary" type="button" onClick={() => navigate("/settings")}>Cancel</button><button className="btn-primary" type="submit" disabled={isSaving}>{isSaving ? "Saving..." : "Confirm"}</button></div>

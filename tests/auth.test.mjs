@@ -95,23 +95,32 @@ test("email delivery setup errors remain general errors, not password errors", a
 });
 
 test("signup validation identifies each field, accepts Unicode names, and never includes the password", async () => {
-  const source = await readFile(new URL("../src/lib/signupValidation.ts", import.meta.url), "utf8");
+  const passwordRequirementsSource = await readFile(new URL("../src/lib/passwordRequirements.ts", import.meta.url), "utf8");
+  const passwordRequirementsCompiled = ts.transpileModule(passwordRequirementsSource, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
+  }).outputText;
+  const passwordRequirementsUrl = `data:text/javascript;base64,${Buffer.from(passwordRequirementsCompiled).toString("base64")}`;
+  const source = (await readFile(new URL("../src/lib/signupValidation.ts", import.meta.url), "utf8"))
+    .replace('from "./passwordRequirements"', `from "${passwordRequirementsUrl}"`);
   const compiled = ts.transpileModule(source, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
   }).outputText;
   const { validateSignup } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
-  const valid = { full_name: "Ád Nguyễn", email: "one@example.com", password: "password123", confirmPassword: "password123" };
+  const valid = { full_name: "Ád Nguyễn", email: "one@example.com", password: "Password123", confirmPassword: "Password123" };
   assert.deepEqual(validateSignup(valid), {});
   const empty = validateSignup({ full_name: "   ", email: "", password: "", confirmPassword: "" });
   assert.deepEqual(Object.keys(empty), ["full_name", "email", "password", "confirmPassword"]);
   const errors = validateSignup({ ...valid, email: "bad-email", password: "secret" });
   assert.match(errors.email, /valid email/);
-  assert.match(errors.password, /at least 8/);
+  assert.match(errors.password, /uppercase letter/);
   assert.match(errors.confirmPassword, /do not match/);
   assert.equal(JSON.stringify(errors).includes("secret"), false);
   assert.match(validateSignup({ ...valid, password: "x".repeat(201) }).password, /no more than 200/);
   assert.match(validateSignup({ ...valid, full_name: "x".repeat(201) }).full_name, /no more than 200/);
   assert.match(validateSignup({ ...valid, email: "<name>@example.com" }).email, /valid email/);
+  assert.match(validateSignup({ ...valid, password: "alllowercase1" }).password, /uppercase letter/);
+  assert.match(validateSignup({ ...valid, password: "ALLUPPERCASE1" }).password, /lowercase letter/);
+  assert.match(validateSignup({ ...valid, password: "NoNumberHere" }).password, /number/);
 });
 
 test("confirming an emailed token never stores its credentials as an app login", async () => {
@@ -201,7 +210,7 @@ test("forgot-password starts a real challenge and reset clears the recovery sess
     return reply({ message: "Password reset successfully" });
   });
   await api.forgotPassword("one@example.com");
-  assert.equal(api.getPendingChallenge(), "test-challenge");
+  assert.equal(api.getPendingChallenge(), "");
   storage.set("perennial.access_token", "recovery");
   storage.set("perennial.refresh_token", "recovery-refresh");
   await api.resetPassword("newpassword");

@@ -1,5 +1,6 @@
-// Match the API's baseline validation. Supabase may additionally reject weak or
-// compromised passwords; its safe, specific errors are shown under that field.
+import { isPasswordValid, passwordRequirementsMessage } from "./passwordRequirements";
+
+// Keep client-side account creation aligned with the configured password policy.
 export type SignupValues = {
   full_name: string;
   email: string;
@@ -18,8 +19,8 @@ export function validateSignup(values: SignupValues): SignupErrors {
     errors.email = "Enter a valid email address in the format name@domain.com.";
   }
   if (!values.password) errors.password = "Create a password.";
-  else if (values.password.length < 8) errors.password = "Use at least 8 characters for your password.";
   else if (values.password.length > 200) errors.password = "Use no more than 200 characters for your password.";
+  else if (!isPasswordValid(values.password)) errors.password = passwordRequirementsMessage();
   if (!values.confirmPassword) errors.confirmPassword = "Re-enter your password.";
   else if (values.confirmPassword !== values.password) errors.confirmPassword = "Passwords do not match. Re-enter the same password.";
   return errors;

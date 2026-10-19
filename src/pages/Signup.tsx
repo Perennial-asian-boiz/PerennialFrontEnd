@@ -3,12 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { AuthShell } from "../components/AppShell";
 import { AuthApiError, signup } from "../api/auth";
 import { validateSignup, type SignupErrors, type SignupValues } from "../lib/signupValidation";
+import PasswordRequirements from "../components/PasswordRequirements";
 
 export default function Signup() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<SignupErrors>({});
   const [busy, setBusy] = useState(false);
+  const [password, setPassword] = useState("");
+  const [passwordFocused, setPasswordFocused] = useState(false);
 
   function showFields(form: HTMLFormElement, errors: SignupErrors) {
     setFieldErrors(errors);
@@ -75,10 +78,13 @@ export default function Signup() {
         <input id="signup-email" name="email" type="email" autoComplete="username" required maxLength={320} placeholder="Enter your email" aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? "email-error" : undefined} />
         {fieldErrors.email && <p id="email-error" className="field-error" role="alert">{fieldErrors.email}</p>}
       </div>
-      <div className="form-field">
+      <div className="form-field password-field-with-popover">
         <label htmlFor="signup-password">Password</label>
-        <input id="signup-password" name="password" type="password" autoComplete="new-password" required minLength={8} maxLength={200} placeholder="Create a password" aria-invalid={Boolean(fieldErrors.password)} aria-describedby={`password-hint${fieldErrors.password ? " password-error" : ""}`} />
-        <p id="password-hint" className="field-hint">Use 8–200 characters. Choose a unique password.</p>
+        <div className="password-input-anchor">
+        <input id="signup-password" name="password" type="password" autoComplete="new-password" required minLength={8} maxLength={200} placeholder="Create a password" aria-invalid={Boolean(fieldErrors.password)} aria-describedby={`password-hint${fieldErrors.password ? " password-error" : ""}${passwordFocused ? " password-requirements" : ""}`} onFocus={() => setPasswordFocused(true)} onBlur={() => setPasswordFocused(false)} onChange={(event) => setPassword(event.target.value)} />
+          <PasswordRequirements password={password} visible={passwordFocused} />
+        </div>
+        <p id="password-hint" className="field-hint">Use a strong, unique password.</p>
         {fieldErrors.password && <p id="password-error" className="field-error" role="alert">{fieldErrors.password}</p>}
       </div>
       <div className="form-field">
