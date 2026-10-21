@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthShell } from "../components/AppShell";
-import { AuthApiError, getPendingEmail, hasPendingLoginCode, login } from "../api/auth";
+import { AuthApiError, hasPendingLoginCode, login } from "../api/auth";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -56,7 +56,6 @@ export default function Login() {
       <div className="form-field"><label htmlFor="password">Password</label><input id="password" name="password" type="password" autoComplete="current-password" required minLength={8} maxLength={200} placeholder="Enter your password" aria-invalid={invalidFields} aria-describedby={invalidFields ? "login-error" : undefined} /></div>
       {error && <p id="login-error" className="auth-error" role="alert">{error}</p>}
       <div className="login-actions"><button className="forgot-link" type="button" onClick={() => navigate("/forgot-password")}>Forgot password?</button><button className="btn-primary" type="submit" disabled={busy}>{busy ? "Signing in..." : "Sign in"}</button></div>
-      {hasPendingLoginCode(getPendingEmail()) && <p className="login-signup">Already received a code? <button className="inline-link" type="button" onClick={() => navigate("/verify-code")}>Enter it</button></p>}
       <p className="login-signup">Don’t have an account? <button className="inline-link" type="button" onClick={() => navigate("/signup")}>Create account</button></p>
     </form>
   </div></AuthShell>;

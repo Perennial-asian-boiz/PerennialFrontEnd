@@ -280,7 +280,7 @@ export function login(email: string, password: string) {
 }
 
 export function forgotPassword(email: string) {
-  return request<ChallengeResponse>("/auth/forgot-password", {
+  return request<{ message: string }>("/auth/forgot-password", {
     method: "POST", body: JSON.stringify({ email }),
   }).then(() => { clearChallenge(); });
 }

@@ -113,9 +113,10 @@ input, and focuses the first invalid field. `src/lib/signupValidation.ts`
 matches the API baseline (8–200 password characters; Unicode names allowed).
 The client consumes the backend's safe `code`/`field_errors` contract; provider
 email-delivery problems remain form-level errors rather than blaming passwords.
-Codes last 15 minutes; the app adds no resend cooldown, while the backend
-limits failed attempts and email requests. Supabase or its SMTP provider may
-still enforce their own send limits. There is no displayed development code or fake
+Codes last 15 minutes. The backend enforces a 60-second resend cooldown and
+email-request limits; the verification page shows the remaining cooldown.
+Supabase or its SMTP provider may still enforce additional send limits.
+There is no displayed development code or fake
 account fallback. Real email testing requires Resend SMTP and Supabase's
 signup-link, login-OTP and recovery templates to be configured correctly first.
 Signup and password recovery use `{{ .ConfirmationURL }}`; login uses `{{ .Token }}`.

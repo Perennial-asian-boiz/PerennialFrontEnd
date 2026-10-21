@@ -43,6 +43,21 @@ test("password login stores a challenge, never an authenticated session", async 
   assert.equal(api.hasPendingLoginCode("other@example.com"), false);
 });
 
+test("a successful resend starts the server-provided cooldown", async () => {
+  const { api } = await client(async (url) => {
+    if (url.endsWith("/auth/login")) {
+      return reply({ ...challenge, resend_after_seconds: 0 });
+    }
+    assert.ok(url.endsWith("/auth/resend-otp"));
+    return reply({ ...challenge, resend_after_seconds: 60 });
+  });
+
+  await api.login("one@example.com", "password123");
+  assert.equal(api.getResendSeconds(), 0);
+  await api.resendOtp("one@example.com");
+  assert.ok(api.getResendSeconds() > 0);
+});
+
 test("signup remains an email-link flow and does not sign the user in", async () => {
   const { api } = await client(async (url, init) => {
     assert.ok(url.endsWith("/auth/signup"));
@@ -201,9 +216,9 @@ test("in-flight refresh cannot restore a session after sign out", async () => {
   assert.equal(api.getSessionToken(), null);
 });
 
-test("forgot-password starts a real challenge and reset clears the recovery session", async () => {
+test("forgot-password accepts the generic response and reset clears the recovery session", async () => {
   const { api, storage } = await client(async (url, init) => {
-    if (url.endsWith("/auth/forgot-password")) return reply({ ...challenge, flow: "recovery" });
+    if (url.endsWith("/auth/forgot-password")) return reply({ message: "If an account exists for this email, password reset instructions will be sent." });
     assert.ok(url.endsWith("/auth/reset-password"));
     assert.equal(init.headers.get("Authorization"), "Bearer recovery");
     assert.deepEqual(JSON.parse(init.body), { new_password: "newpassword" });
