@@ -11,6 +11,10 @@ This repo replaces `development/frontend/perennial/` in
 
 ## Quick start
 
+These commands start the frontend only. To use login, account settings, and
+other API-backed features, start the backend too; see
+[Run the complete app locally](#run-the-complete-app-locally).
+
 ```bash
 npm ci
 npm run dev        # http://localhost:5173
@@ -96,8 +100,9 @@ ships to the browser, so never put a secret there.
 
 `src/api/auth.ts` contains the small typed client for the Sprint 1 account API.
 It covers signup, OTP verification/resend, login, recovery, notification and
-password changes, preferences and personal watchlists. The matching backend
-branch is `codex/supabase-auth-resend`; use that branch in **both repos**.
+password changes, preferences and personal watchlists. After the matching
+Sprint 1 pull requests are merged, use `main` in both repositories. Before
+then, use `codex/supabase-auth-resend` in both repositories.
 The backend README contains the Supabase/Resend owner setup checklist.
 
 Login checks the password first but returns only a pending challenge. Every
@@ -138,9 +143,10 @@ account migration. No passwords are copied into the frontend or a new database.
 
 ### Run the two repositories together
 
-Clone `PerennialFrontEnd` and `PerennialBackend` as sibling directories. Start
-the backend database and API using the backend README, then configure this
-frontend with:
+After the Sprint 1 pull requests are merged, clone the default `main` branch of
+both repositories into sibling directories. Start the backend by following its
+[local setup guide](https://github.com/Perennial-asian-boiz/PerennialBackend#quick-start-sprint-1-app).
+Then, in this repository, configure and start the frontend:
 
 ```bash
 cp .env.example .env
@@ -148,11 +154,17 @@ npm ci
 npm run dev
 ```
 
-The checked-in `.env.example` points to `http://127.0.0.1:8000`. The app opens
-at Login, validates the session with `GET /me`, and redirects unauthenticated
-users away from Dashboard, Setup, Profile, Settings, and Watchlist. The
-backend's temporary dashboard fixture is still used until the real company
-pipeline is ready; it follows the same API response contract.
+The checked-in `.env.example` points to `http://127.0.0.1:8000`. Open
+`http://localhost:5173`; the API reference is at `http://127.0.0.1:8000/docs`.
+The app opens at Login and validates sessions through the backend. If the
+pull requests have not been merged yet, both repositories must use the matching
+`codex/supabase-auth-resend` branch instead of `main`.
+
+Supabase and database credentials are not included in Git. Ask the project
+maintainer for access and private local configuration; never put secrets in a
+`VITE_*` variable, commit a `.env`, or post credentials in chat. Dashboard
+company data remains a development fixture until the company-data integration
+is complete.
 
 ## Layout
 
