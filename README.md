@@ -11,6 +11,10 @@ This repo replaces `development/frontend/perennial/` in
 
 ## Quick start
 
+These commands start the frontend only. To use login, account settings, and
+other API-backed features, start the backend too; see
+[Run the complete app locally](#run-the-complete-app-locally).
+
 ```bash
 npm ci
 npm run dev        # http://localhost:5173
@@ -21,6 +25,7 @@ npm run dev        # http://localhost:5173
 | `npm run dev` | Dev server with hot reload |
 | `npm run build` | Type-check (`tsc -b`), then production build into `dist/` |
 | `npm run lint` | ESLint over `src/` |
+| `npm test` | Offline auth-client contract and refresh/recovery tests |
 | `npm run preview` | Serve the production build locally |
 
 `npm run build` and `npm run lint` both pass on `main`. Keep them that way —
@@ -30,31 +35,136 @@ unused imports and variables fail the type check (`noUnusedLocals`).
 
 | Route | Page | State |
 |---|---|---|
-| `/` | Dashboard | Layout only; bucket buttons not wired |
-| `/setup` | Onboarding — interests and risk comfort | Selections held in state, not saved |
-| `/confirmation` | Setup confirmation | Placeholder copy |
-| `/watchlist` | Watchlist | Three hardcoded rows |
+| `/` | Dashboard | Sector-filtered dashboard using the frontend dashboard JSON contract |
+| `/setup` | Onboarding — interests and risk comfort | Saved to the signed-in account through FastAPI |
+| `/confirmation` | Setup confirmation | Shows selected sectors and risk profile |
+| `/watchlist` | Watchlist | Account-owned tickers from the backend; temporary company metadata |
 | `/company` | Company detail | Placeholder values |
 | `/why` | Why this company | Placeholder values |
 | `/insights` | Insights | Empty |
-| `/profile` | Profile and notification toggles | Dummy account |
-| `/settings` | Settings menu | Menu items not wired |
-| `/login`, `/signup` | Auth | Stubs |
+| `/profile` | Profile and notification toggles | Verified identity and saved sectors |
+| `/settings` | Settings menu | Backend notification/password APIs and preference editor |
+| `/login`, `/signup`, `/verify-code` | Auth | Supabase-backed password + email OTP through FastAPI |
+| `/forgot-password`, `/reset-password` | Recovery | Email-link password recovery through FastAPI |
 
 ## Connecting to the backend
 
-Nothing calls an API yet — every screen renders module-level dummy data. The
-dashboard's two buckets map directly to the backend pipeline's output in
-`consensus_watchlist.json`:
+The dashboard calls the backend when `VITE_API_URL` is configured. Copy
+`.env.example` to `.env` while running the local backend:
+
+```bash
+cp .env.example .env
+```
+
+The dashboard's two buckets map directly to the backend API:
 
 | Button | Backend bucket |
 |---|---|
 | Affordable and Growing | `affordable_growing` |
 | Popular and Stable | `popular_stable` |
 
-When wiring this up, put the API base URL in `.env` as `VITE_API_URL` and read
-it with `import.meta.env.VITE_API_URL`. Anything prefixed `VITE_` ships to the
-browser, so never put a secret there.
+### Dashboard JSON contract
+
+The backend endpoint is `GET /api/watchlist`. It returns this shape:
+
+```json
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-10-14T00:00:00+00:00",
+  "affordable_growing": [
+    {
+      "name": "Example Company",
+      "ticker": "EXMP",
+      "sector": "Technology",
+      "price": 42.00,
+      "change_percent": 1.24,
+      "confidence_score": 82,
+      "sentiment": "Positive",
+      "reason": "Growth signals are improving across technology."
+    }
+  ],
+  "popular_stable": []
+}
+```
+
+The frontend converts the numeric API fields into the display strings used by
+the table. Each bucket can contain three companies per sector. The dashboard
+uses the sectors selected during onboarding; when the user skips onboarding,
+it displays all eleven sectors.
+
+The backend currently returns temporary fixture data in development while the
+real company metadata pipeline is being completed. Anything prefixed `VITE_`
+ships to the browser, so never put a secret there.
+
+### Simple authentication client
+
+`src/api/auth.ts` contains the small typed client for the Sprint 1 account API.
+It covers signup, OTP verification/resend, login, recovery, notification and
+password changes, preferences and personal watchlists. After the matching
+Sprint 1 pull requests are merged, use `main` in both repositories. Before
+then, use `codex/supabase-auth-resend` in both repositories.
+The backend README contains the Supabase/Resend owner setup checklist.
+
+Login checks the password first but returns only a pending challenge. Every
+login requires the emailed six-digit OTP; new users then choose preferences,
+while existing users who completed/skipped onboarding go to Dashboard.
+Registration immediately shows the compact **Account created** screen with
+only **Back to sign in**. Email confirmation is independent: the user clicks
+the signup link later, `/auth/confirm` validates it and returns to Sign in.
+There is no six-digit signup screen and confirmation does not sign the user
+into Dashboard. Duplicate email registration shows an error instead of success.
+Signup validates each field before sending, shows errors under the affected
+input, and focuses the first invalid field. `src/lib/signupValidation.ts`
+matches the API baseline (8–200 password characters; Unicode names allowed).
+The client consumes the backend's safe `code`/`field_errors` contract; provider
+email-delivery problems remain form-level errors rather than blaming passwords.
+Codes last 15 minutes. The backend enforces a 60-second resend cooldown and
+email-request limits; the verification page shows the remaining cooldown.
+Supabase or its SMTP provider may still enforce additional send limits.
+There is no displayed development code or fake
+account fallback. Real email testing requires Resend SMTP and Supabase's
+signup-link, login-OTP and recovery templates to be configured correctly first.
+Signup and password recovery use `{{ .ConfirmationURL }}`; login uses `{{ .Token }}`.
+The callback URL must be allowlisted in Supabase; the backend README explains
+the setup. SMTP/template work is still required for real login OTP delivery.
+
+Only access/refresh tokens and the pending challenge live in tab-scoped
+`sessionStorage`; `clearSession()` removes both tokens. Expired access tokens
+refresh through the backend once; concurrent requests share a refresh.
+Invalid/revoked sessions redirect to Login. A temporary network/provider outage
+shows a retry option rather than erasing the session. Preferences, watchlist
+items and settings live in the backend database, not `localStorage`.
+Recovery sessions cannot access app data. Password changes and logout revoke
+sessions on the backend, including refresh access.
+
+Old opaque tokens are incompatible; sign in again. Users in the legacy custom
+auth database need to register with Supabase or use a separately reviewed
+account migration. No passwords are copied into the frontend or a new database.
+
+### Run the two repositories together
+
+After the Sprint 1 pull requests are merged, clone the default `main` branch of
+both repositories into sibling directories. Start the backend by following its
+[local setup guide](https://github.com/Perennial-asian-boiz/PerennialBackend#quick-start-sprint-1-app).
+Then, in this repository, configure and start the frontend:
+
+```bash
+cp .env.example .env
+npm ci
+npm run dev
+```
+
+The checked-in `.env.example` points to `http://127.0.0.1:8000`. Open
+`http://localhost:5173`; the API reference is at `http://127.0.0.1:8000/docs`.
+The app opens at Login and validates sessions through the backend. If the
+pull requests have not been merged yet, both repositories must use the matching
+`codex/supabase-auth-resend` branch instead of `main`.
+
+Supabase and database credentials are not included in Git. Ask the project
+maintainer for access and private local configuration; never put secrets in a
+`VITE_*` variable, commit a `.env`, or post credentials in chat. Dashboard
+company data remains a development fixture until the company-data integration
+is complete.
 
 ## Layout
 

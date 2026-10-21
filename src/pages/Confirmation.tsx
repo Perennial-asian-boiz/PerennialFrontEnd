@@ -1,34 +1,16 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { confirmationSectorLabels, riskProfiles, type OnboardingPreferences, type RiskLevel } from "../data";
 
-function Update() {}
+type ConfirmationState = Partial<OnboardingPreferences>;
 
 export default function Confirmation() {
   const navigate = useNavigate();
-  return (
-    <div className="flex flex-col w-[1126px] mx-auto">
-      <h1 className="text-[56px] tracking-[-1.68px] my-5">Confirmation</h1>
-      <div className="text-3xl">
-        Lorem ipsum, dolor sit amet consectetur adipisicing elit. Error
-        praesentium architecto, porro eius reiciendis voluptatum autem rem nulla
-        natus corporis qui quibusdam consectetur provident hic. Rerum
-        perspiciatis itaque quia praesentium?
-      </div>
-      <div className="flex flex-row text-lg h-10 mt-10 justify-between">
-        <button
-          className="border w-30 rounded-lg cursor-pointer hover:bg-sky-700"
-          onClick={Update}
-        >
-          Update
-        </button>
-        <button
-          className="border w-30 rounded-lg cursor-pointer hover:bg-sky-700"
-          onClick={() => {
-            navigate("/");
-          }}
-        >
-          Dashboard
-        </button>
-      </div>
-    </div>
-  );
+  const location = useLocation();
+  const routeState = (location.state as ConfirmationState | null) ?? {};
+  const sectors = routeState.sectors ?? [];
+  const risk = (routeState.risk ?? "") as RiskLevel | "";
+  const riskProfile = risk ? riskProfiles[risk] : null;
+  const dashboardState: OnboardingPreferences = { sectors, risk };
+
+  return <div className="onboarding-page confirmation-page"><main className="confirmation-content"><span className="setup-complete-badge"><span aria-hidden="true">•</span> SETUP COMPLETE</span><h1>Confirmation &amp; Investment Thesis</h1><p className="confirmation-subtitle">Review your personalized research preferences before entering your<br className="desktop-break" /> workspace.</p><section className="confirmation-card"><div className="confirmation-summary"><div className="confirmation-check" aria-hidden="true">✓</div><div><h2>Personalized Allocation Matrix Prepared</h2><p>All investment parameters have been mapped into your active research stream.</p></div></div><div className="confirmation-focus"><span>PRIMARY FOCUS</span><div className="confirmation-sector-list">{sectors.length > 0 ? sectors.map((sector) => <span className="confirmation-sector-chip" key={sector}>{confirmationSectorLabels[sector] ?? sector}</span>) : <strong className="confirmation-empty">Non-selected.</strong>}</div></div><div className="confirmation-risk"><span>RISK PROFILE</span><strong className={riskProfile ? `risk-${riskProfile.color}` : "confirmation-empty"}>{riskProfile ? <><b>{risk}</b> : {riskProfile.description}</> : "Non-selected."}</strong></div></section><div className="confirmation-actions"><button className="btn-secondary" type="button" onClick={() => navigate("/setup")}>Update Preferences</button><button className="btn-primary" type="button" onClick={() => navigate("/", { state: dashboardState })}>Go to Dashboard</button></div></main></div>;
 }
