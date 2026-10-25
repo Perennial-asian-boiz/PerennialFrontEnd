@@ -84,7 +84,9 @@ async function request<T>(path: string, init: RequestInit = {}, token?: string, 
   headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const response = await fetch(`${getApiBaseUrl()}${path}`, { ...init, headers });
+  // Account endpoints are mounted under /v1; keep VITE_API_URL at the host
+  // root because the dashboard's legacy endpoint is still /api/watchlist.
+  const response = await fetch(`${getApiBaseUrl()}/v1${path}`, { ...init, headers });
   if (response.status === 401 && token && retry && sessionStorage.getItem(REFRESH_KEY)) {
     // Concurrent account requests share one refresh; never replay a rotated token.
     const latest = getSessionToken();

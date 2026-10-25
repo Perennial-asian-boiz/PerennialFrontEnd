@@ -30,6 +30,7 @@ const reply = (body, status = 200) => new Response(JSON.stringify(body), { statu
 
 test("password login stores a challenge, never an authenticated session", async () => {
   const { api } = await client(async (url, init) => {
+    assert.equal(url, "http://test.invalid/v1/auth/login");
     assert.ok(url.endsWith("/auth/login"));
     assert.deepEqual(JSON.parse(init.body), { email: "one@example.com", password: "password123" });
     return reply(challenge);
