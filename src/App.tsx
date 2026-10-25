@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import type { ReactNode } from "react";
 import Company from "./pages/Company";
 import Confirmation from "./pages/Confirmation";
@@ -26,11 +26,17 @@ function Protected({ children }: { children: ReactNode }) {
   return <RequireAuth>{children}</RequireAuth>;
 }
 
+function LocalPreview({ children }: { children: ReactNode }) {
+  return import.meta.env.DEV ? children : <Navigate to="/login" replace />;
+}
+
 function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "") || "/"}>
       <WatchlistProvider><Routes>
         <Route path="/" element={<Protected><Dashboard /></Protected>} />
+        <Route path="/dashboard-preview" element={<LocalPreview><Dashboard /></LocalPreview>} />
+        <Route path="/setup-preview" element={<LocalPreview><Setup /></LocalPreview>} />
         <Route path="/login" element={<Login />} />
         <Route path="/auth/confirm" element={<EmailConfirmation />} />
         <Route path="/signup" element={<Signup />} />

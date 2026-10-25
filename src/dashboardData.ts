@@ -5,6 +5,11 @@ export type DashboardBucket = "affordable_growing" | "popular_stable";
 
 export type DashboardPayload = Record<DashboardBucket, Company[]>;
 
+export const emptyDashboardPayload: DashboardPayload = {
+  affordable_growing: [],
+  popular_stable: [],
+};
+
 type SectorSeed = {
   affordable: [string, string][];
   popular: [string, string][];
