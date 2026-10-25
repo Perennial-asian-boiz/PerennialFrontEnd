@@ -1,108 +1,23 @@
-import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/sidebar";
-import CompanyLogo from "../components/companyLogo";
+import { useState } from "react";
+import AppShell, { CompanyBadge, Toast, TrashIcon } from "../components/AppShell";
+import { useWatchlist } from "../components/watchlistStore";
+import { allCompanies, getSignalStatus } from "../data";
+import { dashboardCompanies } from "../dashboardData";
 
-type CompanyOverview = {
-  name: string;
-  notes: Array<string>;
-  sentiment: string;
-  score: number;
-  currentPrice: number;
-};
-
-const dummyOverviews: Array<CompanyOverview> = [
-  {
-    name: "spaceX",
-    notes: ["stable", "new technology"],
-    sentiment: "good",
-    score: 75.72,
-    currentPrice: 323.14,
-  },
-  {
-    name: "palantir",
-    notes: ["government", "potential"],
-    sentiment: "average",
-    score: 60.33,
-    currentPrice: 504.28,
-  },
-  {
-    name: "anthropic",
-    notes: ["trending", "new model"],
-    sentiment: "great",
-    score: 84.26,
-    currentPrice: 413.96,
-  },
-];
+const watchlistCompanies = [...dashboardCompanies, ...allCompanies].filter((company, index, companies) => companies.findIndex((item) => item.ticker === company.ticker) === index);
 
 export default function Watchlist() {
-  const navigate = useNavigate();
-  return (
-    <div className="flex flex-col h-screen">
-      <div className="flex flex-row grow-1 border-b">
-        <CompanyLogo />
-        <div className="flex grow-10 text-[2rem] justify-center items-center pl-5">
-          Your Watch List
-        </div>
-      </div>
-      <div className="flex flex-row w-screen grow-20">
-        <div className="flex flex-col grow-2 justify-between items-center border-r">
-          <Sidebar navigations={["Home", "Insight", "Settings"]} />
-          <div className="flex flex-col items-center mb-10 gap-2">
-            <button
-              className="border rounded-full h-[5rem] w-[5rem] cursor-pointer"
-              onClick={() => {
-                navigate("/profile");
-              }}
-            >
-              Profile
-            </button>
-            <div> Profile </div>
-          </div>
-        </div>
-        <div className="flex flex-col grow-10 pt-5">
-          <div className="flex flex-row justify-around">
-            <button className="border rounded-md h-[3rem] w-[15rem] cursor-pointer hover:bg-sky-700">
-              All
-            </button>
-            <button className="border rounded-md h-[3rem] w-[15rem] cursor-pointer hover:bg-sky-700">
-              Sectors
-            </button>
-          </div>
-          <div className="flex flex-col w-[90%] mx-auto py-[2rem]">
-            <div className="grid grid-cols-14 gap-3 items-center">
-              <div className="col-span-6 underline font-bold">Name</div>
-              <div className="col-span-3 underline font-bold">Sentiment</div>
-              <div className="col-span-1 underline font-bold">Score</div>
-              <div className="col-span-2 underline font-bold">
-                Current Price
-              </div>
-              <div className="col-span-2" />
-              {dummyOverviews.map((d) => (
-                <div key={d.name} className="contents">
-                  <div className="col-span-2">{d.name}</div>
-                  <div className="col-span-4 flex flex-row gap-2 items-center">
-                    {d.notes.map((m) => (
-                      <div key={m} className="bg-sky-500 p-1 rounded-md">
-                        {m}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="col-span-3">{d.sentiment}</div>
-                  <div className="col-span-1">{d.score}</div>
-                  <div className="col-span-2">{d.currentPrice}</div>
-                  <div className="col-span-2 flex flex-col">
-                    <button>View</button>
-                    <button>Remove</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="flex flex-row justify-center mt-3">
-              End of Watchlist
-            </div>
-          </div>
-        </div>
-      </div>
+  const [toast, setToast] = useState<"success" | "error" | null>(null);
+  const { isWatched, remove } = useWatchlist();
+  const filtered = watchlistCompanies.filter((company) => isWatched(company.ticker));
+  const removeCompany = (ticker: string) => { remove(ticker); setToast("error"); };
+
+  return <AppShell title="Your Watchlist" subtitle="Active items tracked for analysis.">
+    <div className="watchlist-toolbar"><span className="asset-pill">All Assets</span><span className="watchlist-count">{filtered.length} companies</span></div>
+    <div className="panel">
+      {filtered.length === 0 ? <div className="empty-state"><div className="empty-state-icon">♡</div><h2>Your watchlist is empty</h2><p>Add companies from Market Health and they will appear here.</p><button className="btn-primary" onClick={() => window.location.assign("/")}>Explore Market Health</button></div> : <div className="table-wrap"><table className="data-table watchlist-table"><colgroup><col className="watchlist-company-column" /><col className="watchlist-sector-column" /><col className="watchlist-sentiment-column" /><col className="watchlist-confidence-column" /><col className="watchlist-signal-column" /><col className="watchlist-price-column" /><col className="watchlist-action-column" /></colgroup><thead><tr><th>Company name</th><th>Sector</th><th>Sentiment pulse</th><th>Confidence</th><th>Signal status</th><th>Current price</th><th /></tr></thead><tbody>{filtered.map((company) => { const signal = getSignalStatus(company); return <tr key={company.ticker}><td><CompanyBadge company={company}/></td><td><span className="sector-text">{company.sector}</span></td><td><span className={`tag ${company.sentiment === "Neutral" ? "tag-neutral" : company.sentiment === "Watch" ? "tag-watch" : ""}`}>● {company.sentiment}</span></td><td><strong>{company.score}</strong></td><td><span className={signal === "neutral" ? "signal-neutral" : signal === "down" ? "signal-down" : "signal-up"}>{signal === "neutral" ? "—" : signal === "down" ? "↓" : "↑"}</span></td><td><strong>{company.price}</strong><small className={company.change.startsWith("+") ? "metric-positive" : "metric-negative"}>{company.change}</small></td><td><button className="trash-button" onClick={() => removeCompany(company.ticker)} aria-label={`Remove ${company.name} from watchlist`}><TrashIcon /></button></td></tr>; })}</tbody></table></div>}
+      <p className="end-of-list">{filtered.length ? "End of watchlist" : "Your saved companies will appear here"}</p>
     </div>
-  );
+    {toast && <Toast type={toast} message="Removed from your Watchlist" onDone={() => setToast(null)} />}
+  </AppShell>;
 }

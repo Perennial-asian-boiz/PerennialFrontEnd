@@ -1,73 +1,55 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/Dashboard.tsx";
-import Setup from "./pages/Setup.tsx";
-import Login from "./pages/Login.tsx";
-import Signup from "./pages/Signup.tsx";
-import Company from "./pages/Company.tsx";
-import Insights from "./pages/Insights.tsx";
-import Profile from "./pages/Profile.tsx";
-import Settings from "./pages/Settings.tsx";
-import Watchlist from "./pages/Watchlist.tsx";
-import WhyCompany from "./pages/WhyCompany.tsx";
-import Confirmation from "./pages/Confirmation.tsx";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import type { ReactNode } from "react";
+import Company from "./pages/Company";
+import Confirmation from "./pages/Confirmation";
+import AccountCreated from "./pages/AccountCreated";
+import AccessGranted from "./pages/AccessGranted";
+import Dashboard from "./pages/Dashboard";
+import ForgotPassword from "./pages/ForgotPassword";
+import Insights from "./pages/Insights";
+import Login from "./pages/Login";
+import Profile from "./pages/Profile";
+import PasswordReset from "./pages/PasswordReset";
+import RecoveryPassword from "./pages/RecoveryPassword";
+import Settings from "./pages/Settings";
+import Setup from "./pages/Setup";
+import Signup from "./pages/Signup";
+import Watchlist from "./pages/Watchlist";
+import VerifyCode from "./pages/VerifyCode";
+import EmailConfirmation from "./pages/EmailConfirmation";
+import Welcome from "./pages/Welcome";
+import WhyCompany from "./pages/WhyCompany";
+import { WatchlistProvider } from "./components/watchlistStore";
+import RequireAuth from "./components/RequireAuth";
 
-const topics: string[] = [
-  "Technology",
-  "Healthcare",
-  "Financial Services",
-  "Consumer Discretionary",
-  "Consumer Staples",
-  "Energy",
-  "Industrials",
-  "Materials",
-  "Utilities",
-  "Real Estate",
-  "Communication Services",
-  "Automotive",
-  "Aerospace & Defense",
-  "Semiconductors",
-  "Software",
-  "Hardware",
-  "Artificial Intelligence",
-  "Cybersecurity",
-  "Cloud Computing",
-  "Biotechnology",
-  "Pharmaceuticals",
-  "Banking",
-  "Insurance",
-  "Investment Services",
-  "Retail",
-  "E-Commerce",
-  "Entertainment",
-  "Media",
-  "Telecommunications",
-  "Transportation",
-  "Logistics",
-  "Manufacturing",
-  "Construction",
-  "Mining",
-  "Oil & Gas",
-  "Renewable Energy",
-  "Food & Beverage",
-  "Travel & Hospitality",
-];
+function Protected({ children }: { children: ReactNode }) {
+  return <RequireAuth>{children}</RequireAuth>;
+}
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "") || "/"}>
+      <WatchlistProvider><Routes>
+        <Route path="/" element={<Protected><Dashboard /></Protected>} />
         <Route path="/login" element={<Login />} />
+        <Route path="/auth/confirm" element={<EmailConfirmation />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/setup" element={<Setup topics={topics} />} />
-        <Route path="/confirmation" element={<Confirmation />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/insights" element={<Insights />} />
-        <Route path="/watchlist" element={<Watchlist />} />
-        <Route path="/company" element={<Company />} />
-        <Route path="/why" element={<WhyCompany />} />
-        <Route path="/settings" element={<Settings />} />
-      </Routes>
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<RecoveryPassword />} />
+        <Route path="/verify-code" element={<VerifyCode />} />
+        <Route path="/account-created" element={<AccountCreated />} />
+        <Route path="/access-granted" element={<AccessGranted />} />
+        <Route path="/welcome" element={<Protected><Welcome /></Protected>} />
+        <Route path="/setup" element={<Protected><Setup /></Protected>} />
+        <Route path="/confirmation" element={<Protected><Confirmation /></Protected>} />
+        <Route path="/profile" element={<Protected><Profile /></Protected>} />
+        <Route path="/settings/password" element={<Protected><PasswordReset /></Protected>} />
+        <Route path="/insights" element={<Protected><Insights /></Protected>} />
+        <Route path="/watchlist" element={<Protected><Watchlist /></Protected>} />
+        <Route path="/company" element={<Protected><Company /></Protected>} />
+        <Route path="/why" element={<Protected><WhyCompany /></Protected>} />
+        <Route path="/settings" element={<Protected><Settings /></Protected>} />
+      </Routes></WatchlistProvider>
     </BrowserRouter>
   );
 }

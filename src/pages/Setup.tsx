@@ -1,63 +1,63 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import RiskComfort from "../components/RiskComfort";
+import { topics, type RiskLevel } from "../data";
+import { getCachedPreferences, getPreferences, getSessionToken, isAuthApiConfigured, savePreferences } from "../api/auth";
 
-type TopicProps = {
-  topics: Array<string>;
-};
+export default function Setup() {
+  const [selected, setSelected] = useState<string[]>(() => getCachedPreferences()?.sectors ?? []);
+  const [risk, setRisk] = useState<RiskLevel | "">(() => getCachedPreferences()?.risk_level ?? "");
+  const [isSaving, setIsSaving] = useState(false);
+  const [apiError, setApiError] = useState("");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isEditing = Boolean(location.state?.returnToSettings);
+  const canContinue = selected.length > 0 && Boolean(risk);
 
-function AddInterest(
-  topic: string,
-  setInterests: React.Dispatch<React.SetStateAction<string[]>>,
-) {
-  setInterests((prev) => [...prev, topic]);
-}
+  useEffect(() => {
+    if (!isAuthApiConfigured() || !getSessionToken()) return;
+    getPreferences().then((preferences) => {
+      setSelected(preferences.sectors);
+      setRisk(preferences.risk_level ?? "");
+    }).catch(() => setApiError("Unable to load your saved preferences."));
+  }, []);
 
-export default function Setup({ topics }: TopicProps) {
-  const [, setInterests] = useState<string[]>([]);
-  return (
-    <div className="flex-col w-[1126px] mx-auto">
-      <h1 className="text-[56px] tracking-[-1.68px] mb-5">
-        What Interests You
-      </h1>
-      <div className="grid grid-cols-5 gap-2">
-        {topics.map((t) => (
-          <button
-            className="border rounded-md h-15 cursor-pointer hover:bg-sky-700"
-            key={t}
-            value={t}
-            onClick={(e) => {
-              AddInterest(e.currentTarget.value, setInterests);
-            }}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-      <h1 className="text-[56px] tracking-[-1.68px] my-5">Risk Comfort</h1>
-      <div className="flex flex-row text-xl justify-around mb-5">
-        <label className="flex items-center gap-3">
-          <input type="radio" name="risk" value="low" className="h-4 w-4" />
-          Low
-        </label>
+  useEffect(() => {
+    if (location.hash === "#risk-comfort") {
+      document.getElementById("risk-comfort")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [location.hash]);
 
-        <label className="flex items-center gap-2">
-          <input type="radio" name="risk" value="medium" className="h-4 w-4" />
-          Medium
-        </label>
+  const handleContinue = async () => {
+    setApiError("");
+    setIsSaving(true);
+    try {
+      if (isAuthApiConfigured() && getSessionToken()) {
+        await savePreferences({ sectors: selected, risk_level: risk || null });
+      }
+      navigate("/confirmation", { state: { sectors: selected, risk } });
+    } catch {
+      setApiError("Unable to save your preferences. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
-        <label className="flex items-center gap-2">
-          <input type="radio" name="risk" value="high" className="h-4 w-4" />
-          High
-        </label>
-      </div>
-      <div className="flex justify-end">
-        <button
-          className="flex h-12 w-12 items-center justify-center rounded-full
-             border border-white text-2xl
-             hover:bg-white/20 cursor-pointer"
-        >
-          →
-        </button>
-      </div>
-    </div>
-  );
+  const handleSkip = async () => {
+    if (isEditing) { navigate("/settings"); return; }
+    setApiError("");
+    setIsSaving(true);
+    try {
+      if (isAuthApiConfigured() && getSessionToken()) {
+        await savePreferences({ sectors: [], risk_level: null });
+      }
+      navigate("/");
+    } catch {
+      setApiError("Unable to clear your preferences. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return <div className="onboarding-page setup-page"><main className="setup-panel"><section><h1>What Interests You</h1><p className="setup-section-copy">Select the industries you want to follow:</p><div className="interest-grid">{topics.map((topic) => <button key={topic} type="button" className={`interest-option ${selected.includes(topic) ? "selected" : ""}`} onClick={() => setSelected((current) => current.includes(topic) ? current.filter((item) => item !== topic) : [...current, topic])}>{topic}</button>)}</div></section><section className="risk-section" id="risk-comfort"><h2>Risk Comfort</h2><p className="setup-section-copy">Choose your investment style:</p><RiskComfort value={risk} onChange={setRisk} /></section></main>{apiError && <p className="auth-error setup-api-error" role="alert">{apiError}</p>}<div className="onboarding-actions"><button className="onboarding-skip" type="button" onClick={handleSkip} disabled={isSaving}>{isEditing ? "Cancel" : "Skip for now"}</button><button className="btn-primary onboarding-continue" type="button" disabled={!canContinue || isSaving} onClick={handleContinue}>{isSaving ? "Saving..." : "Continue to Confirmation"}</button></div></div>;
 }

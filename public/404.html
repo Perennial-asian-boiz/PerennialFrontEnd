@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Perennial</title>
+    <script>
+      const base = "/PerennialFrontEnd/";
+      const route = location.pathname.startsWith(base)
+        ? location.pathname.slice(base.length)
+        : "";
+      location.replace(`${base}?p=${encodeURIComponent(route + location.search)}${location.hash}`);
+    </script>
+  </head>
+  <body></body>
+</html>
