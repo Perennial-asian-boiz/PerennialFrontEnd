@@ -1,4 +1,4 @@
-import { dashboardPayload, type DashboardBucket, type DashboardPayload } from "../dashboardData";
+import { emptyDashboardPayload, type DashboardBucket, type DashboardPayload } from "../dashboardData";
 import type { Company } from "../data";
 
 /**
@@ -61,12 +61,13 @@ function getApiUrl() {
 }
 
 /**
- * Loads the backend dashboard data when VITE_API_URL is configured.
- * Without an API URL, the local fixture remains the development fallback.
+ * Loads backend dashboard data when VITE_API_URL is configured. With no API
+ * URL, return empty buckets so the UI can show placeholders instead of sample
+ * market data that might be mistaken for live data.
  */
 export async function loadDashboardPayload(signal?: AbortSignal): Promise<DashboardPayload> {
   const apiUrl = getApiUrl();
-  if (!apiUrl) return dashboardPayload;
+  if (!apiUrl) return emptyDashboardPayload;
 
   const response = await fetch(apiUrl, { signal });
   if (!response.ok) throw new Error(`Dashboard API returned ${response.status}`);

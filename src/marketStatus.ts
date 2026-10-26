@@ -1,42 +1,30 @@
-/**
- * Temporary market-hours adapter.
- *
- * Keep exchange rules here until the backend provides a live market-status
- * payload. The Dashboard only consumes getMarketStatus(), so replacing this
- * calculation with an API response will not require UI changes.
- */
-export const marketSchedule = {
-  exchange: "NYSE",
-  timezone: "America/New_York",
-  openMinutes: 9 * 60 + 30,
-  closeMinutes: 16 * 60,
-  tradingDays: [1, 2, 3, 4, 5] as readonly number[],
-} as const;
+/** Backend market status contract from GET /v1/market-status. */
+export type MarketStatus = {
+  exchange: string;
+  is_open: boolean;
+  label: string;
+  session: "regular" | "closed";
+  note: string;
+  as_of: string;
+  next_open: string;
+  next_close: string;
+  early_close: boolean;
+};
 
-type MarketTimeParts = { weekday: number; hour: number; minute: number };
+export async function loadMarketStatus(signal?: AbortSignal): Promise<MarketStatus | null> {
+  const baseUrl = import.meta.env.VITE_API_URL?.trim();
+  if (!baseUrl) return null;
 
-function getMarketTimeParts(date: Date): MarketTimeParts {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: marketSchedule.timezone,
-    weekday: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(date);
-  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
-  const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(values.weekday);
-  const hour = Number(values.hour) === 24 ? 0 : Number(values.hour);
-  return { weekday, hour, minute: Number(values.minute) };
-}
+  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/v1/market-status`, { signal });
+  if (!response.ok) throw new Error(`Market status API returned ${response.status}`);
 
-export function getMarketStatus(date = new Date()) {
-  const { weekday, hour, minute } = getMarketTimeParts(date);
-  const currentMinutes = hour * 60 + minute;
-  const isOpen = marketSchedule.tradingDays.includes(weekday) && currentMinutes >= marketSchedule.openMinutes && currentMinutes < marketSchedule.closeMinutes;
-
-  return {
-    exchange: marketSchedule.exchange,
-    isOpen,
-    label: isOpen ? "Market Open" : "Market Closed",
-  };
+  const payload = await response.json() as Partial<MarketStatus>;
+  if (
+    typeof payload.exchange !== "string"
+    || typeof payload.is_open !== "boolean"
+    || typeof payload.label !== "string"
+  ) {
+    throw new Error("Market status API returned an invalid response.");
+  }
+  return payload as MarketStatus;
 }
