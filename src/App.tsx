@@ -36,6 +36,7 @@ function App() {
     <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "") || "/"}>
       <WatchlistProvider><Routes>
         <Route path="/" element={<Protected><Dashboard /></Protected>} />
+        <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
         <Route path="/dashboard-preview" element={<LocalPreview><Dashboard /></LocalPreview>} />
         <Route path="/setup-preview" element={<LocalPreview><Setup /></LocalPreview>} />
         <Route path="/login" element={<Login />} />
@@ -57,6 +58,7 @@ function App() {
         <Route path="/company/:symbol" element={<Protected><CompanySummary /></Protected>} />
         <Route path="/why" element={<Protected><WhyCompany /></Protected>} />
         <Route path="/settings" element={<Protected><Settings /></Protected>} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes></WatchlistProvider>
     </BrowserRouter>
   );
