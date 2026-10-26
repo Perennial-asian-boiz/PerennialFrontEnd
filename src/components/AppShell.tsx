@@ -92,7 +92,7 @@ export default function AppShell({ children, title, subtitle, headerActions, hid
   const selectSearchResult = (company: Company) => {
     setQuery(company.ticker);
     setIsSearchOpen(false);
-    navigate("/");
+    navigate(`/company/${encodeURIComponent(company.ticker)}`);
   };
 
   const handleLogout = () => {

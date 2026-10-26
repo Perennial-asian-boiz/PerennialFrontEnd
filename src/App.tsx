@@ -53,6 +53,7 @@ function App() {
         <Route path="/insights" element={<Protected><Insights /></Protected>} />
         <Route path="/watchlist" element={<Protected><Watchlist /></Protected>} />
         <Route path="/company" element={<Protected><Company /></Protected>} />
+        <Route path="/company/:symbol" element={<Protected><Company /></Protected>} />
         <Route path="/why" element={<Protected><WhyCompany /></Protected>} />
         <Route path="/settings" element={<Protected><Settings /></Protected>} />
       </Routes></WatchlistProvider>
