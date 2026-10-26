@@ -11,6 +11,20 @@ export type MarketStatus = {
   early_close: boolean;
 };
 
+export function formatNextMarketOpen(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/New_York",
+    timeZoneName: "short",
+  }).format(date);
+}
+
 export async function loadMarketStatus(signal?: AbortSignal): Promise<MarketStatus | null> {
   const baseUrl = import.meta.env.VITE_API_URL?.trim();
   if (!baseUrl) return null;

@@ -99,9 +99,7 @@ export const dashboardPayload: DashboardPayload = {
 export const dashboardCompanies = [...dashboardPayload.affordable_growing, ...dashboardPayload.popular_stable].filter((company, index, companies) => companies.findIndex((item) => item.ticker === company.ticker) === index);
 
 export function getDashboardSections(payload: DashboardPayload, selectedSectors: string[], bucket: DashboardBucket) {
-  const sectors = selectedSectors.length > 0 ? selectedSectors : topics;
-
-  return sectors.map((name) => ({
+  return selectedSectors.map((name) => ({
     name,
     items: payload[bucket].filter((company) => company.sector === name),
   }));

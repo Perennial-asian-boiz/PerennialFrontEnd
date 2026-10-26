@@ -1,6 +1,63 @@
-import { useState } from "react";
-import AppShell, { CompanyBadge, ScoreRing, Toast } from "../components/AppShell";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { loadSecurityDetails, type SecurityDetails } from "../api/company";
+import AppShell, { CompanyBadge, Toast } from "../components/AppShell";
 import { useWatchlist } from "../components/watchlistStore";
-import { companies } from "../data";
 
-export default function Company() { const company = companies[0]; const [toast, setToast] = useState<"success" | "error" | null>(null); const { isWatched, add } = useWatchlist(); return <AppShell title="Company details" subtitle="A clearer view of what may be driving the score."><div className="company-header"><div className="company-title"><CompanyBadge company={company}/><div><h2>{company.name}</h2><p>{company.sector} · NASDAQ</p></div></div>{!isWatched(company.ticker) && <button className="btn-primary" onClick={() => { add(company.ticker); setToast("success"); }}>＋ Add to watchlist</button>}</div><div className="page-grid"><div><div className="panel score-card"><ScoreRing score={company.score}/><div><span className="eyebrow">Perennial confidence score</span><h2 style={{ margin: "8px 0 5px", fontSize: 22 }}>Strong long-term signal</h2><p style={{ margin: 0, color: "#78877d", fontSize: 13, lineHeight: 1.55 }}>The score combines company fundamentals, recent momentum, and the tone of current coverage.</p></div></div><div className="section-heading"><h2>What is driving this score?</h2></div><div className="panel"><ul className="reason-list"><li>AI infrastructure demand continues to support revenue growth.</li><li>Recent earnings signals remain stronger than the sector average.</li><li>Valuation is elevated, so volatility is still worth monitoring.</li></ul></div></div><div><div className="section-heading"><h2>Price snapshot</h2></div><div className="stats-card"><div className="metric-row"><div><div className="metric-label">Current price</div><div className="metric-value">$184.92</div></div><span className="metric-positive">{company.change}</span></div><div className="metric-row"><div><div className="metric-label">52-week range</div><div className="metric-value" style={{ fontSize: 16 }}>$75.61 — $195.95</div></div></div><div className="metric-row"><div><div className="metric-label">Market sentiment</div><div className="metric-value" style={{ fontSize: 16 }}>Positive</div></div></div></div></div></div><div className="section-heading"><h2>Recent sentiment</h2><a href="/why">Why this company?</a></div><div className="panel"><p style={{ margin: 0, color: "#78877d", fontSize: 13 }}>News, analyst coverage, and market movement are currently aligned in a positive direction. This is educational context, not financial advice.</p></div>{toast && <Toast type={toast} message="Successfully added to your Watchlist" onDone={() => setToast(null)} />}</AppShell>; }
+export default function Company() {
+  const { symbol: routeSymbol } = useParams<{ symbol: string }>();
+  const symbol = routeSymbol?.trim().toUpperCase() ?? "";
+  const [result, setResult] = useState<{ symbol: string; security: SecurityDetails | null; error: string }>({
+    symbol: "",
+    security: null,
+    error: "",
+  });
+  const [toast, setToast] = useState<"success" | null>(null);
+  const { isWatched, add } = useWatchlist();
+
+  useEffect(() => {
+    if (!symbol) return;
+
+    const controller = new AbortController();
+    loadSecurityDetails(symbol, controller.signal).then((security) => {
+      setResult({ symbol, security, error: "" });
+    }).catch((caught: unknown) => {
+      if (caught instanceof DOMException && caught.name === "AbortError") return;
+      setResult({
+        symbol,
+        security: null,
+        error: caught instanceof Error && caught.message.includes("404")
+          ? "Company details are not available for this ticker yet."
+          : "Unable to load company details. Please try again.",
+      });
+    });
+
+    return () => controller.abort();
+  }, [symbol]);
+
+  const resultIsCurrent = result.symbol === symbol;
+  const security = resultIsCurrent ? result.security : null;
+  const error = resultIsCurrent ? result.error : "";
+  const loading = Boolean(symbol) && !resultIsCurrent;
+  const name = security?.name || security?.symbol || symbol;
+
+  return <AppShell title="Company details" subtitle="Company information from the Perennial API.">
+    {!symbol ? <p className="auth-muted-line" role="status">Search for a company to view its details.</p> : loading ? <p className="auth-muted-line" role="status">Loading company details…</p> : error ? <p className="auth-error" role="alert">{error}</p> : security && <>
+      <div className="company-header">
+        <div className="company-title">
+          <CompanyBadge company={{ name, ticker: security.symbol }} />
+          <div><h2>{name}</h2><p>{security.symbol} · {security.sector ?? "Sector unavailable"}</p></div>
+        </div>
+        {!isWatched(security.symbol) && <button className="btn-primary" onClick={() => { add(security.symbol); setToast("success"); }}>＋ Add to watchlist</button>}
+      </div>
+      <div className="section-heading"><h2>Company summary</h2></div>
+      <div className="panel">
+        {security.summary ? <>
+          <p className="company-summary-text">{security.summary.text}</p>
+          <a className="company-summary-source" href={security.summary.source.url} target="_blank" rel="noreferrer">Source: {security.summary.source.name}</a>
+        </> : <p className="auth-muted-line" role="status">Summary not available</p>}
+      </div>
+    </>}
+    {toast && <Toast type="success" message="Successfully added to your Watchlist" onDone={() => setToast(null)} />}
+  </AppShell>;
+}

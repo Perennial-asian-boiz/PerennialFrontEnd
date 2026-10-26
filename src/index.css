@@ -431,3 +431,9 @@ button, input { font: inherit; } button { cursor: pointer; }
   .auth-shell.account-created-shell { padding: 24px 18px; }
   .account-created-shell .account-created-card { gap: 20px; padding: 26px 20px; }
 }
+
+.market-status { display: grid; gap: 4px; }
+.market-status > span { display: flex; align-items: center; gap: 7px; }
+.market-status small { font-size: 9px; font-weight: 500; line-height: 1.4; }
+.company-summary-text { margin: 0 0 12px; color: #526359; font-size: 14px; line-height: 1.65; }
+.company-summary-source { color: #347b4c; font-size: 12px; font-weight: 700; }

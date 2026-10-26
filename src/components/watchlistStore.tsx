@@ -3,19 +3,27 @@ import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { addToWatchlist, getSessionToken, getWatchlist, isAuthApiConfigured, isRecoverySession, removeFromWatchlist } from "../api/auth";
 
-type WatchlistContextValue = { isWatched: (ticker: string) => boolean; add: (ticker: string) => void; remove: (ticker: string) => void };
+type WatchlistContextValue = { tickers: string[]; loading: boolean; isWatched: (ticker: string) => boolean; add: (ticker: string) => void; remove: (ticker: string) => void };
 const WatchlistContext = createContext<WatchlistContextValue | null>(null);
 
 export function WatchlistProvider({ children }: { children: ReactNode }) {
   const [tickers, setTickers] = useState<string[]>([]);
+  const [loading, setLoading] = useState(() => (
+    isAuthApiConfigured() && Boolean(getSessionToken()) && !isRecoverySession()
+  ));
 
   useEffect(() => {
     const loadWatchlist = () => {
       if (!isAuthApiConfigured() || !getSessionToken() || isRecoverySession()) {
         setTickers([]);
+        setLoading(false);
         return;
       }
-      getWatchlist().then((items) => setTickers(items.map((item) => item.ticker))).catch(() => setTickers([]));
+      setLoading(true);
+      getWatchlist()
+        .then((items) => setTickers(items.map((item) => item.ticker)))
+        .catch(() => setTickers([]))
+        .finally(() => setLoading(false));
     };
     loadWatchlist();
     window.addEventListener("perennial-auth-changed", loadWatchlist);
@@ -23,6 +31,8 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = {
+    tickers,
+    loading,
     isWatched: (ticker: string) => tickers.includes(ticker),
     add: (ticker: string) => {
       if (tickers.includes(ticker)) return;
