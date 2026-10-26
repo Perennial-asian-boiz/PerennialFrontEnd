@@ -28,3 +28,17 @@ export async function loadMarketStatus(signal?: AbortSignal): Promise<MarketStat
   }
   return payload as MarketStatus;
 }
+
+/** Formats an ISO time from the API in Eastern time, whatever the viewer's zone. */
+export function formatMarketTime(iso: string): string {
+  const time = new Date(iso);
+  if (Number.isNaN(time.getTime())) return "";
+  return `${time.toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", minute: "2-digit" })} ET`;
+}
+
+const EXCHANGE_NAMES: Record<string, string> = { XNYS: "NYSE" };
+
+/** The commonly known name for the API's exchange code (XNYS -> NYSE). */
+export function exchangeName(code: string): string {
+  return EXCHANGE_NAMES[code] ?? code;
+}
