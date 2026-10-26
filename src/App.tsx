@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import type { ReactNode } from "react";
 import Company from "./pages/Company";
+import CompanySummary from "./pages/CompanySummary";
 import Confirmation from "./pages/Confirmation";
 import AccountCreated from "./pages/AccountCreated";
 import AccessGranted from "./pages/AccessGranted";
@@ -53,6 +54,7 @@ function App() {
         <Route path="/insights" element={<Protected><Insights /></Protected>} />
         <Route path="/watchlist" element={<Protected><Watchlist /></Protected>} />
         <Route path="/company" element={<Protected><Company /></Protected>} />
+        <Route path="/company/:symbol" element={<Protected><CompanySummary /></Protected>} />
         <Route path="/why" element={<Protected><WhyCompany /></Protected>} />
         <Route path="/settings" element={<Protected><Settings /></Protected>} />
       </Routes></WatchlistProvider>
