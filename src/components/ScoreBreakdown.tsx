@@ -14,6 +14,21 @@ const UNAVAILABLE_REASONS: Record<string, string> = {
 
 const percent = (weight: number) => `${(weight * 100).toFixed(2)}%`;
 
+// When the scores batch was promoted, in the market's time zone like the page's other dates.
+function formatAsOf(value: string | null) {
+  const date = value ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/New_York",
+    timeZoneName: "short",
+  }).format(date);
+}
+
 export default function ScoreBreakdown({ symbol }: { symbol: string }) {
   const [result, setResult] = useState<{ symbol: string; response: ScoreResponse | null; error: unknown }>({
     symbol: "",
@@ -56,6 +71,7 @@ export default function ScoreBreakdown({ symbol }: { symbol: string }) {
 function BreakdownTable({ score }: { score: Score }) {
   const rows = breakdownRows(score);
   const total = contributionTotal(score);
+  const asOf = formatAsOf(score.as_of);
 
   return <div className="table-wrap">
     <table className="data-table score-breakdown-table">
@@ -90,6 +106,13 @@ function BreakdownTable({ score }: { score: Score }) {
             {total.consistent
               ? `Score ${score.value.toFixed(1)} (contributions are rounded to 0.01)`
               : `Doesn't match the score of ${score.value.toFixed(1)}`}
+          </td>
+        </tr>
+        <tr>
+          <td colSpan={6} className="score-breakdown-sum">
+            {[score.score_version, asOf && `as of ${asOf}`]
+              .filter(Boolean)
+              .join(" · ")}
           </td>
         </tr>
       </tfoot>}
