@@ -437,3 +437,9 @@ button, input { font: inherit; } button { cursor: pointer; }
 .market-status small { font-size: 9px; font-weight: 500; line-height: 1.4; }
 .company-summary-text { margin: 0 0 12px; color: #526359; font-size: 14px; line-height: 1.65; }
 .company-summary-source { color: #347b4c; font-size: 12px; font-weight: 700; }
+.score-breakdown { min-height: 236px; }
+.score-breakdown-table th[scope="row"] { color: #26372d; font-size: 13px; font-weight: 700; text-transform: none; letter-spacing: 0; padding: 15px 13px 15px 0; border-top: 1px solid #edf1ed; }
+.score-breakdown-table tfoot td, .score-breakdown-table tfoot th[scope="row"] { font-weight: 700; }
+.score-breakdown-note { color: #7d8c82; font-style: italic; }
+.score-breakdown-sum { color: #7d8c82; font-size: 12px; }
+.score-breakdown-unavailable { margin: 0 0 6px; color: #26372d; font-size: 16px; font-weight: 700; }
