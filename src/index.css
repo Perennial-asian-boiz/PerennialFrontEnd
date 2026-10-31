@@ -443,3 +443,4 @@ button, input { font: inherit; } button { cursor: pointer; }
 .score-breakdown-note { color: #7d8c82; font-style: italic; }
 .score-breakdown-sum { color: #7d8c82; font-size: 12px; }
 .score-breakdown-unavailable { margin: 0 0 6px; color: #26372d; font-size: 16px; font-weight: 700; }
+.score-card-caption { margin: 0 0 8px; color: #526359; font-size: 14px; line-height: 1.6; }
