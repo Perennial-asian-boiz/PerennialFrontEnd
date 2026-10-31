@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { loadSecurityDetails, type SecurityDetails } from "../api/company";
-import AppShell, { CompanyBadge, Toast } from "../components/AppShell";
+import AppShell, { Toast } from "../components/AppShell";
 import { useWatchlist } from "../components/watchlistStore";
 
 export default function Company() {
+  const navigate = useNavigate();
   const { symbol: routeSymbol } = useParams<{ symbol: string }>();
   const symbol = routeSymbol?.trim().toUpperCase() ?? "";
   const [result, setResult] = useState<{ symbol: string; security: SecurityDetails | null; error: string }>({
@@ -40,16 +41,23 @@ export default function Company() {
   const error = resultIsCurrent ? result.error : "";
   const loading = Boolean(symbol) && !resultIsCurrent;
   const name = security?.name || security?.symbol || symbol;
+  const goBack = () => {
+    const historyIndex = window.history.state?.idx;
+    if (typeof historyIndex === "number" && historyIndex > 0) navigate(-1);
+    else navigate("/");
+  };
 
-  return <AppShell title="Company details" subtitle="Company information from the Perennial API.">
-    {!symbol ? <p className="auth-muted-line" role="status">Search for a company to view its details.</p> : loading ? <p className="auth-muted-line" role="status">Loading company details…</p> : error ? <p className="auth-error" role="alert">{error}</p> : security && <>
-      <div className="company-header">
-        <div className="company-title">
-          <CompanyBadge company={{ name, ticker: security.symbol }} />
-          <div><h2>{name}</h2><p>{security.symbol} · {security.sector ?? "Sector unavailable"}</p></div>
-        </div>
-        {!isWatched(security.symbol) && <button className="btn-primary" onClick={() => { add(security.symbol); setToast("success"); }}>＋ Add to watchlist</button>}
+  return <AppShell title="Company details" subtitle="Company information from the Perennial API." hidePageHeading>
+    <div className="company-detail-topline">
+      <button className="company-back-button" type="button" onClick={goBack}>Back</button>
+      <span className="company-detail-divider" aria-hidden="true" />
+      <div className="company-detail-identity">
+        <h1>{security ? name : symbol || "Company details"}</h1>
+        {security && <><span className="company-detail-chip">{security.symbol}</span><span className="company-detail-chip company-detail-sector">{security.sector ?? "Sector unavailable"}</span></>}
       </div>
+      {security && !isWatched(security.symbol) && <button className="btn-primary company-detail-watch" onClick={() => { add(security.symbol); setToast("success"); }}>＋ Add to watchlist</button>}
+    </div>
+    {!symbol ? <p className="auth-muted-line" role="status">Search for a company to view its details.</p> : loading ? <p className="auth-muted-line" role="status">Loading company details…</p> : error ? <p className="auth-error" role="alert">{error}</p> : security && <>
       <div className="section-heading"><h2>Company summary</h2></div>
       <div className="panel">
         {security.summary ? <>
