@@ -445,3 +445,21 @@ button, input { font: inherit; } button { cursor: pointer; }
 .watchlist-company-link:focus-visible { border-radius: 4px; outline: 2px solid #347b4c; outline-offset: 3px; }
 .market-company-row, .watchlist-company-row { cursor: pointer; }
 .market-company-row:hover td, .watchlist-company-row:hover td { background: #f8fbf7; }
+
+.company-detail-topline { display: flex; align-items: center; gap: 14px; min-height: 42px; margin-bottom: 22px; }
+.company-back-button { padding: 6px 13px; border: 0; border-radius: 5px; background: #16823d; color: #fff; font-size: 12px; font-weight: 700; line-height: 1.2; cursor: pointer; transition: background-color 140ms ease, box-shadow 140ms ease; }
+.company-back-button:hover { background: #116c32; }
+.company-back-button:focus-visible { outline: 2px solid #16823d; outline-offset: 3px; }
+.company-detail-divider { width: 1px; height: 24px; flex: 0 0 1px; background: #e4e9e4; }
+.company-detail-identity { display: flex; min-width: 0; align-items: center; gap: 8px; }
+.company-detail-identity h1 { margin: 0 6px 0 0; overflow: hidden; color: #17231c; font-size: 20px; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
+.company-detail-chip { padding: 3px 8px; border-radius: 99px; background: #edf4f2; color: #51685c; font-size: 10px; font-weight: 700; white-space: nowrap; }
+.company-detail-sector { background: #eaf3fc; color: #4778a5; }
+.company-detail-watch { margin-left: auto; white-space: nowrap; }
+
+@media (max-width: 650px) {
+  .company-detail-topline { flex-wrap: wrap; gap: 10px; }
+  .company-detail-identity { flex-wrap: wrap; }
+  .company-detail-identity h1 { max-width: 100%; font-size: 18px; }
+  .company-detail-watch { margin-left: 0; }
+}
