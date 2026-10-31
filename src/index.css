@@ -451,3 +451,4 @@ button, input { font: inherit; } button { cursor: pointer; }
 .why-claim-source dt { color: #7d8c82; }
 .why-claim-source dd { margin: 0; overflow-wrap: anywhere; }
 .why-stamp { margin: 12px 0 0; }
+.why-detail { margin: 0; color: #526359; font-size: 14px; line-height: 1.5; }

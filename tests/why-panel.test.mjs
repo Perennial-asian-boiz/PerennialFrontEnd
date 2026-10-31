@@ -130,6 +130,23 @@ test("an unavailable score has no explanation", () => {
   assert.match(html, /because the score is unavailable/);
 });
 
+// ── the heading never contradicts the panel ──────────────
+
+const heading = (html) => html.match(/id="why-panel-heading">([^<]*)</)[1];
+
+test("only a panel with claims is headed \"Why Perennial recommends it\"", () => {
+  assert.equal(heading(panel(recommended([claim(1, "Supported by fundamentals.")]))), "Why Perennial recommends it");
+  for (const html of [
+    panel(withExplanation({ status: "not_recommended", template_version: "explain-v1", claims: [] })),
+    panel(withExplanation({ status: "unavailable", reason: "insufficient_supporting_data", claims: [] })),
+    panel(recommended([claim(1, "About event exposure.", "event_exposure")])),
+    panel(null),
+    panel(null, new api.ScoreApiError("Score API returned 500", 500, "internal_error")),
+  ]) {
+    assert.equal(heading(html), "Recommendation");
+  }
+});
+
 // ── the other states ─────────────────────────────────────
 
 test("loading, an unknown company and a failed request show no claims", () => {
