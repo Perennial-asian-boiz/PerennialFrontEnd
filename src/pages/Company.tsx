@@ -49,15 +49,18 @@ export default function Company() {
 
   return <AppShell title="Company details" subtitle="Company information from the Perennial API." hidePageHeading>
     <div className="company-detail-topline">
-      <button className="company-back-button" type="button" onClick={goBack}>Back</button>
+      <button className="btn-primary company-back-button" type="button" onClick={goBack}>Back</button>
       <span className="company-detail-divider" aria-hidden="true" />
       <div className="company-detail-identity">
         <h1>{security ? name : symbol || "Company details"}</h1>
         {security && <><span className="company-detail-chip">{security.symbol}</span><span className="company-detail-chip company-detail-sector">{security.sector ?? "Sector unavailable"}</span></>}
       </div>
-      {security && !isWatched(security.symbol) && <button className="btn-primary company-detail-watch" onClick={() => { add(security.symbol); setToast("success"); }}>＋ Add to watchlist</button>}
+      {loading ? <span className="loading-bar company-watch-loading" aria-hidden="true" /> : security && !isWatched(security.symbol) && <button className="btn-primary company-detail-watch" onClick={() => { add(security.symbol); setToast("success"); }}>＋ Add to watchlist</button>}
     </div>
-    {!symbol ? <p className="auth-muted-line" role="status">Search for a company to view its details.</p> : loading ? <p className="auth-muted-line" role="status">Loading company details…</p> : error ? <p className="auth-error" role="alert">{error}</p> : security && <>
+    {!symbol ? <p className="auth-muted-line" role="status">Search for a company to view its details.</p> : loading ? <div className="company-loading" role="status" aria-label={`Loading ${symbol} company details`}>
+      <div className="section-heading"><span className="loading-bar company-loading-heading" /></div>
+      <div className="panel company-loading-panel"><span className="loading-bar company-loading-line" /><span className="loading-bar company-loading-line company-loading-line-short" /><span className="loading-bar company-loading-source" /></div>
+    </div> : error ? <p className="auth-error" role="alert">{error}</p> : security && <>
       <div className="section-heading"><h2>Company summary</h2></div>
       <div className="panel">
         {security.summary ? <>

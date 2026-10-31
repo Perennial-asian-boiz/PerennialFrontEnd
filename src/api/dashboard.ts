@@ -26,6 +26,10 @@ export type DashboardApiResponse = {
   popular_stable: DashboardApiCompany[];
 };
 
+const DASHBOARD_CACHE_TTL_MS = 30_000;
+const dashboardCache = new Map<string, { payload: DashboardPayload; cachedAt: number }>();
+const pendingDashboardRequests = new Map<string, Promise<DashboardPayload>>();
+
 function formatPrice(value: number | null) {
   return value === null ? "—" : `$${value.toFixed(2)}`;
 }
@@ -69,11 +73,37 @@ export async function loadDashboardPayload(signal?: AbortSignal): Promise<Dashbo
   const apiUrl = getApiUrl();
   if (!apiUrl) return emptyDashboardPayload;
 
-  const response = await fetch(apiUrl, { signal });
-  if (!response.ok) throw new Error(`Dashboard API returned ${response.status}`);
+  if (signal?.aborted) throw new DOMException("The request was aborted.", "AbortError");
 
-  const payload = await response.json() as DashboardApiResponse;
-  return toDashboardPayload(payload);
+  const cached = dashboardCache.get(apiUrl);
+  if (cached && Date.now() - cached.cachedAt < DASHBOARD_CACHE_TTL_MS) return cached.payload;
+
+  let request = pendingDashboardRequests.get(apiUrl);
+  if (!request) {
+    request = fetch(apiUrl).then(async (response) => {
+      if (!response.ok) throw new Error(`Dashboard API returned ${response.status}`);
+      const payload = toDashboardPayload(await response.json() as DashboardApiResponse);
+      dashboardCache.set(apiUrl, { payload, cachedAt: Date.now() });
+      return payload;
+    }).finally(() => pendingDashboardRequests.delete(apiUrl));
+    pendingDashboardRequests.set(apiUrl, request);
+  }
+
+  if (!signal) return request;
+  return new Promise((resolve, reject) => {
+    const abort = () => {
+      signal.removeEventListener("abort", abort);
+      reject(new DOMException("The request was aborted.", "AbortError"));
+    };
+    signal.addEventListener("abort", abort, { once: true });
+    request!.then((payload) => {
+      signal.removeEventListener("abort", abort);
+      resolve(payload);
+    }, (error: unknown) => {
+      signal.removeEventListener("abort", abort);
+      reject(error);
+    });
+  });
 }
 
 export const dashboardBuckets: DashboardBucket[] = ["affordable_growing", "popular_stable"];
