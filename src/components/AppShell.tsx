@@ -121,7 +121,7 @@ export default function AppShell({ children, title, subtitle, headerActions, hid
 
 export function AuthShell({ children, className = "" }: { children: ReactNode; className?: string }) { return <div className={`auth-shell ${className}`.trim()}><div className="auth-brand"><PerennialLogo /></div>{children}<p className="auth-footer">© 2026 Perennial · Built for better-informed decisions</p></div>; }
 
-export function ScoreRing({ score }: { score: number }) { return <div className="score-ring" style={{ "--score": `${score * 3.6}deg` } as CSSProperties}><div><strong>{score}</strong><span>/ 100</span></div></div>; }
+export function ScoreRing({ score, label }: { score: number; label?: string }) { return <div className="score-ring" style={{ "--score": `${score * 3.6}deg` } as CSSProperties}><div><strong>{label ?? score}</strong><span>/ 100</span></div></div>; }
 
 export function CompanyBadge({ company }: { company: { name: string; ticker: string } }) { return <div className="company-badge"><span className={`company-logo logo-${company.ticker.toLowerCase()}`}>{company.ticker.slice(0, 1)}</span><span><strong>{company.name}</strong><small>{company.ticker}</small></span></div>; }
 

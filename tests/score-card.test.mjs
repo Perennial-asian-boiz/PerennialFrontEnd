@@ -13,7 +13,7 @@ import ts from "typescript";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const env = JSON.stringify({ VITE_API_URL: "http://test.invalid" });
 const STUBS = {
-  "./AppShell": "export function ScoreRing({ score }) { return `ring:${score}`; }",
+  "./AppShell": "export function ScoreRing({ score, label }) { return `ring:${label ?? score}`; }",
 };
 let outDir;
 const compiled = new Map();
@@ -122,8 +122,14 @@ test("the stamp is the version and the as-of in New York time", () => {
 
 test("a score of 0 is shown as 0, not as unavailable", () => {
   const html = card({ ...full, score: { ...full.score, value: 0 } });
-  assert.match(html, /ring:0/);
+  assert.match(html, /ring:0\.0/);
   assert.match(html, /Confidence Score 0\.0 out of 100/);
+});
+
+test("a whole-number score keeps its decimal, as the breakdown shows it", () => {
+  const html = card({ ...full, score: { ...full.score, value: 66 } });
+  assert.match(html, /ring:66\.0/);
+  assert.match(html, /Confidence Score 66\.0 out of 100/);
 });
 
 // ── AC4: "Score unavailable", never an invented score ────

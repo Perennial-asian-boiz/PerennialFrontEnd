@@ -17,7 +17,7 @@ export default function ScoreCard({ state }: { state: ScoreState }) {
       </div>}
       {state.kind === "scored" && state.score.value !== null && <div className="score-card">
         <div role="img" aria-label={`Confidence Score ${state.score.value.toFixed(1)} out of 100`}>
-          <ScoreRing score={state.score.value} />
+          <ScoreRing score={state.score.value} label={state.score.value.toFixed(1)} />
         </div>
         <div>
           <p className="score-card-caption">Combines the company's financial reports with recent news and social sentiment.</p>
