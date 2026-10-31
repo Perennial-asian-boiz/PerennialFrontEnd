@@ -444,6 +444,14 @@ button, input { font: inherit; } button { cursor: pointer; }
 .score-breakdown-sum { color: #7d8c82; font-size: 12px; }
 .score-breakdown-unavailable { margin: 0 0 6px; color: #26372d; font-size: 16px; font-weight: 700; }
 .score-card-caption { margin: 0 0 8px; color: #526359; font-size: 14px; line-height: 1.6; }
+.why-claims li { align-items: flex-start; }
+.why-claim-text { margin: 0 0 4px; color: #26372d; font-size: 14px; line-height: 1.5; }
+.why-claim-source summary { color: #7d8c82; font-size: 12px; cursor: pointer; }
+.why-claim-source dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 8px 0 0; color: #526359; font-size: 12px; }
+.why-claim-source dt { color: #7d8c82; }
+.why-claim-source dd { margin: 0; overflow-wrap: anywhere; }
+.why-stamp { margin: 12px 0 0; }
+.why-detail { margin: 0; color: #526359; font-size: 14px; line-height: 1.5; }
 .market-company-link { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .market-company-link:hover strong { color: #347b4c; text-decoration: underline; text-underline-offset: 2px; }
 .market-company-link:focus-visible { border-radius: 3px; outline: 2px solid #347b4c; outline-offset: 3px; }
