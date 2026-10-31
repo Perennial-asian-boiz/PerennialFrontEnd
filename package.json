@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "test": "node --test tests/auth.test.mjs tests/score.test.mjs tests/score-card.test.mjs",
+    "test": "node --test tests/auth.test.mjs tests/score.test.mjs tests/score-card.test.mjs tests/why-panel.test.mjs",
     "preview": "vite preview",
     "mock-api": "node scripts/mock-api.mjs"
   },

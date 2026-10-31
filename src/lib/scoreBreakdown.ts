@@ -13,6 +13,11 @@ const LABELS: Record<string, string> = {
   event_exposure: "Event exposure",
 };
 
+// A component's name as the breakdown shows it; the why-panel (S2-03) cites it the same way.
+export function componentLabel(name: string): string {
+  return LABELS[name] ?? name.replaceAll("_", " ");
+}
+
 export type BreakdownRow = {
   name: string;
   label: string;
@@ -40,7 +45,7 @@ export function breakdownRows(score: Score): BreakdownRow[] {
   if (!hasBreakdown(score)) return [];
   return score.components.map((component) => ({
     name: component.name,
-    label: LABELS[component.name] ?? component.name.replaceAll("_", " "),
+    label: componentLabel(component.name),
     status: component.status,
     value: component.value,
     weight: component.weight,
