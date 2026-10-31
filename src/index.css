@@ -437,3 +437,11 @@ button, input { font: inherit; } button { cursor: pointer; }
 .market-status small { font-size: 9px; font-weight: 500; line-height: 1.4; }
 .company-summary-text { margin: 0 0 12px; color: #526359; font-size: 14px; line-height: 1.65; }
 .company-summary-source { color: #347b4c; font-size: 12px; font-weight: 700; }
+.market-company-link { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.market-company-link:hover strong { color: #347b4c; text-decoration: underline; text-underline-offset: 2px; }
+.market-company-link:focus-visible { border-radius: 3px; outline: 2px solid #347b4c; outline-offset: 3px; }
+.watchlist-company-link { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.watchlist-company-link:hover .company-badge strong { color: #347b4c; text-decoration: underline; text-underline-offset: 2px; }
+.watchlist-company-link:focus-visible { border-radius: 4px; outline: 2px solid #347b4c; outline-offset: 3px; }
+.market-company-row, .watchlist-company-row { cursor: pointer; }
+.market-company-row:hover td, .watchlist-company-row:hover td { background: #f8fbf7; }
