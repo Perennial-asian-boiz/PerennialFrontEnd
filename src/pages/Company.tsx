@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { loadSecurityDetails, type SecurityDetails } from "../api/company";
 import AppShell, { Toast } from "../components/AppShell";
+import ScoreBreakdown from "../components/ScoreBreakdown";
 import { useWatchlist } from "../components/watchlistStore";
 
 export default function Company() {
@@ -68,6 +69,8 @@ export default function Company() {
           <a className="company-summary-source" href={security.summary.source.url} target="_blank" rel="noreferrer">Source: {security.summary.source.name}</a>
         </> : <p className="auth-muted-line" role="status">Summary not available</p>}
       </div>
+      {/* Its own section, so Hong's ScoreCard and WhyPanel can sit beside it (S2-01, S2-03). */}
+      <ScoreBreakdown symbol={security.symbol} />
     </>}
     {toast && <Toast type="success" message="Successfully added to your Watchlist" onDone={() => setToast(null)} />}
   </AppShell>;
