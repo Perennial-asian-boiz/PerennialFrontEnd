@@ -26,6 +26,7 @@ export default function Profile() {
   const [moatAlerts, setMoatAlerts] = useState(cachedSettings?.confidence_score_enabled ?? true);
   const [earningsAlerts, setEarningsAlerts] = useState(cachedSettings?.earnings_alerts_enabled ?? true);
   const [sectors, setSectors] = useState<string[]>(cachedPreferences?.sectors ?? []);
+  const [sectorsLoading, setSectorsLoading] = useState(() => hasSession && !cachedPreferences);
   const [notificationsError, setNotificationsError] = useState("");
   const [notificationsLoaded, setNotificationsLoaded] = useState(() => !hasSession || Boolean(cachedSettings));
   const [notificationsAvailable, setNotificationsAvailable] = useState(() => !hasSession || Boolean(cachedSettings));
@@ -33,7 +34,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (!isAuthApiConfigured() || !getSessionToken()) return;
-    getPreferences().then((preferences) => setSectors(preferences.sectors)).catch(() => setSectors([]));
+    getPreferences().then((preferences) => setSectors(preferences.sectors)).catch(() => setSectors([])).finally(() => setSectorsLoading(false));
     getNotificationSettings().then((settings) => {
       setMoatAlerts(settings.confidence_score_enabled);
       setEarningsAlerts(settings.earnings_alerts_enabled);
@@ -60,10 +61,10 @@ export default function Profile() {
 
   return <AppShell title="Your Profile" hidePageHeading>
     <div className="profile-high-fidelity">
-      <section className={`profile-identity-card ${sectors.length === 0 ? "profile-no-sectors" : ""}`}>
+      <section className={`profile-identity-card ${!sectorsLoading && sectors.length === 0 ? "profile-no-sectors" : ""}`}>
         <h1>{user?.full_name || user?.email || "Account"}</h1>
         <p>{user?.email}</p>
-        {sectors.length > 0 && <div className="profile-sector-summary"><strong>Sector:</strong>{sectors.map((sector) => <span key={sector}>{confirmationSectorLabels[sector] ?? sector}</span>)}</div>}
+        {sectorsLoading ? <div className="profile-sector-loading" role="status" aria-label="Loading your sectors">{[0, 1, 2].map((item) => <span className="loading-bar" key={item} />)}</div> : sectors.length > 0 && <div className="profile-sector-summary"><strong>Sector:</strong>{sectors.map((sector) => <span key={sector}>{confirmationSectorLabels[sector] ?? sector}</span>)}</div>}
       </section>
       <section className="profile-notifications-card">
         <h2>Investment Notification</h2>
