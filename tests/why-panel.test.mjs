@@ -68,13 +68,15 @@ test("no more than three claims are shown (03-AC1)", () => {
 
 // ── AC2: each claim's source and as-of ───────────────────
 
-test("each claim cites its component, stored record, value and as-of (03-AC2)", () => {
+test("tapping a claim shows its component, stored record, value and as-of (03-AC2)", () => {
   const html = panel(recommended([claim(1, "Keeps 42 cents of every sales dollar as operating profit.")]));
-  assert.match(html, /Fundamentals · as of 2025-06-30/);
-  assert.match(html, /fundamental_scores #812, batch 5/);
-  assert.match(html, /operating margin/);
-  assert.match(html, /0\.420000/);
-  assert.match(html, /explain-v1 · as of Nov 5, 2026, 12:02 PM EST/);
+  assert.match(html, /<details class="why-reason"><summary>/);
+  const source = html.match(/<dl class="why-claim-source">(.*?)<\/dl>/)[1];
+  assert.match(source, /<dt>Component<\/dt><dd>Fundamentals<\/dd>/);
+  assert.match(source, /fundamental_scores #812, batch 5/);
+  assert.match(source, /operating margin/);
+  assert.match(source, /0\.420000/);
+  assert.match(source, /<dt>As of<\/dt><dd>2025-06-30<\/dd>/);
 });
 
 // ── AC3: never a claim about an unavailable component ────
@@ -110,15 +112,16 @@ for (const [reason, detail] of [
   });
 }
 
-test("a company scored below 60 is labeled not recommended, with no claims", () => {
-  const html = panel(withExplanation({ status: "not_recommended", template_version: "explain-v1", claims: [] }));
-  assert.match(html, /Not recommended/);
-  assert.match(html, /at least 60/);
-  assert.deepEqual(claimTexts(html), []);
+// ── only a recommended company gets a card ───────────────
+
+test("a company that isn't recommended gets no card at all", () => {
+  assert.equal(panel(withExplanation({ status: "not_recommended", template_version: "explain-v1", claims: [] })), "");
+  const below60 = recommended([], { value: 42.6, recommended: false });
+  assert.equal(panel({ ...below60, explanation: { status: "not_recommended", claims: [] } }), "");
 });
 
-test("an unavailable score has no explanation", () => {
-  const html = panel({
+test("an unavailable score, loading, an unknown company and a failed request get no card", () => {
+  const unavailableScore = panel({
     api_version: "v1", symbol: "ZZOF",
     score: {
       status: "unavailable", reason: "only_fundamentals", value: null, score_version: "score-v1", as_of: STAMP,
@@ -126,36 +129,35 @@ test("an unavailable score has no explanation", () => {
     },
     explanation: { status: "unavailable", reason: "score_unavailable", claims: [] },
   });
-  assert.match(html, /Explanation unavailable/);
-  assert.match(html, /because the score is unavailable/);
-});
-
-// ── the heading never contradicts the panel ──────────────
-
-const heading = (html) => html.match(/id="why-panel-heading">([^<]*)</)[1];
-
-test("only a panel with claims is headed \"Why Perennial recommends it\"", () => {
-  assert.equal(heading(panel(recommended([claim(1, "Supported by fundamentals.")]))), "Why Perennial recommends it");
   for (const html of [
-    panel(withExplanation({ status: "not_recommended", template_version: "explain-v1", claims: [] })),
-    panel(withExplanation({ status: "unavailable", reason: "insufficient_supporting_data", claims: [] })),
-    panel(recommended([claim(1, "About event exposure.", "event_exposure")])),
+    unavailableScore,
     panel(null),
+    panel(null, new api.ScoreApiError("Score API returned 404", 404, "unknown_security")),
     panel(null, new api.ScoreApiError("Score API returned 500", 500, "internal_error")),
   ]) {
-    assert.equal(heading(html), "Recommendation");
+    assert.equal(html, "");
   }
 });
 
-// ── the other states ─────────────────────────────────────
+test("the card is headed \"Why This Company\", with \"Key reasons\" only above claims", () => {
+  const heading = (html) => html.match(/id="why-panel-heading"[^>]*>([^<]*)</)[1];
+  const withClaims = panel(recommended([claim(1, "Supported by fundamentals.")]));
+  assert.equal(heading(withClaims), "Why This Company");
+  assert.match(withClaims, /Key reasons/);
+  const unexplained = panel(withExplanation({ status: "unavailable", reason: "insufficient_supporting_data", claims: [] }));
+  assert.equal(heading(unexplained), "Why This Company");
+  assert.doesNotMatch(unexplained, /Key reasons/);
+});
 
-test("loading, an unknown company and a failed request show no claims", () => {
-  const loading = panel(null);
-  assert.match(loading, /Loading explanation…/);
-  assert.match(loading, /aria-busy="true"/);
-  const notFound = panel(null, new api.ScoreApiError("Score API returned 404", 404, "unknown_security"));
-  assert.match(notFound, /isn(&#x27;|')t in Perennial yet/);
-  const failed = panel(null, new api.ScoreApiError("Score API returned 500", 500, "internal_error"));
-  assert.match(failed, /role="alert"/);
-  for (const html of [loading, notFound, failed]) assert.deepEqual(claimTexts(html), []);
+// ── the Figma reason cards ───────────────────────────────
+
+test("each reason card has a short title for its measure above the claim", () => {
+  const html = panel(recommended([
+    claim(1, "Keeps 42 cents of every sales dollar as operating profit."),
+    { ...claim(2, "Revenue grew 25% a year over the last 3 years."), measure: "revenue_growth_3y" },
+    { ...claim(3, "Social posts leaned positive (4 posts)."), component: "sentiment", measure: "value" },
+  ]));
+  const titles = [...html.matchAll(/class="why-claim-title">([^<]*)</g)].map((match) => match[1]);
+  assert.deepEqual(titles, ["Healthy operating margin", "Strong revenue growth", "Positive sentiment"]);
+  assert.match(html, /Key reasons/);
 });
