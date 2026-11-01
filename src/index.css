@@ -443,7 +443,6 @@ button, input { font: inherit; } button { cursor: pointer; }
 .score-breakdown-note { color: #7d8c82; font-style: italic; }
 .score-breakdown-sum { color: #7d8c82; font-size: 12px; }
 .score-breakdown-unavailable { margin: 0 0 6px; color: #26372d; font-size: 16px; font-weight: 700; }
-.score-card-caption { margin: 0 0 8px; color: #526359; font-size: 14px; line-height: 1.6; }
 .market-company-link { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .market-company-link:hover strong { color: #347b4c; text-decoration: underline; text-underline-offset: 2px; }
 .market-company-link:focus-visible { border-radius: 3px; outline: 2px solid #347b4c; outline-offset: 3px; }
@@ -497,4 +496,67 @@ button, input { font: inherit; } button { cursor: pointer; }
   .company-detail-identity { flex-wrap: wrap; }
   .company-detail-identity h1 { max-width: 100%; font-size: 18px; }
   .company-detail-watch { margin-left: 0; }
+}
+/* Company detail cards, matched to the high-fidelity Figma (About, Valuation confidence,
+   Score Breakdown). */
+.about-card, .confidence-card, .breakdown-card { margin-top: 28px; padding: 30px 36px; border: 1px solid #dedede; border-radius: 22px; background: #fff; }
+.confidence-band-low { --band: #d6402f; --band-soft: #fdecea; --band-text: #c0392b; }
+.confidence-band-mixed { --band: #e5873a; --band-soft: #fff5e5; --band-text: #c2711f; }
+.confidence-band-strong { --band: #4fa046; --band-soft: #ecf8ea; --band-text: #3b8a37; }
+.confidence-band-none { --band: #b8c2bb; --band-soft: #f0f2f0; --band-text: #7d8c82; }
+.card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid #e6e6e6; }
+.card-title { margin: 0; color: #0a0a0a; font-size: 32px; font-weight: 600; letter-spacing: -.01em; line-height: 1.2; }
+.card-subtitle { margin: 6px 0 0; color: #7b7b7b; font-size: 16px; }
+.card-eyebrow { padding-top: 14px; color: #8a8a8a; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+
+.about-card .card-title { margin-bottom: 12px; font-size: 40px; }
+.about-text { margin: 0 0 14px; color: #0a0a0a; font-size: 22px; line-height: 1.55; }
+.about-name { color: #2e7d32; text-decoration: underline; text-underline-offset: 4px; }
+
+.confidence-card { padding-bottom: 48px; text-align: center; }
+.confidence-eyebrow { margin: 0 0 36px; color: #7b7b7b; font-size: 17px; font-weight: 400; letter-spacing: .03em; text-align: left; text-transform: uppercase; }
+.confidence-ring { position: relative; width: 230px; height: 230px; margin: 0 auto 40px; color: var(--band); }
+.confidence-ring svg { display: block; width: 100%; height: 100%; }
+.confidence-ring-value { fill: none; stroke: currentColor; stroke-width: 8; }
+.confidence-ring-number { position: absolute; inset: 0; display: grid; place-items: center; font-size: 46px; font-weight: 600; letter-spacing: -.01em; }
+.confidence-title { margin: 0 0 12px; color: #0a0a0a; font-size: 34px; font-weight: 600; letter-spacing: -.01em; }
+.confidence-caption { max-width: 680px; margin: 0 auto; color: #7b7b7b; font-size: 16px; line-height: 1.5; }
+.confidence-stamp { margin: 6px 0 0; color: #a3aba5; font-size: 13px; }
+.confidence-status { padding: 4px 0; }
+.confidence-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 28px; margin: 36px 0 0; padding: 0; color: #7b7b7b; font-size: 16px; list-style: none; }
+.confidence-legend li { display: flex; align-items: center; gap: 10px; }
+.confidence-legend li::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--band); }
+
+.factor-badge { padding: 7px 14px; border-radius: 8px; background: #e5f4e1; color: #1f2d1f; font-size: 16px; white-space: nowrap; }
+.factor-list { display: grid; gap: 30px; margin: 0; padding: 0; list-style: none; }
+.factor summary { display: block; cursor: pointer; list-style: none; }
+.factor summary::-webkit-details-marker { display: none; }
+.factor summary:focus-visible { border-radius: 8px; outline: 2px solid #347b4c; outline-offset: 4px; }
+.factor-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.factor-name { color: #0a0a0a; font-size: 19px; font-weight: 600; }
+.factor-pill { padding: 5px 12px; border-radius: 6px; background: var(--band-soft); color: var(--band-text); font-size: 16px; white-space: nowrap; }
+.factor-bar { display: block; height: 12px; overflow: hidden; border-radius: 99px; background: #eef3f7; }
+.factor-bar span { display: block; height: 100%; border-radius: inherit; background: var(--band); }
+.factor-note { display: block; margin-top: 10px; color: #8a8a8a; font-size: 13px; font-style: italic; }
+.factor-details { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 12px 0 0; padding: 12px 14px; border-radius: 8px; background: #f7f9f7; color: #3f4a43; font-size: 13px; }
+.factor-details dt { color: #8a948d; }
+.factor-details dd { margin: 0; overflow-wrap: anywhere; }
+.factor-nominal { color: #9aa29c; }
+.factor-footer { margin-top: 26px; padding-top: 16px; border-top: 1px solid #e6e6e6; }
+.factor-footer p { margin: 2px 0; color: #9aa29c; font-size: 12px; }
+
+
+@media (max-width: 650px) {
+  .about-card, .confidence-card, .breakdown-card { padding: 22px 18px; border-radius: 16px; }
+  .card-header { flex-wrap: wrap; }
+  .card-title { font-size: 24px; }
+  .about-card .card-title { font-size: 30px; }
+  .about-text { font-size: 17px; }
+  .confidence-eyebrow { margin-bottom: 24px; font-size: 14px; }
+  .confidence-ring { width: 180px; height: 180px; margin-bottom: 28px; }
+  .confidence-ring-number { font-size: 38px; }
+  .confidence-title { font-size: 26px; }
+  .confidence-legend { gap: 8px 16px; margin-top: 24px; font-size: 14px; }
+  .factor-name { font-size: 17px; }
+  .factor-pill, .factor-badge { font-size: 14px; }
 }

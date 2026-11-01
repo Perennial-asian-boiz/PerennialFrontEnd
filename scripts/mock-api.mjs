@@ -26,14 +26,20 @@ async function securities() {
   return JSON.parse(await readFile(FIXTURES, "utf8")).securities;
 }
 
+// A fixture's summary is either text, served with a mock source, or a full summary
+// object (text, source, as_of) as exported from a real database.
+function summaryOf(entry) {
+  if (!entry.summary) return null;
+  if (typeof entry.summary === "object") return entry.summary;
+  return { text: entry.summary, source: { name: "Mock fixture", url: "https://example.invalid/" }, as_of: AS_OF };
+}
+
 function security(symbol, entry) {
   return {
     symbol,
     name: entry.name ?? null,
     sector: entry.sector ?? null,
-    summary: entry.summary
-      ? { text: entry.summary, source: { name: "Mock fixture", url: "https://example.invalid/" }, as_of: AS_OF }
-      : null,
+    summary: summaryOf(entry),
   };
 }
 
@@ -46,7 +52,7 @@ function dashboardRow(symbol, entry) {
     change_percent: null,
     confidence_score: entry.score?.value ?? null,
     sentiment: "Neutral",
-    reason: entry.summary ?? null,
+    reason: summaryOf(entry)?.text ?? null,
   };
 }
 
