@@ -42,7 +42,7 @@ const view = (response, error) => render(createElement(ScoreBreakdown, { state: 
 test("each present factor shows its band and value, and on tap its weight and contribution (02-AC1)", () => {
   const html = view(scored);
   assert.match(html, /Fundamentals<\/span><span class="factor-pill">Strong \(78\.0\)/);
-  assert.match(html, /News sentiment<\/span><span class="factor-pill">Mix \(65\.5\)/);
+  assert.match(html, /News &amp; social sentiment<\/span><span class="factor-pill">Mix \(65\.5\)/);
   assert.match(html, /<dt>Weight<\/dt><dd>70\.59% <span class="factor-nominal">\(nominal 60\.00%\)<\/span><\/dd><dt>Contribution<\/dt><dd>55\.06 points/);
   assert.match(html, /<dt>Weight<\/dt><dd>29\.41% .*?<dt>Contribution<\/dt><dd>19\.26 points/);
   assert.match(html, /style="width:78%"/);
