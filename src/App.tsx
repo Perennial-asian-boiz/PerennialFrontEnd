@@ -37,6 +37,7 @@ function App() {
         <Route path="/" element={<Protected><Dashboard /></Protected>} />
         <Route path="/dashboard-preview" element={<LocalPreview><Dashboard /></LocalPreview>} />
         <Route path="/setup-preview" element={<LocalPreview><Setup /></LocalPreview>} />
+        <Route path="/company-preview/:symbol" element={<LocalPreview><Company /></LocalPreview>} />
         <Route path="/login" element={<Login />} />
         <Route path="/auth/confirm" element={<EmailConfirmation />} />
         <Route path="/signup" element={<Signup />} />

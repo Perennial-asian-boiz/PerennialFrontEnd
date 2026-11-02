@@ -126,7 +126,8 @@ function withContributions(value, fundamentals, sentiment) {
 // ---------------------------------------------------------------- FE-1: types
 
 test("the exported types accept the contract's bodies and refuse wrong shapes", () => {
-  const virtual = join(root, "tests", "__score_contract__.ts");
+  // TypeScript asks for files with forward slashes, Windows included.
+  const virtual = join(root, "tests", "__score_contract__.ts").replaceAll("\\", "/");
   const literal = (value) => JSON.stringify(value);
   const okScore = '{ "status": "ok", "value": 74.3, "score_version": "score-v1", "as_of": null, "recommended": true, "components": [], "missing": [] }';
   const source = `import type { Claim, Explanation, Score, ScoreComponent, ScoreResponse } from "../src/api/score";

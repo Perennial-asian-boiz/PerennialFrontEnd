@@ -1,121 +1,79 @@
-import { useEffect, useState } from "react";
-import { loadScore, scoreState, type Score, type ScoreResponse } from "../api/score";
-import { breakdownRows, contributionTotal } from "../lib/scoreBreakdown";
+import type { Score, ScoreState } from "../api/score";
+import { breakdownRows, contributionTotal, type BreakdownRow } from "../lib/scoreBreakdown";
+import { SCORE_BANDS, scoreBand, scoreStamp } from "../lib/scoreFormat";
 
-// S2-02: how the Confidence Score is built, one row per component (FE-3), with the
-// loading, not-found and error states (FE-5). The panel keeps one height in every state,
-// so nothing beside it shifts while the score loads.
-
-const UNAVAILABLE_REASONS: Record<string, string> = {
-  not_scored: "This company hasn't been scored yet.",
-  only_fundamentals: "Only fundamentals are available, and a score needs at least one more component.",
-  no_fundamentals: "Fundamentals aren't available yet, and every score needs them.",
-};
+// S2-02: how the Confidence Score is built, one bar per component (FE-3), with the
+// loading, not-found and error states (FE-5), laid out as the Figma "Score Breakdown"
+// card. Each factor shows its band and value; tapping it, as the Figma subtitle says, shows
+// its weight and contribution (AC1) and its input as-of and version when stored (AC3). A
+// missing one reads "Unavailable" (AC4); the footer adds the contributions up (AC2). The
+// page loads the score once (useScore) and passes its state here and to the score card.
 
 const percent = (weight: number) => `${(weight * 100).toFixed(2)}%`;
 
-// When the scores batch was promoted, in the market's time zone like the page's other dates.
-function formatAsOf(value: string | null) {
-  const date = value ? new Date(value) : null;
-  if (!date || Number.isNaN(date.getTime())) return null;
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: "America/New_York",
-    timeZoneName: "short",
-  }).format(date);
-}
-
-export default function ScoreBreakdown({ symbol }: { symbol: string }) {
-  const [result, setResult] = useState<{ symbol: string; response: ScoreResponse | null; error: unknown }>({
-    symbol: "",
-    response: null,
-    error: null,
-  });
-
-  useEffect(() => {
-    if (!symbol) return;
-
-    const controller = new AbortController();
-    loadScore(symbol, controller.signal).then((response) => {
-      setResult({ symbol, response, error: null });
-    }).catch((caught: unknown) => {
-      if (caught instanceof DOMException && caught.name === "AbortError") return;
-      setResult({ symbol, response: null, error: caught });
-    });
-
-    return () => controller.abort();
-  }, [symbol]);
-
-  const current = result.symbol === symbol;
-  const state = scoreState(current ? result.response : null, current ? result.error : null);
-
-  return <section aria-labelledby="score-breakdown-heading">
-    <div className="section-heading"><h2 id="score-breakdown-heading">Score breakdown</h2></div>
-    <div className="panel score-breakdown" aria-busy={state.kind === "loading"}>
-      {state.kind === "loading" && <p className="auth-muted-line" role="status">Loading score breakdown…</p>}
-      {state.kind === "not_found" && <p className="auth-muted-line" role="status">{state.label}</p>}
-      {state.kind === "error" && <p className="auth-error" role="alert">{state.label}</p>}
-      {state.kind === "unavailable" && <div role="status">
-        <p className="score-breakdown-unavailable">{state.label}</p>
-        <p className="auth-muted-line">{UNAVAILABLE_REASONS[state.reason ?? ""] ?? "There isn't enough data to score this company yet."}</p>
-      </div>}
-      {state.kind === "scored" && <BreakdownTable score={state.score} />}
+// Rendered only when there are factors to draw: while loading, for an unavailable score
+// and on errors the score card above already says so, so this card stays out of the way.
+export default function ScoreBreakdown({ state }: { state: ScoreState }) {
+  const rows = state.kind === "scored" ? breakdownRows(state.score) : [];
+  if (state.kind !== "scored" || rows.length === 0) return null;
+  const active = rows.filter((row) => row.note === null).length;
+  return <section className="panel breakdown-card" aria-labelledby="score-breakdown-heading">
+    <div className="card-header">
+      <div>
+        <h2 id="score-breakdown-heading" className="card-title">Score Breakdown</h2>
+        <p className="card-subtitle">Tap any factor to inspect fundamental quantitative weights</p>
+      </div>
+      <span className="factor-badge">Factors ({active} Active)</span>
     </div>
+    <Factors score={state.score} rows={rows} />
   </section>;
 }
 
-function BreakdownTable({ score }: { score: Score }) {
-  const rows = breakdownRows(score);
+function Factors({ score, rows }: { score: Score; rows: BreakdownRow[] }) {
   const total = contributionTotal(score);
-  const asOf = formatAsOf(score.as_of);
+  return <>
+    <ul className="factor-list">
+      {rows.map((row) => <li key={row.name}>{row.note === null ? <Factor row={row} /> : <MissingFactor row={row} />}</li>)}
+    </ul>
+    {total && score.value !== null && <div className="factor-footer">
+      <p className={total.consistent ? undefined : "auth-error"}>
+        Contributions add up to {total.total.toFixed(2)} · {total.consistent
+          ? `Score ${score.value.toFixed(1)} (contributions are rounded to 0.01)`
+          : `Doesn't match the score of ${score.value.toFixed(1)}`}
+      </p>
+      <p>{scoreStamp(score)}</p>
+    </div>}
+  </>;
+}
 
-  return <div className="table-wrap">
-    <table className="data-table score-breakdown-table">
-      <thead>
-        <tr>
-          <th scope="col">Component</th>
-          <th scope="col">Value</th>
-          <th scope="col">Weight</th>
-          <th scope="col">Contribution</th>
-          <th scope="col">Input as of</th>
-          <th scope="col">Version</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row) => <tr key={row.name}>
-          <th scope="row">{row.label}</th>
-          {row.note === null ? <>
-            <td>{row.value === null ? "—" : row.value.toFixed(1)}</td>
-            <td><span title={`Nominal weight ${percent(row.nominalWeight)}`}>{percent(row.weight)}</span></td>
-            <td>{row.contribution.toFixed(2)}</td>
-            <td>{row.inputAsOf ?? "—"}</td>
-            <td>{row.version ?? "—"}</td>
-          </> : <td colSpan={5} className="score-breakdown-note" title={`Nominal weight ${percent(row.nominalWeight)}`}>{row.note}</td>}
-        </tr>)}
-      </tbody>
-      {total && score.value !== null && <tfoot>
-        <tr>
-          <th scope="row">Total</th>
-          <td colSpan={2} />
-          <td>{total.total.toFixed(2)}</td>
-          <td colSpan={2} className={total.consistent ? "score-breakdown-sum" : "auth-error"}>
-            {total.consistent
-              ? `Score ${score.value.toFixed(1)} (contributions are rounded to 0.01)`
-              : `Doesn't match the score of ${score.value.toFixed(1)}`}
-          </td>
-        </tr>
-        <tr>
-          <td colSpan={6} className="score-breakdown-sum">
-            {[score.score_version, asOf && `as of ${asOf}`]
-              .filter(Boolean)
-              .join(" · ")}
-          </td>
-        </tr>
-      </tfoot>}
-    </table>
+function Factor({ row }: { row: BreakdownRow }) {
+  const value = row.value ?? 0;
+  const band = scoreBand(value);
+  const label = SCORE_BANDS.find((entry) => entry.band === band)?.label;
+  return <details className={`factor confidence-band-${band}`}>
+    <summary>
+      <span className="factor-top">
+        <span className="factor-name">{row.label}</span>
+        <span className="factor-pill">{label} ({value.toFixed(1)})</span>
+      </span>
+      <span className="factor-bar" aria-hidden="true"><span style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }} /></span>
+    </summary>
+    <dl className="factor-details">
+      <dt>Weight</dt><dd>{percent(row.weight)} <span className="factor-nominal">(nominal {percent(row.nominalWeight)})</span></dd>
+      <dt>Contribution</dt><dd>{row.contribution.toFixed(2)} points</dd>
+      {row.inputAsOf && <><dt>Input as of</dt><dd>{row.inputAsOf}</dd></>}
+      {row.version && <><dt>Version</dt><dd>{row.version}</dd></>}
+    </dl>
+  </details>;
+}
+
+function MissingFactor({ row }: { row: BreakdownRow }) {
+  return <div className="factor confidence-band-none">
+    <span className="factor-top">
+      <span className="factor-name">{row.label}</span>
+      <span className="factor-pill">Unavailable</span>
+    </span>
+    <span className="factor-bar" aria-hidden="true" />
+    <span className="factor-note" title={`Nominal weight ${percent(row.nominalWeight)}`}>{row.note}</span>
   </div>;
 }

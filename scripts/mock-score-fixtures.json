@@ -1,0 +1,161 @@
+{
+  "_about": "GET /v1/securities/{symbol}/score bodies for the local mock API, in the backend #77 contract shape. One synthetic ticker per state the score card (S2-01) and why-panel (S2-03) must handle. Wording follows explain-v1 after backend #92 and #93.",
+  "securities": {
+    "ZZSA": {
+      "name": "Sample Recommended Co",
+      "sector": "Technology",
+      "summary": "A synthetic company whose score is 74.3 and recommended, with three supporting reasons.",
+      "score": {
+        "status": "ok", "value": 74.3, "score_version": "score-v1", "as_of": "2026-11-05T17:02:11+00:00", "recommended": true,
+        "components": [
+          {"name": "fundamentals", "status": "ok", "value": 78.0, "nominal_weight": 0.6, "weight": 0.7059, "contribution": 55.06,
+           "input_as_of": "2025-06-30", "input_version": "fundamentals-v1", "record": {"table": "fundamental_scores", "id": 812}},
+          {"name": "sentiment", "status": "ok", "value": 65.5, "nominal_weight": 0.25, "weight": 0.2941, "contribution": 19.26,
+           "input_as_of": "2026-11-04", "input_version": "weights-v1", "record": {"table": "ticker_sentiment", "id": 77}},
+          {"name": "event_exposure", "status": "unavailable", "value": null, "nominal_weight": 0.15, "weight": 0.0, "contribution": 0.0,
+           "input_as_of": null, "input_version": null, "record": null, "note": "weight redistributed to the remaining components"}
+        ],
+        "missing": ["event_exposure"]
+      },
+      "explanation": {
+        "status": "ok", "template_version": "explain-v1", "as_of": "2026-11-05T17:02:11+00:00",
+        "claims": [
+          {"order": 1, "text": "Keeps 42 cents of every sales dollar as operating profit.", "component": "fundamentals",
+           "measure": "operating_margin", "record": {"table": "fundamental_scores", "id": 812, "batch_id": 5},
+           "as_of": "2025-06-30", "value": "0.420000"},
+          {"order": 2, "text": "Revenue grew 25% a year over the last 3 years.", "component": "fundamentals",
+           "measure": "revenue_growth_3y", "record": {"table": "fundamental_scores", "id": 812, "batch_id": 5},
+           "as_of": "2025-06-30", "value": "0.250000"},
+          {"order": 3, "text": "News coverage over the last 7 days leaned positive (12 articles).", "component": "sentiment",
+           "measure": "value", "record": {"table": "ticker_sentiment", "id": 77, "batch_id": 9},
+           "as_of": "2026-11-04", "value": "0.3100"}
+        ]
+      }
+    },
+    "ZZBK": {
+      "name": "Sample Bank Corp",
+      "sector": "Financials",
+      "summary": "A synthetic bank: recommended, with bank-model reasons and a social-only sentiment reason.",
+      "score": {
+        "status": "ok", "value": 70.3, "score_version": "score-v1", "as_of": "2026-11-05T17:02:11+00:00", "recommended": true,
+        "components": [
+          {"name": "fundamentals", "status": "ok", "value": 67.3, "nominal_weight": 0.6, "weight": 0.7059, "contribution": 47.51,
+           "input_as_of": "2025-12-31", "input_version": "fundamentals-v1", "record": {"table": "fundamental_scores", "id": 820}},
+          {"name": "sentiment", "status": "ok", "value": 77.5, "nominal_weight": 0.25, "weight": 0.2941, "contribution": 22.79,
+           "input_as_of": "2026-11-04", "input_version": "weights-v1", "record": {"table": "ticker_sentiment", "id": 81}},
+          {"name": "event_exposure", "status": "unavailable", "value": null, "nominal_weight": 0.15, "weight": 0.0, "contribution": 0.0,
+           "input_as_of": null, "input_version": null, "record": null, "note": "weight redistributed to the remaining components"}
+        ],
+        "missing": ["event_exposure"]
+      },
+      "explanation": {
+        "status": "ok", "template_version": "explain-v1", "as_of": "2026-11-05T17:02:11+00:00",
+        "claims": [
+          {"order": 1, "text": "Spends 52 cents to earn each dollar of revenue.", "component": "fundamentals",
+           "measure": "efficiency_ratio", "record": {"table": "fundamental_scores", "id": 820, "batch_id": 5},
+           "as_of": "2025-12-31", "value": "0.520000"},
+          {"order": 2, "text": "Earns 16% a year on shareholders' money.", "component": "fundamentals",
+           "measure": "return_on_equity", "record": {"table": "fundamental_scores", "id": 820, "batch_id": 5},
+           "as_of": "2025-12-31", "value": "0.160000"},
+          {"order": 3, "text": "Social posts over the last 7 days leaned positive (4 posts).", "component": "sentiment",
+           "measure": "value", "record": {"table": "ticker_sentiment", "id": 81, "batch_id": 9},
+           "as_of": "2026-11-04", "value": "0.5500"}
+        ]
+      }
+    },
+    "ZZNR": {
+      "name": "Sample Not Recommended Inc",
+      "sector": "Industrials",
+      "summary": "A synthetic company with a score below 60: scored, but not recommended.",
+      "score": {
+        "status": "ok", "value": 42.6, "score_version": "score-v1", "as_of": "2026-11-05T17:02:11+00:00", "recommended": false,
+        "components": [
+          {"name": "fundamentals", "status": "ok", "value": 50.0, "nominal_weight": 0.6, "weight": 0.7059, "contribution": 35.30,
+           "input_as_of": "2025-06-30", "input_version": "fundamentals-v1", "record": {"table": "fundamental_scores", "id": 813}},
+          {"name": "sentiment", "status": "ok", "value": 25.0, "nominal_weight": 0.25, "weight": 0.2941, "contribution": 7.35,
+           "input_as_of": "2026-11-04", "input_version": "weights-v1", "record": {"table": "ticker_sentiment", "id": 78}},
+          {"name": "event_exposure", "status": "unavailable", "value": null, "nominal_weight": 0.15, "weight": 0.0, "contribution": 0.0,
+           "input_as_of": null, "input_version": null, "record": null, "note": "weight redistributed to the remaining components"}
+        ],
+        "missing": ["event_exposure"]
+      },
+      "explanation": {"status": "not_recommended", "template_version": "explain-v1", "as_of": "2026-11-05T17:02:11+00:00", "claims": []}
+    },
+    "ZZIN": {
+      "name": "Sample Weak Signals Ltd",
+      "sector": "Healthcare",
+      "summary": "A synthetic company that is recommended, but has no supporting signal to cite (decision 103 (c)).",
+      "score": {
+        "status": "ok", "value": 61.2, "score_version": "score-v1", "as_of": "2026-11-05T17:02:11+00:00", "recommended": true,
+        "components": [
+          {"name": "fundamentals", "status": "ok", "value": 70.0, "nominal_weight": 0.6, "weight": 0.7059, "contribution": 49.41,
+           "input_as_of": "2025-06-30", "input_version": "fundamentals-v1", "record": {"table": "fundamental_scores", "id": 814}},
+          {"name": "sentiment", "status": "ok", "value": 40.0, "nominal_weight": 0.25, "weight": 0.2941, "contribution": 11.76,
+           "input_as_of": "2026-11-04", "input_version": "weights-v1", "record": {"table": "ticker_sentiment", "id": 79}},
+          {"name": "event_exposure", "status": "unavailable", "value": null, "nominal_weight": 0.15, "weight": 0.0, "contribution": 0.0,
+           "input_as_of": null, "input_version": null, "record": null, "note": "weight redistributed to the remaining components"}
+        ],
+        "missing": ["event_exposure"]
+      },
+      "explanation": {"status": "unavailable", "reason": "insufficient_supporting_data", "template_version": "explain-v1",
+                      "as_of": "2026-11-05T17:02:11+00:00", "claims": []}
+    },
+    "ZZNE": {
+      "name": "Sample Not Explained Yet",
+      "sector": "Energy",
+      "summary": "A synthetic company whose score is promoted but whose explanation isn't written yet.",
+      "score": {
+        "status": "ok", "value": 66.0, "score_version": "score-v1", "as_of": "2026-11-05T17:02:11+00:00", "recommended": true,
+        "components": [
+          {"name": "fundamentals", "status": "ok", "value": 66.0, "nominal_weight": 0.6, "weight": 0.7059, "contribution": 46.59,
+           "input_as_of": "2025-06-30", "input_version": "fundamentals-v1", "record": {"table": "fundamental_scores", "id": 815}},
+          {"name": "sentiment", "status": "ok", "value": 66.0, "nominal_weight": 0.25, "weight": 0.2941, "contribution": 19.41,
+           "input_as_of": "2026-11-04", "input_version": "weights-v1", "record": {"table": "ticker_sentiment", "id": 80}},
+          {"name": "event_exposure", "status": "unavailable", "value": null, "nominal_weight": 0.15, "weight": 0.0, "contribution": 0.0,
+           "input_as_of": null, "input_version": null, "record": null, "note": "weight redistributed to the remaining components"}
+        ],
+        "missing": ["event_exposure"]
+      },
+      "explanation": {"status": "unavailable", "reason": "not_explained_yet", "claims": []}
+    },
+    "ZZOF": {
+      "name": "Sample Only Fundamentals",
+      "sector": "Materials",
+      "summary": "A synthetic company with a fundamentals score but no sentiment: Score unavailable.",
+      "score": {
+        "status": "unavailable", "reason": "only_fundamentals", "value": null, "score_version": "score-v1",
+        "as_of": "2026-11-05T17:02:11+00:00", "recommended": false, "components": [], "missing": ["sentiment", "event_exposure"]
+      },
+      "explanation": {"status": "unavailable", "reason": "score_unavailable", "template_version": "explain-v1",
+                      "as_of": "2026-11-05T17:02:11+00:00", "claims": []}
+    },
+    "ZZNF": {
+      "name": "Sample No Fundamentals",
+      "sector": "Utilities",
+      "summary": "A synthetic company with no fundamentals score (like OKLO, no revenue yet): Score unavailable.",
+      "score": {
+        "status": "unavailable", "reason": "no_fundamentals", "value": null, "score_version": "score-v1",
+        "as_of": "2026-11-05T17:02:11+00:00", "recommended": false, "components": [], "missing": ["fundamentals", "event_exposure"]
+      },
+      "explanation": {"status": "unavailable", "reason": "score_unavailable", "template_version": "explain-v1",
+                      "as_of": "2026-11-05T17:02:11+00:00", "claims": []}
+    },
+    "ZZNS": {
+      "name": "Sample Not Scored",
+      "sector": "Energy",
+      "summary": "A synthetic company with no row in the current scores batch (like XOM or KMTUY): Score unavailable.",
+      "score": {
+        "status": "unavailable", "reason": "not_scored", "value": null, "score_version": null, "as_of": null,
+        "recommended": false, "components": [], "missing": []
+      },
+      "explanation": {"status": "unavailable", "reason": "not_scored", "claims": []}
+    },
+    "ZZER": {
+      "name": "Sample Server Error",
+      "sector": "Technology",
+      "summary": "The score request fails with 500 internal_error, as a corrupt stored row would.",
+      "status": 500,
+      "body": {"detail": "request failed", "code": "internal_error"}
+    }
+  }
+}
