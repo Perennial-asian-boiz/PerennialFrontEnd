@@ -5,6 +5,7 @@ import AppShell, { Toast } from "../components/AppShell";
 import ScoreBreakdown from "../components/ScoreBreakdown";
 import ScoreCard from "../components/ScoreCard";
 import { useScore } from "../components/useScore";
+import WhyPanel from "../components/WhyPanel";
 import { useWatchlist } from "../components/watchlistStore";
 
 export default function Company() {
@@ -74,6 +75,7 @@ export default function Company() {
       </section>}
       <ScoreCard state={score} />
       <ScoreBreakdown state={score} />
+      <WhyPanel state={score} />
     </>}
     {toast && <Toast type="success" message="Successfully added to your Watchlist" onDone={() => setToast(null)} />}
   </AppShell>;
