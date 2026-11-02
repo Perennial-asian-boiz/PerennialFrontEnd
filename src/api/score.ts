@@ -127,7 +127,7 @@ export type ScoreState =
 export function scoreState(response: ScoreResponse | null, error?: unknown): ScoreState {
   if (error) {
     if (error instanceof ScoreApiError && error.status === 404) {
-      return { kind: "not_found", label: "No score: this company isn't in Perennial yet" };
+      return { kind: "not_found", label: "Score unavailable: the API has no score for this ticker yet." };
     }
     return { kind: "error", label: "The score couldn't be loaded. Please try again." };
   }
