@@ -9,7 +9,7 @@ export const SUM_TOLERANCE = 0.5;
 
 const LABELS: Record<string, string> = {
   fundamentals: "Fundamentals",
-  sentiment: "News sentiment",
+  sentiment: "News & social sentiment",
   event_exposure: "Event exposure",
 };
 
