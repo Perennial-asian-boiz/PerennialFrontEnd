@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { loadSecurityDetails, type SecurityDetails } from "../api/company";
+import { FinancialsApiError, loadFinancials, type FinancialsResponse } from "../api/financials";
 import AppShell, { Toast } from "../components/AppShell";
 import ScoreBreakdown from "../components/ScoreBreakdown";
 import ScoreCard from "../components/ScoreCard";
@@ -81,15 +82,13 @@ export default function Company() {
       <ScoreBreakdown state={score} />
       <CompanyDetailSections />
       <WhyPanel state={score} />
-      <FinancialsSection companyName={name} marketCap={security.current?.entry?.market_cap ?? null} />
+      <FinancialsSection symbol={security.symbol} companyName={name} marketCap={security.current?.entry?.market_cap ?? null} />
     </>}
     {toast && <Toast type="success" message="Successfully added to your Watchlist" onDone={() => setToast(null)} />}
   </AppShell>;
 }
 
-// These Figma sections are intentionally data-empty until the API serves their
-// underlying fields. Keeping the structure here lets the backend response be
-// wired into the same components later without presenting invented numbers.
+// Price and sentiment remain explicit placeholders until their API fields exist.
 function CompanyDetailSections() {
   const [sentimentChannel, setSentimentChannel] = useState<"news" | "social">("news");
 
@@ -123,35 +122,83 @@ function CompanyDetailSections() {
   </>;
 }
 
-function FinancialsSection({ companyName, marketCap }: { companyName: string; marketCap: number | null }) {
+function FinancialsSection({ symbol, companyName, marketCap }: { symbol: string; companyName: string; marketCap: number | null }) {
+  const [result, setResult] = useState<{ symbol: string; data: FinancialsResponse | null; error: string }>({
+    symbol: "",
+    data: null,
+    error: "",
+  });
+
+  useEffect(() => {
+    const controller = new AbortController();
+    loadFinancials(symbol, controller.signal).then((data) => {
+      setResult({ symbol, data, error: "" });
+    }).catch((caught: unknown) => {
+      if (caught instanceof DOMException && caught.name === "AbortError") return;
+      const error = caught instanceof FinancialsApiError && caught.status === 404
+        ? "The financials endpoint or data is not available for this company yet."
+        : "Financial data could not be loaded.";
+      setResult({ symbol, data: null, error });
+    });
+    return () => controller.abort();
+  }, [symbol]);
+
+  const isCurrent = result.symbol === symbol;
+  const financials = isCurrent ? result.data : null;
+  const error = isCurrent ? result.error : "";
+  const loading = !isCurrent;
+  const years = financials?.status === "ok" ? financials.years : [];
+  const latest = years[0] ?? null;
+  const revenueHistory = [...years].reverse().filter((year) => year.revenue !== null);
+  const maxRevenue = Math.max(...revenueHistory.map((year) => Math.max(year.revenue!.value, 0)), 0);
+  const yAxisMax = chartAxisMax(maxRevenue);
+  const yAxisTicks = [yAxisMax, yAxisMax * 2 / 3, yAxisMax / 3, 0];
+  const yAxisUnit = revenueHistory[0]?.revenue?.unit ?? "USD";
+
   return <section className="panel detail-data-card financials-card" aria-labelledby="financials-heading">
     <div className="financials-header">
       <h2 id="financials-heading">{companyName} Finance</h2>
-      <span>Key metrics</span>
+      <span>SEC EDGAR · Annual</span>
     </div>
     <div className="financial-metrics-list" aria-label="Key financial metrics">
       <FinancialMetric label="Market Cap" value={formatMarketCap(marketCap)} />
-      <FinancialMetric label="Revenue" value="Not available" />
-      <FinancialMetric label="Revenue Growth" value="Not available" />
-      <FinancialMetric label="Debt / Equity" value="Not available" />
+      <FinancialMetric label="Revenue" value={loading ? "Loading…" : formatAmount(latest?.revenue ?? null)} detail={latest ? `FY ended ${formatFiscalYear(latest.fiscal_year_end)}` : undefined} />
+      <FinancialMetric label="Revenue Growth" value={loading ? "Loading…" : formatPercent(latest?.revenue_growth ?? null)} />
+      <FinancialMetric label="Debt / Equity" value={loading ? "Loading…" : formatRatio(latest?.debt_to_equity ?? null)} />
     </div>
-    <div className="financial-chart-card" role="status">
+    <div className="financial-chart-card">
       <div className="financial-chart-heading">
-        <div><strong>Revenue Growth (YoY)</strong><span className="financial-chart-badge">Awaiting API data</span></div>
-        <span>Historical &amp; projections</span>
+        <div><strong>Revenue by Fiscal Year</strong><span className="financial-chart-badge">{loading ? "Loading" : financials?.status === "ok" ? "SEC reported" : "Data unavailable"}</span></div>
+        <span>Annual reported values</span>
       </div>
-      <div className="financial-chart-plot">
+      {revenueHistory.length > 0 ? <div className="financial-chart-plot financial-chart-plot-populated" role="img" aria-label={`Annual revenue from ${formatFiscalYear(revenueHistory[0].fiscal_year_end)} to ${formatFiscalYear(revenueHistory[revenueHistory.length - 1].fiscal_year_end)}`}>
         <div className="financial-chart-grid" aria-hidden="true"><span /><span /><span /><span /></div>
-        <p>Revenue history will appear when annual financial data is available.</p>
-      </div>
-      <div className="financial-chart-footer"><span>Fiscal year reported</span><span>Values will include their reporting period and source.</span></div>
+        <div className="financial-chart-y-axis" aria-hidden="true">
+          {yAxisTicks.map((tick, index) => <span key={index}>{formatAxisAmount(tick, yAxisUnit)}</span>)}
+        </div>
+        <div className="financial-revenue-bars">
+          {revenueHistory.map((year, index) => {
+            const amount = year.revenue!;
+            const height = Math.max(0, amount.value) / yAxisMax * 100;
+            return <div className="financial-bar-column" key={year.fiscal_year_end}>
+              <strong className="financial-bar-value" style={{ bottom: `calc(${height}% + 38px)` }}>{formatAmount(amount)}</strong>
+              <span className={`financial-bar${index === revenueHistory.length - 1 ? " financial-bar-current" : ""}`} style={{ height: `${height}%` }} />
+              <span className={`financial-bar-year${index === revenueHistory.length - 1 ? " financial-bar-year-current" : ""}`}>{formatFiscalYear(year.fiscal_year_end)}</span>
+            </div>;
+          })}
+        </div>
+      </div> : <div className="financial-chart-plot" role="status">
+        <div className="financial-chart-grid" aria-hidden="true"><span /><span /><span /><span /></div>
+        <p>{loading ? "Loading annual financial data…" : error || "Revenue history will appear when annual financial data is available."}</p>
+      </div>}
+      <div className="financial-chart-footer"><span>Fiscal year ended</span><span>{latest ? `Filed ${latest.filed} · ${financials?.source ?? "SEC EDGAR"}` : "Values are shown when supplied by the API."}</span></div>
     </div>
-    <div className="financials-footnote"><span>ⓘ</span> Financial metrics are shown only when supplied by the API.</div>
+    {financials?.revenue_basis === "revenue_net_of_interest" && <div className="financials-footnote"><span>ⓘ</span> Revenue is reported net of interest for this bank.</div>}
   </section>;
 }
 
-function FinancialMetric({ label, value }: { label: string; value: string }) {
-  return <div className="financial-metric-row"><span>{label}</span><strong>{value}</strong></div>;
+function FinancialMetric({ label, value, detail }: { label: string; value: string; detail?: string }) {
+  return <div className="financial-metric-row"><span>{label}</span><div><strong>{value}</strong>{detail && <small>{detail}</small>}</div></div>;
 }
 
 function formatMarketCap(value: number | null) {
@@ -162,6 +209,51 @@ function formatMarketCap(value: number | null) {
     notation: "compact",
     maximumFractionDigits: 2,
   }).format(value);
+}
+
+function formatAmount(amount: { value: number; unit: string } | null) {
+  if (!amount) return "Not available";
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: amount.unit,
+      notation: "compact",
+      maximumFractionDigits: 1,
+    }).format(amount.value);
+  } catch {
+    return `${new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(amount.value)} ${amount.unit}`;
+  }
+}
+
+function formatPercent(value: number | null) {
+  if (value === null) return "Not available";
+  return new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 1 }).format(value);
+}
+
+function formatRatio(value: number | null) {
+  if (value === null) return "Not available";
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value);
+}
+
+function formatFiscalYear(value: string) {
+  return value.slice(0, 4);
+}
+
+function chartAxisMax(value: number) {
+  if (!Number.isFinite(value) || value <= 0) return 1;
+  // Reserve headroom above the tallest bar so its value label stays clear of
+  // the chart's top grid line as revenue values change between companies.
+  const targetMax = value * 1.15;
+  const targetStep = targetMax / 3;
+  const magnitude = 10 ** Math.floor(Math.log10(targetStep));
+  const normalizedStep = targetStep / magnitude;
+  const niceFactors = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
+  const factor = niceFactors.find((candidate) => candidate >= normalizedStep) ?? 10;
+  return factor * magnitude * 3;
+}
+
+function formatAxisAmount(value: number, unit: string) {
+  return value === 0 ? "$0" : formatAmount({ value, unit });
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
