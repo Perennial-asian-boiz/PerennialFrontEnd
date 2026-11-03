@@ -27,7 +27,6 @@ export default function Watchlist() {
   const [dashboardCompanies, setDashboardCompanies] = useState<Company[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [companyProfiles, setCompanyProfiles] = useState<Record<string, { name: string; sector: string }>>({});
-  const [profileLoading, setProfileLoading] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -41,18 +40,25 @@ export default function Watchlist() {
     return () => controller.abort();
   }, []);
 
+  const dashboardTickers = useMemo(
+    () => new Set(dashboardCompanies.map((company) => company.ticker)),
+    [dashboardCompanies],
+  );
+  const missingProfileTickers = useMemo(
+    () => [...new Set(tickers)].filter(
+      (ticker) => !dashboardTickers.has(ticker) && !companyProfiles[ticker],
+    ),
+    [companyProfiles, dashboardTickers, tickers],
+  );
+  const profileLoading = !dataLoading && missingProfileTickers.length > 0;
+
   useEffect(() => {
     if (dataLoading) return;
 
-    const dashboardTickers = new Set(dashboardCompanies.map((company) => company.ticker));
-    const missingTickers = [...new Set(tickers)].filter(
-      (ticker) => !dashboardTickers.has(ticker) && !companyProfiles[ticker],
-    );
-    if (missingTickers.length === 0) return;
+    if (missingProfileTickers.length === 0) return;
 
     const controller = new AbortController();
-    setProfileLoading(true);
-    Promise.all(missingTickers.map(async (ticker) => {
+    Promise.all(missingProfileTickers.map(async (ticker) => {
       try {
         const security = await loadSecurityDetails(ticker, controller.signal);
         return [ticker, {
@@ -66,12 +72,10 @@ export default function Watchlist() {
       if (!controller.signal.aborted) {
         setCompanyProfiles((current) => ({ ...current, ...Object.fromEntries(profiles) }));
       }
-    }).finally(() => {
-      if (!controller.signal.aborted) setProfileLoading(false);
     });
 
     return () => controller.abort();
-  }, [companyProfiles, dashboardCompanies, dataLoading, tickers]);
+  }, [dataLoading, missingProfileTickers]);
 
   const filtered = useMemo(() => {
     const byTicker = new Map(dashboardCompanies.map((company) => [company.ticker, company]));
