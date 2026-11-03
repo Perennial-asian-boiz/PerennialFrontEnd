@@ -6,6 +6,20 @@ import { getSignalStatus, type Company } from "../data";
 import { loadDashboardPayload } from "../api/dashboard";
 import { loadSecurityDetails } from "../api/company";
 
+function dashboardSectorLabel(sector: string | null): string {
+  const label = sector?.trim();
+  if (!label) return "—";
+
+  const dashboardLabels: Record<string, string> = {
+    "basic materials": "Materials",
+    "consumer cyclical": "Consumer Discretionary",
+    "consumer defensive": "Consumer Staples",
+    "financial services": "Financials",
+    "information technology": "Technology",
+  };
+  return dashboardLabels[label.toLowerCase()] ?? label;
+}
+
 export default function Watchlist() {
   const navigate = useNavigate();
   const [toast, setToast] = useState<"success" | "error" | null>(null);
@@ -43,7 +57,7 @@ export default function Watchlist() {
         const security = await loadSecurityDetails(ticker, controller.signal);
         return [ticker, {
           name: security.name?.trim() || ticker,
-          sector: security.sector?.trim() || "—",
+          sector: dashboardSectorLabel(security.sector),
         }] as const;
       } catch {
         return [ticker, { name: ticker, sector: "—" }] as const;
