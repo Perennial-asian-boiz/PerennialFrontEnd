@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactElement, ReactNode } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { topics, type Company } from "../data";
 import { loadDashboardPayload } from "../api/dashboard";
 import { clearSession, getCachedPreferences, getPreferences, getSessionToken, isAuthApiConfigured, logout } from "../api/auth";
@@ -41,6 +41,11 @@ export default function AppShell({ children, title, subtitle, headerActions, hid
   const [searchDataReady, setSearchDataReady] = useState(false);
   const searchBoxRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isLocalPreview = location.pathname === "/dashboard-preview"
+    || location.pathname.startsWith("/company-preview/");
+  const homePath = isLocalPreview ? "/dashboard-preview" : "/";
+  const companyRoute = "/company/";
   const user = useAuthUser();
   const { isWatched } = useWatchlist();
   const profileName = user?.full_name.trim() || user?.email || "Account";
@@ -92,7 +97,7 @@ export default function AppShell({ children, title, subtitle, headerActions, hid
   const selectSearchResult = (company: Company) => {
     setQuery(company.ticker);
     setIsSearchOpen(false);
-    navigate(`/company/${encodeURIComponent(company.ticker)}`);
+    navigate(`${companyRoute}${encodeURIComponent(company.ticker)}`);
   };
 
   const handleLogout = () => {
@@ -105,9 +110,9 @@ export default function AppShell({ children, title, subtitle, headerActions, hid
   return (
     <div className="app-shell">
       <aside className={`sidebar ${open ? "sidebar-open" : ""}`}>
-        <div className="brand" onClick={() => navigate("/")} role="button" tabIndex={0}><PerennialLogo /></div>
+        <div className="brand" onClick={() => navigate(homePath)} role="button" tabIndex={0}><PerennialLogo /></div>
         <div className="sidebar-label">Explore</div>
-        <nav className="sidebar-nav">{navItems.map(([icon, label, path]) => <NavLink key={path} to={path} end={path === "/"} onClick={() => setOpen(false)} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}><span className="nav-icon"><Icon name={icon} /></span>{label}</NavLink>)}</nav>
+        <nav className="sidebar-nav">{navItems.map(([icon, label, path]) => { const to = path === "/" ? homePath : path; return <NavLink key={path} to={to} end={path === "/"} onClick={() => setOpen(false)} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}><span className="nav-icon"><Icon name={icon} /></span>{label}</NavLink>; })}</nav>
         {!hideSidebarLogout && <div className="sidebar-footer"><button className="nav-link sidebar-logout" onClick={handleLogout}><span className="nav-icon"><Icon name="logout" /></span>Logout</button></div>}
       </aside>
       {open && <button className="mobile-overlay" onClick={() => setOpen(false)} aria-label="Close menu" />}

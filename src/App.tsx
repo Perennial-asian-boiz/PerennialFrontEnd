@@ -20,6 +20,8 @@ import EmailConfirmation from "./pages/EmailConfirmation";
 import Welcome from "./pages/Welcome";
 import WhyCompany from "./pages/WhyCompany";
 import { WatchlistProvider } from "./components/watchlistStore";
+import { AuthUserContext } from "./components/authUserContext";
+import { getCachedUser } from "./api/auth";
 import RequireAuth from "./components/RequireAuth";
 
 function Protected({ children }: { children: ReactNode }) {
@@ -27,7 +29,9 @@ function Protected({ children }: { children: ReactNode }) {
 }
 
 function LocalPreview({ children }: { children: ReactNode }) {
-  return import.meta.env.DEV ? children : <Navigate to="/login" replace />;
+  return import.meta.env.DEV
+    ? <AuthUserContext.Provider value={getCachedUser()}>{children}</AuthUserContext.Provider>
+    : <Navigate to="/login" replace />;
 }
 
 function App() {

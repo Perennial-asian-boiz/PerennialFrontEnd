@@ -4,7 +4,7 @@ import { claimTitle, explanationClaims, explanationDetail } from "../lib/scoreEx
 
 // S2-03: why Perennial recommends the company, as up to three supporting signals in plain
 // language (AC1), each citing its breakdown component, stored record and as-of (AC2, AC3),
-// laid out as the Figma "Why This Company" card. It renders from the same useScore state
+// laid out as the Figma recommendation card. It renders from the same useScore state
 // as the score card and the breakdown, and only for a recommended company: with claims it
 // shows them, and without them it says an explanation is unavailable (AC5). A company that
 // isn't recommended, has no score, or is still loading gets no card at all.
@@ -18,7 +18,7 @@ export default function WhyPanel({ state }: { state: ScoreState }) {
     <div className="card-header">
       <div className="why-heading">
         <span className="why-icon" aria-hidden="true"><LightbulbIcon /></span>
-        <h2 id="why-panel-heading" className="card-title">Why This Company</h2>
+        <h2 id="why-panel-heading" className="card-title">Why Perennial recommends this company</h2>
       </div>
       {claims.length > 0 && <span className="card-eyebrow">Key reasons</span>}
     </div>

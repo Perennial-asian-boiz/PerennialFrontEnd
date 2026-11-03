@@ -139,13 +139,13 @@ test("an unavailable score, loading, an unknown company and a failed request get
   }
 });
 
-test("the card is headed \"Why This Company\", with \"Key reasons\" only above claims", () => {
+test("the card is headed \"Why Perennial recommends this company\", with \"Key reasons\" only above claims", () => {
   const heading = (html) => html.match(/id="why-panel-heading"[^>]*>([^<]*)</)[1];
   const withClaims = panel(recommended([claim(1, "Supported by fundamentals.")]));
-  assert.equal(heading(withClaims), "Why This Company");
+  assert.equal(heading(withClaims), "Why Perennial recommends this company");
   assert.match(withClaims, /Key reasons/);
   const unexplained = panel(withExplanation({ status: "unavailable", reason: "insufficient_supporting_data", claims: [] }));
-  assert.equal(heading(unexplained), "Why This Company");
+  assert.equal(heading(unexplained), "Why Perennial recommends this company");
   assert.doesNotMatch(unexplained, /Key reasons/);
 });
 

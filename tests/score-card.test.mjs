@@ -185,5 +185,5 @@ test("an unknown company and a failed request are not shown as a score", () => {
   const failed = card(null, new api.ScoreApiError("Score API returned 500", 500, "internal_error"));
   assert.match(failed, /role="alert"/);
   assert.match(failed, /The score couldn(&#x27;|')t be loaded/);
-  for (const html of [notFound, failed]) assert.doesNotMatch(html, /out of 100|Score unavailable/);
+  for (const html of [notFound, failed]) assert.doesNotMatch(html, /out of 100|Confidence Score/);
 });
