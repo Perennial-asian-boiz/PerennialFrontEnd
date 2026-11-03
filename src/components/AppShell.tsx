@@ -43,8 +43,7 @@ export default function AppShell({ children, title, subtitle, headerActions, hid
   const navigate = useNavigate();
   const location = useLocation();
   const isLocalPreview = location.pathname === "/dashboard-preview"
-    || location.pathname.startsWith("/company-preview/")
-    || (import.meta.env.DEV && location.pathname.startsWith("/company/"));
+    || location.pathname.startsWith("/company-preview/");
   const homePath = isLocalPreview ? "/dashboard-preview" : "/";
   const companyRoute = "/company/";
   const user = useAuthUser();

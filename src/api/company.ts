@@ -12,23 +12,10 @@ export type SecurityDetails = {
   name: string | null;
   sector: string | null;
   summary: CompanySummary | null;
-  current: {
-    entry: {
-      market_cap: number | null;
-      warnings: string[];
-      source_dates: Record<string, string | null>;
-      signals: Record<string, unknown>;
-    } | null;
-    publication: {
-      created_at: string;
-      ranking_version: string;
-    } | null;
-  } | null;
 };
 
 type SecurityResponse = {
-  security: Omit<SecurityDetails, "current">;
-  current?: SecurityDetails["current"];
+  security: SecurityDetails;
 };
 
 const SECURITY_CACHE_TTL_MS = 30_000;
@@ -74,12 +61,8 @@ export async function loadSecurityDetails(symbol: string, signal?: AbortSignal):
       if (!payload.security || typeof payload.security.symbol !== "string") {
         throw new Error("Company API returned an invalid response.");
       }
-      const security: SecurityDetails = {
-        ...payload.security,
-        current: payload.current ?? null,
-      };
-      securityCache.set(apiUrl, { security, cachedAt: Date.now() });
-      return security;
+      securityCache.set(apiUrl, { security: payload.security, cachedAt: Date.now() });
+      return payload.security;
     }).finally(() => pendingSecurityRequests.delete(apiUrl));
     pendingSecurityRequests.set(apiUrl, request);
   }

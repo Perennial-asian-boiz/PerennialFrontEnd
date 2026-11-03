@@ -82,7 +82,7 @@ export default function Company() {
       <ScoreBreakdown state={score} />
       <CompanyDetailSections />
       <WhyPanel state={score} />
-      <FinancialsSection symbol={security.symbol} companyName={name} marketCap={security.current?.entry?.market_cap ?? null} />
+      <FinancialsSection symbol={security.symbol} companyName={name} />
     </>}
     {toast && <Toast type="success" message="Successfully added to your Watchlist" onDone={() => setToast(null)} />}
   </AppShell>;
@@ -122,7 +122,7 @@ function CompanyDetailSections() {
   </>;
 }
 
-function FinancialsSection({ symbol, companyName, marketCap }: { symbol: string; companyName: string; marketCap: number | null }) {
+function FinancialsSection({ symbol, companyName }: { symbol: string; companyName: string }) {
   const [result, setResult] = useState<{ symbol: string; data: FinancialsResponse | null; error: string }>({
     symbol: "",
     data: null,
@@ -161,7 +161,6 @@ function FinancialsSection({ symbol, companyName, marketCap }: { symbol: string;
       <span>SEC EDGAR · Annual</span>
     </div>
     <div className="financial-metrics-list" aria-label="Key financial metrics">
-      <FinancialMetric label="Market Cap" value={formatMarketCap(marketCap)} />
       <FinancialMetric label="Revenue" value={loading ? "Loading…" : formatAmount(latest?.revenue ?? null)} detail={latest ? `FY ended ${formatFiscalYear(latest.fiscal_year_end)}` : undefined} />
       <FinancialMetric label="Revenue Growth" value={loading ? "Loading…" : formatPercent(latest?.revenue_growth ?? null)} />
       <FinancialMetric label="Debt / Equity" value={loading ? "Loading…" : formatRatio(latest?.debt_to_equity ?? null)} />
@@ -199,16 +198,6 @@ function FinancialsSection({ symbol, companyName, marketCap }: { symbol: string;
 
 function FinancialMetric({ label, value, detail }: { label: string; value: string; detail?: string }) {
   return <div className="financial-metric-row"><span>{label}</span><div><strong>{value}</strong>{detail && <small>{detail}</small>}</div></div>;
-}
-
-function formatMarketCap(value: number | null) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "Not available";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    notation: "compact",
-    maximumFractionDigits: 2,
-  }).format(value);
 }
 
 function formatAmount(amount: { value: number; unit: string } | null) {
