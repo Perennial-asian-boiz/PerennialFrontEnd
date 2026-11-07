@@ -54,7 +54,7 @@ function Factor({ row }: { row: BreakdownRow }) {
     <summary>
       <span className="factor-top">
         <span className="factor-name">{row.label}</span>
-        <span className="factor-pill">{label} ({value.toFixed(1)})</span>
+        <span className="factor-pill"><span>{label} ({value.toFixed(1)})</span></span>
       </span>
       <span className="factor-bar" aria-hidden="true"><span style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }} /></span>
     </summary>
@@ -71,7 +71,7 @@ function MissingFactor({ row }: { row: BreakdownRow }) {
   return <div className="factor confidence-band-none">
     <span className="factor-top">
       <span className="factor-name">{row.label}</span>
-      <span className="factor-pill">Unavailable</span>
+      <span className="factor-pill"><span>Unavailable</span></span>
     </span>
     <span className="factor-bar" aria-hidden="true" />
     <span className="factor-note" title={`Nominal weight ${percent(row.nominalWeight)}`}>{row.note}</span>

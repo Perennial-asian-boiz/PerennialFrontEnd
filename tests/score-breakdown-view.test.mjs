@@ -38,11 +38,13 @@ const scored = {
   explanation: { status: "ok", claims: [] },
 };
 const view = (response, error) => render(createElement(ScoreBreakdown, { state: api.scoreState(response, error) }));
+// Check the displayed labels without depending on spans used for layout.
+const visibleText = (html) => html.replace(/<[^>]+>/g, "");
 
 test("each present factor shows its band and value, and on tap its weight and contribution (02-AC1)", () => {
   const html = view(scored);
-  assert.match(html, /Fundamentals<\/span><span class="factor-pill">Strong \(78\.0\)/);
-  assert.match(html, /News &amp; social sentiment<\/span><span class="factor-pill">Mix \(65\.5\)/);
+  assert.match(visibleText(html), /FundamentalsStrong \(78\.0\)/);
+  assert.match(visibleText(html), /News &amp; social sentimentMix \(65\.5\)/);
   assert.match(html, /<dt>Weight<\/dt><dd>70\.59% <span class="factor-nominal">\(nominal 60\.00%\)<\/span><\/dd><dt>Contribution<\/dt><dd>55\.06 points/);
   assert.match(html, /<dt>Weight<\/dt><dd>29\.41% .*?<dt>Contribution<\/dt><dd>19\.26 points/);
   assert.match(html, /style="width:78%"/);
@@ -62,7 +64,7 @@ test("a factor's details show its input as-of and version (02-AC3)", () => {
 
 test("a missing factor reads Unavailable, weight redistributed, with an empty bar (02-AC4)", () => {
   const html = view(scored);
-  assert.match(html, /Event exposure<\/span><span class="factor-pill">Unavailable/);
+  assert.match(visibleText(html), /Event exposureUnavailable/);
   assert.match(html, /Unavailable — weight redistributed to the other components/);
   assert.match(html, /<span class="factor-bar" aria-hidden="true"><\/span>/);
 });

@@ -1,0 +1,131 @@
+/* Restore the setup card and controls below the desktop breakpoint. */
+@media (max-width: 900px) {
+  .onboarding-page.setup-page {
+    width: 100%;
+    min-height: 100svh;
+    padding: 32px;
+    background: #f3faf1;
+    color: #303030;
+  }
+
+  .setup-page .setup-panel {
+    width: min(100%, 704px);
+    min-width: 0;
+    margin: 0 auto;
+    padding: 36px 32px;
+    border: 1px solid #d9e4d9;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 20px rgb(35 74 45 / 6%);
+  }
+
+  .setup-page .setup-panel h1,
+  .setup-page .setup-panel h2 {
+    margin: 0;
+    color: #373737;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -.025em;
+  }
+
+  .setup-page .setup-section-copy {
+    margin: 12px 0 0;
+    color: #1e5733;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .setup-page .interest-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 28px;
+  }
+
+  .setup-page .interest-option {
+    width: 100%;
+    min-width: 0;
+    min-height: 52px;
+    padding: 10px 14px;
+    border: 2px solid #c9c9c9;
+    border-radius: 28px;
+    background: #fff;
+    color: #4c4c4c;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.35;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  .setup-page .interest-option:hover,
+  .setup-page .interest-option.selected {
+    border-color: #168c43;
+    background: #f1fbef;
+    color: #168c43;
+  }
+
+  .setup-page .interest-option:focus-visible,
+  .setup-page .risk-label:focus-visible,
+  .setup-page .onboarding-actions button:focus-visible {
+    outline: 3px solid #168c43;
+    outline-offset: 3px;
+  }
+
+  .setup-page .risk-section {
+    margin-top: 36px;
+    padding-top: 32px;
+    border-top: 1px solid #d9e4d9;
+  }
+
+  .setup-page .risk-comfort,
+  .setup-page .risk-loading-skeleton {
+    width: min(100%, 400px);
+    margin: 32px auto 0;
+  }
+
+  .setup-page .risk-gauge { display: block; width: 100%; height: auto; }
+  .setup-page .risk-labels { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+  .setup-page .risk-label { min-width: 0; min-height: 44px; padding: 8px 0; font-size: 12px; line-height: 1.3; }
+
+  .setup-page .onboarding-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    width: min(100%, 704px);
+    margin: 24px auto 0;
+  }
+
+  .setup-page .onboarding-actions > * { min-width: 0; min-height: 48px; }
+  .setup-page .onboarding-skip { padding: 12px; border: 0; background: transparent; color: #168c43; font-size: 16px; font-weight: 700; }
+  .setup-page .onboarding-continue { padding: 12px 24px; border-radius: 9px; font-size: 16px; }
+  .setup-page .onboarding-continue:disabled { cursor: not-allowed; opacity: .55; }
+  .setup-page .setup-api-error { width: min(100%, 704px); margin: 16px auto 0; line-height: 1.5; }
+}
+
+@media (max-width: 650px) {
+  .onboarding-page.setup-page { padding: 20px 16px 28px; }
+  .setup-page .setup-panel { padding: 24px 20px; }
+  .setup-page .setup-panel h1,
+  .setup-page .setup-panel h2 { font-size: clamp(24px, 6.5vw, 28px); }
+  .setup-page .setup-section-copy { font-size: 15px; }
+  .setup-page .interest-grid { gap: 12px; margin-top: 24px; }
+  .setup-page .interest-option { padding: 10px; font-size: 14px; }
+  .setup-page .risk-section { margin-top: 28px; padding-top: 28px; }
+  .setup-page .risk-label { font-size: clamp(9px, 2.5vw, 12px); }
+  .setup-page .onboarding-actions { flex-direction: column-reverse; align-items: stretch; flex-wrap: nowrap; gap: 8px; }
+  .setup-page .onboarding-actions > * { width: 100%; flex: none; order: 0; }
+}
+
+@media (max-width: 380px) {
+  .setup-page .setup-panel { padding-inline: 16px; }
+  .setup-page .interest-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (min-width: 901px) and (max-width: 1200px) {
+  .setup-page .interest-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+  .setup-page .interest-option { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+}
