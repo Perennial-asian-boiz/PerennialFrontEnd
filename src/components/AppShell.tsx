@@ -30,9 +30,9 @@ function SearchIcon() {
   return <svg className="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>;
 }
 
-type AppShellProps = { children: ReactNode; title: string; subtitle?: string; headerActions?: ReactNode; hidePageHeading?: boolean; hideSidebarLogout?: boolean };
+type AppShellProps = { className?: string; children: ReactNode; title: string; subtitle?: string; headerActions?: ReactNode; hidePageHeading?: boolean; hideSidebarLogout?: boolean };
 
-export default function AppShell({ children, title, subtitle, headerActions, hidePageHeading = false, hideSidebarLogout = false }: AppShellProps) {
+export default function AppShell({ className = "", children, title, subtitle, headerActions, hidePageHeading = false, hideSidebarLogout = false }: AppShellProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -108,7 +108,7 @@ export default function AppShell({ children, title, subtitle, headerActions, hid
   };
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${className}`.trim()}>
       <aside className={`sidebar ${open ? "sidebar-open" : ""}`}>
         <div className="brand" onClick={() => navigate(homePath)} role="button" tabIndex={0}><PerennialLogo /></div>
         <div className="sidebar-label">Explore</div>

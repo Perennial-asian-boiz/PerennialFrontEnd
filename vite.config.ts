@@ -7,6 +7,8 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   // GitHub Pages hosts this repository under /PerennialFrontEnd/.
   base: process.env.GITHUB_ACTIONS === "true" ? "/PerennialFrontEnd/" : "/",
+  // Supabase's local confirmation redirect uses this exact IPv4 loopback host.
+  server: { host: "127.0.0.1" },
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] }),

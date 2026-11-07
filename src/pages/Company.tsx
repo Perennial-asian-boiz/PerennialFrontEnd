@@ -162,7 +162,9 @@ function FinancialsSection({ symbol, companyName }: { symbol: string; companyNam
     </div>
     <div className="financial-metrics-list" aria-label="Key financial metrics">
       <FinancialMetric label="Revenue" value={loading ? "Loading…" : formatAmount(latest?.revenue ?? null)} detail={latest ? `FY ended ${formatFiscalYear(latest.fiscal_year_end)}` : undefined} />
+      <FinancialMetric label="Net Income" value={loading ? "Loading…" : formatAmount(latest?.net_income ?? null)} />
       <FinancialMetric label="Revenue Growth" value={loading ? "Loading…" : formatPercent(latest?.revenue_growth ?? null)} />
+      <FinancialMetric label="Net Margin" value={loading ? "Loading…" : formatPercent(latest?.net_margin ?? null)} />
       <FinancialMetric label="Debt / Equity" value={loading ? "Loading…" : formatRatio(latest?.debt_to_equity ?? null)} />
     </div>
     <div className="financial-chart-card">
@@ -171,20 +173,22 @@ function FinancialsSection({ symbol, companyName }: { symbol: string; companyNam
         <span>Annual reported values</span>
       </div>
       {revenueHistory.length > 0 ? <div className="financial-chart-plot financial-chart-plot-populated" role="img" aria-label={`Annual revenue from ${formatFiscalYear(revenueHistory[0].fiscal_year_end)} to ${formatFiscalYear(revenueHistory[revenueHistory.length - 1].fiscal_year_end)}`}>
-        <div className="financial-chart-grid" aria-hidden="true"><span /><span /><span /><span /></div>
-        <div className="financial-chart-y-axis" aria-hidden="true">
-          {yAxisTicks.map((tick, index) => <span key={index}>{formatAxisAmount(tick, yAxisUnit)}</span>)}
-        </div>
-        <div className="financial-revenue-bars">
-          {revenueHistory.map((year, index) => {
-            const amount = year.revenue!;
-            const height = Math.max(0, amount.value) / yAxisMax * 100;
-            return <div className="financial-bar-column" key={year.fiscal_year_end}>
-              <strong className="financial-bar-value" style={{ bottom: `calc(${height}% + 38px)` }}>{formatAmount(amount)}</strong>
-              <span className={`financial-bar${index === revenueHistory.length - 1 ? " financial-bar-current" : ""}`} style={{ height: `${height}%` }} />
-              <span className={`financial-bar-year${index === revenueHistory.length - 1 ? " financial-bar-year-current" : ""}`}>{formatFiscalYear(year.fiscal_year_end)}</span>
-            </div>;
-          })}
+        <div className="financial-chart-canvas">
+          <div className="financial-chart-grid" aria-hidden="true"><span /><span /><span /><span /></div>
+          <div className="financial-chart-y-axis" aria-hidden="true">
+            {yAxisTicks.map((tick, index) => <span key={index}>{formatAxisAmount(tick, yAxisUnit)}</span>)}
+          </div>
+          <div className="financial-revenue-bars">
+            {revenueHistory.map((year, index) => {
+              const amount = year.revenue!;
+              const height = Math.max(0, amount.value) / yAxisMax * 100;
+              return <div className={`financial-bar-column${index % 2 === 1 ? " financial-bar-column-label-raised" : ""}`} key={year.fiscal_year_end}>
+                <strong className="financial-bar-value" style={{ bottom: `calc(${height}% + 38px)` }}>{formatAmount(amount)}</strong>
+                <span className={`financial-bar${index === revenueHistory.length - 1 ? " financial-bar-current" : ""}`} style={{ height: `${height}%` }} />
+                <span className={`financial-bar-year${index === revenueHistory.length - 1 ? " financial-bar-year-current" : ""}`}>{formatFiscalYear(year.fiscal_year_end)}</span>
+              </div>;
+            })}
+          </div>
         </div>
       </div> : <div className="financial-chart-plot" role="status">
         <div className="financial-chart-grid" aria-hidden="true"><span /><span /><span /><span /></div>

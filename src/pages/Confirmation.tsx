@@ -1,6 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { confirmationSectorLabels, riskProfiles, type OnboardingPreferences, type RiskLevel } from "../data";
 
+import "./Confirmation.css";
+
 type ConfirmationState = Partial<OnboardingPreferences>;
 
 export default function Confirmation() {
