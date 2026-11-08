@@ -8,7 +8,7 @@ export const MISSING_TEXT = "Unavailable — weight redistributed to the other c
 export const SUM_TOLERANCE = 0.5;
 
 const LABELS: Record<string, string> = {
-  fundamentals: "Fundamentals",
+  fundamentals: "Market position",
   sentiment: "News & social sentiment",
   event_exposure: "Event exposure",
 };

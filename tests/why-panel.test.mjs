@@ -72,7 +72,7 @@ test("tapping a claim shows its component, stored record, value and as-of (03-AC
   const html = panel(recommended([claim(1, "Keeps 42 cents of every sales dollar as operating profit.")]));
   assert.match(html, /<details class="why-reason"><summary>/);
   const source = html.match(/<dl class="why-claim-source">(.*?)<\/dl>/)[1];
-  assert.match(source, /<dt>Component<\/dt><dd>Fundamentals<\/dd>/);
+  assert.match(source, /<dt>Component<\/dt><dd>Market position<\/dd>/);
   assert.match(source, /fundamental_scores #812, batch 5/);
   assert.match(source, /operating margin/);
   assert.match(source, /0\.420000/);
