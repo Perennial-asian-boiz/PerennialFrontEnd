@@ -5,7 +5,8 @@
 //   npm run mock-api                       # http://localhost:8787
 //   VITE_API_URL=http://localhost:8787     # in .env.local, then npm run dev
 //
-// Routes: GET /api/watchlist (the dashboard), GET /v1/securities/{symbol} (company
+// Routes: GET /v1/watchlist (published ranks/signals), GET /api/watchlist
+// (company display metadata), GET /v1/securities/{symbol} (company
 // details) and GET /v1/securities/{symbol}/score (backend #77's contract). Each ticker in
 // the fixtures file is one state; an unknown ticker is 404 unknown_security, as the API
 // does. The fixtures are re-read on every request, so edits show up without a restart.
@@ -58,6 +59,26 @@ function dashboardRow(symbol, entry) {
 
 async function route(path) {
   const all = await securities();
+  if (path === "/v1/watchlist") {
+    const tickers = Object.keys(all);
+    const half = Math.ceil(tickers.length / 2);
+    const ranked = (symbols, bucket) => symbols.map((ticker, index) => ({
+      ticker, bucket, rank: index + 1,
+      signals: { ark: all[ticker].signals?.ark ?? null, insider: all[ticker].signals?.insider ?? null, congress: null, short_interest: null },
+      source_dates: { ark: null, insider: null, congress: null, short_interest: null },
+      warnings: [],
+    }));
+    return [200, {
+      api_version: "v1",
+      publication: { id: 1, created_at: AS_OF, ranking_version: "watchlist-v5", demo: true },
+      watchlist: {
+        schema_version: "1.0", generated_at: AS_OF, ranking_version: "watchlist-v5",
+        affordable_growing: ranked(tickers.slice(0, half), "affordable_growing"),
+        popular_stable: ranked(tickers.slice(half), "popular_stable"),
+        unresolved: [], errors: [],
+      },
+    }];
+  }
   if (path === "/api/watchlist") {
     const rows = Object.entries(all).map(([symbol, entry]) => dashboardRow(symbol, entry));
     const half = Math.ceil(rows.length / 2);

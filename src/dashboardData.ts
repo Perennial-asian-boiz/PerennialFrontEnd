@@ -98,7 +98,7 @@ export const dashboardPayload: DashboardPayload = {
 // The first occurrence wins if a ticker appears in both backend buckets.
 export const dashboardCompanies = [...dashboardPayload.affordable_growing, ...dashboardPayload.popular_stable].filter((company, index, companies) => companies.findIndex((item) => item.ticker === company.ticker) === index);
 
-export function getDashboardSections(payload: DashboardPayload, selectedSectors: string[], bucket: DashboardBucket) {
+export function getDashboardSections<T extends Company>(payload: Record<DashboardBucket, T[]>, selectedSectors: string[], bucket: DashboardBucket) {
   return selectedSectors.map((name) => ({
     name,
     items: payload[bucket].filter((company) => company.sector === name),
