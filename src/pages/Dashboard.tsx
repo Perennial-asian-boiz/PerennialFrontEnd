@@ -107,7 +107,7 @@ export default function Dashboard() {
         </div>
         <div className="table-wrap"><table className="market-table" aria-busy={dashboardLoading}>
           <colgroup><col className="market-company-column" /><col className="market-signal-column" /><col className="market-ark-column" /><col className="market-insider-column" /><col className="market-action-column" /></colgroup>
-          <thead><tr><th scope="col">Company / ticker</th><th scope="col">Signal status</th><th scope="col">ARK</th><th scope="col">Insider</th><th scope="col">Action</th></tr></thead>
+          <thead><tr><th scope="col">Company / ticker</th><th scope="col">Signal status</th><th scope="col">ARK</th><th scope="col">Insider</th><th scope="col"><span className="market-action-label">Action</span></th></tr></thead>
           <tbody>{section.items.length === 0 ? dashboardLoading ? [0, 1, 2].map((key) => <tr className="market-skeleton-row" key={key} aria-hidden="true"><td><span className="loading-bar loading-company" /><span className="loading-bar loading-subline" /></td><td><span className="loading-bar loading-metric" /></td><td><span className="loading-bar loading-metric" /></td><td><span className="loading-bar loading-metric" /></td><td><span className="loading-bar loading-action" /></td></tr>) : <tr><td><strong>—</strong><small>No companies in this sector right now</small></td><td>—</td><td>—</td><td>—</td><td><span className="watch-placeholder" aria-hidden="true" /></td></tr> : visibleItems.map((company) => {
             const signal = getSignalStatus(company);
             return <tr className="market-company-row" key={company.ticker} data-rank={company.rank} onClick={() => navigate(`${companyRoute}${encodeURIComponent(company.ticker)}`)}>

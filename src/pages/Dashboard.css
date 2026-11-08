@@ -1,10 +1,10 @@
 /* Five dashboard columns: company, overall signal, ARK, insider and action. */
 .dashboard-shell .market-table { width: 100%; min-width: 0; table-layout: fixed; }
-.dashboard-shell .market-table col.market-company-column { width: 30%; }
-.dashboard-shell .market-table col.market-signal-column { width: 12%; }
+.dashboard-shell .market-table col.market-company-column,
+.dashboard-shell .market-table col.market-signal-column,
 .dashboard-shell .market-table col.market-ark-column,
-.dashboard-shell .market-table col.market-insider-column { width: 20%; }
-.dashboard-shell .market-table col.market-action-column { width: 18%; }
+.dashboard-shell .market-table col.market-insider-column,
+.dashboard-shell .market-table col.market-action-column { width: 20%; }
 .dashboard-shell .market-table th,
 .dashboard-shell .market-table td { padding: 14px 10px; vertical-align: middle; }
 .dashboard-shell .market-table th:last-child,
@@ -23,6 +23,20 @@
   font-size: clamp(10px, .9vw, 12px);
   white-space: nowrap;
   overflow-wrap: normal;
+}
+
+@media (min-width: 651px) {
+  .dashboard-shell .market-table { --row-edge-gap: clamp(16px, 2vw, 28px); }
+  .dashboard-shell .market-table th:first-child,
+  .dashboard-shell .market-table td:first-child { padding-left: var(--row-edge-gap); }
+  .dashboard-shell .market-company-link { overflow-wrap: anywhere; }
+  .dashboard-shell .market-table th:last-child,
+  .dashboard-shell .market-table td:last-child { padding-right: var(--row-edge-gap); }
+  .dashboard-shell .market-table th:last-child { text-align: right; }
+  .dashboard-shell .market-action-label { display: inline-block; width: 96px; max-width: 100%; text-align: center; }
+  .dashboard-shell .market-table .watch-action { justify-content: flex-end; }
+  .dashboard-shell .market-table .watch-button,
+  .dashboard-shell .market-table .watch-placeholder { width: 96px; max-width: 100%; }
 }
 
 @media (max-width: 900px) {

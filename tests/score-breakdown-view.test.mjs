@@ -43,7 +43,7 @@ const visibleText = (html) => html.replace(/<[^>]+>/g, "");
 
 test("each present factor shows its band and value, and on tap its weight and contribution (02-AC1)", () => {
   const html = view(scored);
-  assert.match(visibleText(html), /FundamentalsStrong \(78\.0\)/);
+  assert.match(visibleText(html), /Market positionStrong \(78\.0\)/);
   assert.match(visibleText(html), /News &amp; social sentimentMix \(65\.5\)/);
   assert.match(html, /<dt>Weight<\/dt><dd>70\.59% <span class="factor-nominal">\(nominal 60\.00%\)<\/span><\/dd><dt>Contribution<\/dt><dd>55\.06 points/);
   assert.match(html, /<dt>Weight<\/dt><dd>29\.41% .*?<dt>Contribution<\/dt><dd>19\.26 points/);

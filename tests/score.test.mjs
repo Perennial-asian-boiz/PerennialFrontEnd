@@ -296,7 +296,7 @@ const pick = (row) => Object.fromEntries(ROW_KEYS.map((key) => [key, row[key]]))
 test("the breakdown has a row per component, in the served order (02-AC1)", () => {
   const rows = breakdown.breakdownRows(clone(full.score));
   assert.deepEqual(rows.map((row) => row.name), ["fundamentals", "sentiment", "event_exposure"]);
-  assert.match(rows[0].label, /fundamental/i);
+  assert.equal(rows[0].label, "Market position");
   assert.match(rows[1].label, /sentiment/i);
   assert.match(rows[2].label, /event/i);
 });
