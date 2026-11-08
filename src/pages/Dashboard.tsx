@@ -3,10 +3,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 import AppShell, { Toast } from "../components/AppShell";
 import { useWatchlist } from "../components/watchlistStore";
 import { getSignalStatus, topics } from "../data";
-import { emptyDashboardPayload, getDashboardSections, type DashboardBucket } from "../dashboardData";
-import { loadDashboardPayload } from "../api/dashboard";
+import { getDashboardSections, type DashboardBucket } from "../dashboardData";
+import { emptyPublishedDashboardPayload, loadPublishedDashboardPayload } from "../api/publishedWatchlist";
 import { getCachedPreferences, getPreferences, getSessionToken, isAuthApiConfigured } from "../api/auth";
 import { formatNextMarketOpen, loadMarketStatus, type MarketStatus } from "../marketStatus";
+import "./Dashboard.css";
+
+const signalNumber = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
+
+function signalCount(value: number, singular: string, plural = `${singular}s`) {
+  return `${signalNumber.format(value)} ${value === 1 ? singular : plural}`;
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -16,7 +23,7 @@ export default function Dashboard() {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set());
   const [toast, setToast] = useState<"success" | "error" | null>(null);
   const apiConfigured = Boolean(import.meta.env.VITE_API_URL?.trim());
-  const [payload, setPayload] = useState(emptyDashboardPayload);
+  const [payload, setPayload] = useState(emptyPublishedDashboardPayload);
   const [dashboardLoading, setDashboardLoading] = useState(apiConfigured);
   const [dashboardUnavailable, setDashboardUnavailable] = useState(!apiConfigured);
   const [marketStatus, setMarketStatus] = useState<MarketStatus | null>(null);
@@ -37,14 +44,14 @@ export default function Dashboard() {
   };
   useEffect(() => {
     const controller = new AbortController();
-    loadDashboardPayload(controller.signal).then((nextPayload) => {
+    loadPublishedDashboardPayload(controller.signal).then((nextPayload) => {
       setPayload(nextPayload);
       setDashboardUnavailable(!apiConfigured);
       setDashboardLoading(false);
     }).catch((error: unknown) => {
       if (error instanceof DOMException && error.name === "AbortError") return;
       if (apiConfigured) {
-        setPayload(emptyDashboardPayload);
+        setPayload(emptyPublishedDashboardPayload);
         setDashboardUnavailable(true);
       }
       setDashboardLoading(false);
@@ -86,7 +93,7 @@ export default function Dashboard() {
     };
   }, [apiConfigured, isDashboardPreview]);
   const companyRoute = "/company/";
-  return <AppShell title="Market Health" subtitle="Curated market opportunities and sector trend monitors." headerActions={<div className="segmented"><button className={view === "Affordable & Growing" ? "selected" : ""} onClick={() => setView("Affordable & Growing")}>Affordable &amp; Growing</button><button className={view === "Popular & Stable" ? "selected" : ""} onClick={() => setView("Popular & Stable")}>Popular &amp; Stable</button></div>}>
+  return <AppShell className="dashboard-shell" title="Market Health" subtitle="Curated market opportunities and sector trend monitors." headerActions={<div className="segmented"><button className={view === "Affordable & Growing" ? "selected" : ""} onClick={() => setView("Affordable & Growing")}>Affordable &amp; Growing</button><button className={view === "Popular & Stable" ? "selected" : ""} onClick={() => setView("Popular & Stable")}>Popular &amp; Stable</button></div>}>
     <div className="market-toolbar"><div className={`market-status ${marketStatus ? (marketStatus.is_open ? "market-status-open" : "market-status-closed") : ""}`} aria-live="polite"><span><span className="market-status-dot" aria-hidden="true" /> {marketStatus?.label ?? "—"} · {marketStatus?.exchange ?? "—"}</span>{marketStatus && <small>Next open: {formatNextMarketOpen(marketStatus.next_open)} · {marketStatus.note}</small>}</div></div>
     {preferencesLoading ? <div className="market-sections" role="status" aria-label="Loading your selected sectors">{[0, 1, 2].map((key) => <section className="market-section market-skeleton-section" key={key}><div className="market-section-heading"><span className="loading-bar loading-sector" /><span className="loading-bar loading-action" /></div>{[0, 1, 2].map((row) => <div className="market-skeleton-row" key={row}><span className="loading-bar loading-company" /><span className="loading-bar loading-metric" /><span className="loading-bar loading-metric" /><span className="loading-bar loading-action" /></div>)}</section>)}</div> : selectedSectors.length === 0 ? <p className="auth-muted-line" role="status">No sectors selected. Choose sectors in setup to see companies here.</p> : <div className="market-sections">{sections.map((section) => {
       const sectionKey = `${bucket}:${section.name}`;
@@ -99,14 +106,15 @@ export default function Dashboard() {
           <button className="view-all" type="button" aria-expanded={isExpanded} disabled={!hasMoreItems} onClick={() => toggleSection(sectionKey)}>{isExpanded ? "Show less ↑" : "View all →"}</button>
         </div>
         <div className="table-wrap"><table className="market-table" aria-busy={dashboardLoading}>
-          <colgroup><col className="market-company-column" /><col className="market-signal-column" /><col className="market-price-column" /><col className="market-action-column" /></colgroup>
-          <thead><tr><th>Company / ticker</th><th>Signal status</th><th>Price</th><th>Action</th></tr></thead>
-          <tbody>{section.items.length === 0 ? dashboardLoading ? [0, 1, 2].map((key) => <tr className="market-skeleton-row" key={key} aria-hidden="true"><td><span className="loading-bar loading-company" /><span className="loading-bar loading-subline" /></td><td><span className="loading-bar loading-metric" /></td><td><span className="loading-bar loading-metric" /></td><td><span className="loading-bar loading-action" /></td></tr>) : <tr><td><strong>—</strong><small>No companies in this sector right now</small></td><td>—</td><td>—</td><td><span className="watch-placeholder" aria-hidden="true" /></td></tr> : visibleItems.map((company) => {
+          <colgroup><col className="market-company-column" /><col className="market-signal-column" /><col className="market-ark-column" /><col className="market-insider-column" /><col className="market-action-column" /></colgroup>
+          <thead><tr><th scope="col">Company / ticker</th><th scope="col">Signal status</th><th scope="col">ARK</th><th scope="col">Insider</th><th scope="col">Action</th></tr></thead>
+          <tbody>{section.items.length === 0 ? dashboardLoading ? [0, 1, 2].map((key) => <tr className="market-skeleton-row" key={key} aria-hidden="true"><td><span className="loading-bar loading-company" /><span className="loading-bar loading-subline" /></td><td><span className="loading-bar loading-metric" /></td><td><span className="loading-bar loading-metric" /></td><td><span className="loading-bar loading-metric" /></td><td><span className="loading-bar loading-action" /></td></tr>) : <tr><td><strong>—</strong><small>No companies in this sector right now</small></td><td>—</td><td>—</td><td>—</td><td><span className="watch-placeholder" aria-hidden="true" /></td></tr> : visibleItems.map((company) => {
             const signal = getSignalStatus(company);
-            return <tr className="market-company-row" key={company.ticker} onClick={() => navigate(`${companyRoute}${encodeURIComponent(company.ticker)}`)}>
+            return <tr className="market-company-row" key={company.ticker} data-rank={company.rank} onClick={() => navigate(`${companyRoute}${encodeURIComponent(company.ticker)}`)}>
               <td><button className="market-company-link" type="button" onClick={() => navigate(`${companyRoute}${encodeURIComponent(company.ticker)}`)} aria-label={`View ${company.name} (${company.ticker}) details`}><strong>{company.name}</strong><small>{company.ticker}</small></button></td>
               <td><span className={signal === "neutral" ? "signal-neutral" : signal === "down" ? "signal-down" : "signal-up"}>{signal === "neutral" ? "—" : signal === "down" ? "↓" : "↑"}</span></td>
-              <td>{company.price}</td>
+              <td className="published-signal">{company.arkSignal ? <><strong title={company.arkSignal.funds.join(", ") || undefined}>{signalCount(company.arkSignal.fundCount, "fund")}</strong>{company.arkSignal.totalWeight !== null && <small>{signalNumber.format(company.arkSignal.totalWeight)}% total weight</small>}</> : "—"}</td>
+              <td className="published-signal">{company.insiderSignal ? <><strong>{signalCount(company.insiderSignal.buyCount, "buy", "buys")}</strong>{company.insiderSignal.insiderCount !== null && <small>{signalCount(company.insiderSignal.insiderCount, "insider")}</small>}</> : "—"}</td>
               <td><span className="watch-action">{watchlistLoading || isWatched(company.ticker) ? <span className="watch-placeholder" aria-hidden="true" /> : <button className="watch-button" onClick={(event) => { event.stopPropagation(); add(company.ticker); setToast("success"); }}>＋ Watchlist</button>}</span></td>
             </tr>;
           })}</tbody>

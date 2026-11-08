@@ -63,38 +63,48 @@ The dashboard's two buckets map directly to the backend API:
 | Affordable and Growing | `affordable_growing` |
 | Popular and Stable | `popular_stable` |
 
-### Dashboard JSON contract
+### Published dashboard data (S2-07)
 
-The backend endpoint is `GET /api/watchlist`. It returns this shape:
+Dashboard ranks and signals come from `GET /v1/watchlist`. Its two buckets
+are inside `watchlist`; each company has `ticker`, `rank`, and `signals`:
 
 ```json
 {
-  "schema_version": "1.0",
-  "generated_at": "2026-10-14T00:00:00+00:00",
-  "affordable_growing": [
-    {
-      "name": "Example Company",
+  "api_version": "v1",
+  "publication": { "id": 6 },
+  "watchlist": {
+    "affordable_growing": [{
       "ticker": "EXMP",
-      "sector": "Technology",
-      "price": 42.00,
-      "change_percent": 1.24,
-      "confidence_score": 82,
-      "sentiment": "Positive",
-      "reason": "Growth signals are improving across technology."
-    }
-  ],
-  "popular_stable": []
+      "rank": 1,
+      "signals": {
+        "ark": { "fund_count": 2, "funds": ["ARKK", "ARKG"], "total_weight": 10.88 },
+        "insider": { "buy_count": 3, "distinct_insider_count": 2 }
+      }
+    }],
+    "popular_stable": []
+  }
 }
 ```
 
-The frontend converts the numeric API fields into the display strings used by
-the table. Each bucket can contain three companies per sector. The dashboard
-uses the sectors selected during onboarding; when the user skips onboarding,
-it displays all eleven sectors.
+The dashboard shows Company / ticker, Signal status, ARK, Insider, and Action.
+ARK displays the fund count and total weight; Insider displays the buy count
+and distinct insider count. A missing signal is `—`; a reported zero remains
+zero. There is no Price or market-cap column.
 
-The backend currently returns temporary fixture data in development while the
-real company metadata pipeline is being completed. Anything prefixed `VITE_`
-ships to the browser, so never put a secret there.
+Company names and normalized sectors are joined by ticker from the existing
+`GET /api/watchlist` display adapter, shared with search and the saved watchlist.
+New tickers missing from that adapter are resolved through
+`GET /v1/securities/{symbol}`. Configure the backend with
+`DASHBOARD_DATA_MODE=publication` so its display metadata matches the publication.
+Neither demo-only rows nor display-adapter ordering can replace publication rows.
+
+The dashboard filters by the user's selected sectors and retains ascending
+publication rank inside each sector. It shows ten rows initially per sector;
+View all expands the rest. No publication or an API error produces the
+unavailable state rather than synthetic company data. `npm run mock-api`
+supports both watchlist endpoints for local development.
+
+Anything prefixed `VITE_` ships to the browser, so never put a secret there.
 
 ### Simple authentication client
 
