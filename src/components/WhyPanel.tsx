@@ -8,7 +8,7 @@ import { claimTitle, explanationClaims, explanationDetail } from "../lib/scoreEx
 // as the score card and the breakdown, and only for a recommended company: with claims it
 // shows them, and without them it says an explanation is unavailable (AC5). A company that
 // isn't recommended, has no score, or is still loading gets no card at all.
-export default function WhyPanel({ state }: { state: ScoreState }) {
+export default function WhyPanel({ state, filingsUrl = null }: { state: ScoreState; filingsUrl?: string | null }) {
   if (state.kind !== "scored") return null;
   const { score, explanation } = state;
   const claims = explanationClaims(score, explanation);
@@ -23,7 +23,7 @@ export default function WhyPanel({ state }: { state: ScoreState }) {
       {claims.length > 0 && <span className="card-eyebrow">Key reasons</span>}
     </div>
     {claims.length > 0
-      ? <Explained claims={claims} />
+      ? <Explained claims={claims} filingsUrl={filingsUrl} />
       // A served "ok" with nothing left to cite reads as insufficient supporting data.
       : <Unavailable explanation={explanation.status === "ok"
         ? { ...explanation, status: "unavailable", reason: "insufficient_supporting_data" }
@@ -31,15 +31,16 @@ export default function WhyPanel({ state }: { state: ScoreState }) {
   </section>;
 }
 
-function Explained({ claims }: { claims: Claim[] }) {
+function Explained({ claims, filingsUrl }: { claims: Claim[]; filingsUrl: string | null }) {
   return <ol className="why-claims">
-    {claims.map((claim) => <li key={claim.order}><ClaimItem claim={claim} /></li>)}
+    {claims.map((claim) => <li key={claim.order}><ClaimItem claim={claim} filingsUrl={filingsUrl} /></li>)}
   </ol>;
 }
 
 // A Figma reason card: the title and the claim; tapping it shows the stored record, value
 // and as-of the claim cites (AC2).
-function ClaimItem({ claim }: { claim: Claim }) {
+function ClaimItem({ claim, filingsUrl }: { claim: Claim; filingsUrl: string | null }) {
+  const sourceUrl = claim.component === "fundamentals" && claim.record.table === "fundamental_scores" ? filingsUrl : null;
   return <details className="why-reason">
     <summary>
       <CheckIcon />
@@ -51,6 +52,9 @@ function ClaimItem({ claim }: { claim: Claim }) {
     <dl className="why-claim-source">
       <dt>Component</dt><dd>{componentLabel(claim.component)}</dd>
       <dt>Source</dt><dd>{claim.record.table} #{claim.record.id}, batch {claim.record.batch_id}</dd>
+      <dt>Source documents</dt><dd>{sourceUrl
+        ? <a className="source-document-link" href={sourceUrl} target="_blank" rel="noopener noreferrer">Browse SEC filings ↗</a>
+        : "Source link unavailable"}</dd>
       <dt>Measure</dt><dd>{claim.measure.replaceAll("_", " ")}</dd>
       <dt>Stored value</dt><dd>{claim.value}</dd>
       <dt>As of</dt><dd>{claim.as_of}</dd>
