@@ -5,6 +5,9 @@ import { FinancialsApiError, loadFinancials, type FinancialsResponse } from "../
 import AppShell, { Toast } from "../components/AppShell";
 import ScoreBreakdown from "../components/ScoreBreakdown";
 import ScoreCard from "../components/ScoreCard";
+import PublicFloatMetric from "../components/PublicFloatMetric";
+import { useSecFilings } from "../components/useSecFilings";
+import type { PublicFloat } from "../lib/publicFloat";
 import { useScore } from "../components/useScore";
 import WhyPanel from "../components/WhyPanel";
 import { useWatchlist } from "../components/watchlistStore";
@@ -46,6 +49,7 @@ export default function Company() {
 
   const resultIsCurrent = result.symbol === symbol;
   const security = resultIsCurrent ? result.security : null;
+  const filingsUrl = useSecFilings(security?.symbol ?? symbol);
   const error = resultIsCurrent ? result.error : "";
   const loading = Boolean(symbol) && !resultIsCurrent;
   const name = security?.name || security?.symbol || symbol;
@@ -81,8 +85,8 @@ export default function Company() {
       <ScoreCard state={score} />
       <ScoreBreakdown state={score} />
       <CompanyDetailSections />
-      <WhyPanel state={score} />
-      <FinancialsSection symbol={security.symbol} companyName={name} />
+      <WhyPanel state={score} filingsUrl={filingsUrl} />
+      <FinancialsSection symbol={security.symbol} companyName={name} publicFloat={security.publicFloat ?? null} />
     </>}
     {toast && <Toast type="success" message="Successfully added to your Watchlist" onDone={() => setToast(null)} />}
   </AppShell>;
@@ -122,7 +126,9 @@ function CompanyDetailSections() {
   </>;
 }
 
-function FinancialsSection({ symbol, companyName }: { symbol: string; companyName: string }) {
+function FinancialsSection({ symbol, companyName, publicFloat }: {
+  symbol: string; companyName: string; publicFloat: PublicFloat | null;
+}) {
   const [result, setResult] = useState<{ symbol: string; data: FinancialsResponse | null; error: string }>({
     symbol: "",
     data: null,
@@ -161,6 +167,7 @@ function FinancialsSection({ symbol, companyName }: { symbol: string; companyNam
       <span>SEC EDGAR · Annual</span>
     </div>
     <div className="financial-metrics-list" aria-label="Key financial metrics">
+      <PublicFloatMetric value={publicFloat} />
       <FinancialMetric label="Revenue" value={loading ? "Loading…" : formatAmount(latest?.revenue ?? null)} detail={latest ? `FY ended ${formatFiscalYear(latest.fiscal_year_end)}` : undefined} />
       <FinancialMetric label="Net Income" value={loading ? "Loading…" : formatAmount(latest?.net_income ?? null)} />
       <FinancialMetric label="Revenue Growth" value={loading ? "Loading…" : formatPercent(latest?.revenue_growth ?? null)} />

@@ -79,6 +79,26 @@ test("tapping a claim shows its component, stored record, value and as-of (03-AC
   assert.match(source, /<dt>As of<\/dt><dd>2025-06-30<\/dd>/);
 });
 
+test("financial explanations link to the company's SEC filings without claiming an exact report", () => {
+  const html = render(createElement(WhyPanel, {
+    state: api.scoreState(recommended([claim(1, "Healthy margin."), claim(2, "Improving margin.")])),
+    filingsUrl: "https://www.sec.gov/edgar/browse/?CIK=1045810&owner=exclude",
+  }));
+  assert.equal((html.match(/Browse SEC filings/g) ?? []).length, 2);
+  assert.equal((html.match(/CIK=1045810/g) ?? []).length, 2);
+  assert.match(html, /target="_blank" rel="noopener noreferrer"/);
+  assert.match(html, /fundamental_scores #812, batch 5/);
+});
+
+test("news explanations never incorrectly link to SEC financial statements", () => {
+  const html = render(createElement(WhyPanel, {
+    state: api.scoreState(recommended([claim(1, "Positive news.", "sentiment")])),
+    filingsUrl: "https://www.sec.gov/edgar/browse/?CIK=1045810&owner=exclude",
+  }));
+  assert.doesNotMatch(html, /href=|Browse SEC filings/);
+  assert.match(html, /Source link unavailable/);
+});
+
 // ── AC3: never a claim about an unavailable component ────
 
 test("a claim about a missing or unavailable component is not shown (03-AC3)", () => {

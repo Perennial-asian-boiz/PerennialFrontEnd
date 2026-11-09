@@ -106,6 +106,25 @@ supports both watchlist endpoints for local development.
 
 Anything prefixed `VITE_` ships to the browser, so never put a secret there.
 
+### Company Finance and explanation sources
+
+Company Finance's first row shows SEC public float in USD from
+`GET /v1/securities/{symbol}` → `current.entry.public_float`, with the actual
+`public_float_as_of` measurement date. `size_flags` produces a separate measurement
+caution; missing float/date stays unavailable and never falls back to market cap.
+
+Each financial explanation links to that company's SEC filings, while preserving
+its stored record, value and as-of date. These are company-level filing links, not
+links to an exact report: the current explanation contract contains no accession
+or document URL. Non-financial explanations keep source links unavailable until
+the backend provides their actual source documents.
+
+The public `sec-company-ciks.json` index is derived from SEC's official
+`https://www.sec.gov/files/company_tickers.json`. It is loaded once when needed,
+so the browser needs no cross-origin SEC request or credentials. Numeric CIKs
+are required for EDGAR browse links; unknown tickers get no guessed link.
+Refresh this public mapping with `npm run refresh:sec-ciks`.
+
 ### Simple authentication client
 
 `src/api/auth.ts` contains the small typed client for the Sprint 1 account API.

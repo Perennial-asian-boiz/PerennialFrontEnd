@@ -1,3 +1,5 @@
+import { readPublicFloat, type PublicFloat } from "../lib/publicFloat";
+
 export type CompanySummary = {
   text: string;
   source: {
@@ -12,10 +14,12 @@ export type SecurityDetails = {
   name: string | null;
   sector: string | null;
   summary: CompanySummary | null;
+  publicFloat?: PublicFloat | null;
 };
 
 type SecurityResponse = {
   security: SecurityDetails;
+  current?: { entry?: unknown } | null;
 };
 
 const SECURITY_CACHE_TTL_MS = 30_000;
@@ -61,8 +65,9 @@ export async function loadSecurityDetails(symbol: string, signal?: AbortSignal):
       if (!payload.security || typeof payload.security.symbol !== "string") {
         throw new Error("Company API returned an invalid response.");
       }
-      securityCache.set(apiUrl, { security: payload.security, cachedAt: Date.now() });
-      return payload.security;
+      const security = { ...payload.security, publicFloat: readPublicFloat(payload.current?.entry) };
+      securityCache.set(apiUrl, { security, cachedAt: Date.now() });
+      return security;
     }).finally(() => pendingSecurityRequests.delete(apiUrl));
     pendingSecurityRequests.set(apiUrl, request);
   }
