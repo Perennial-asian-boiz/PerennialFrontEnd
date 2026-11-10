@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { CSSProperties, ReactElement, ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { topics, type Company } from "../data";
-import { loadDashboardPayload } from "../api/dashboard";
-import { clearSession, getCachedPreferences, getPreferences, getSessionToken, isAuthApiConfigured, logout } from "../api/auth";
+import { clearSession, logout } from "../api/auth";
 import { useAuthUser } from "./authUserContext";
 import { useWatchlist } from "./watchlistStore";
+import CompanySearch from "./CompanySearch";
 
 type IconName = "dashboard" | "watchlist" | "insight" | "setting" | "logout";
 
@@ -26,26 +25,15 @@ export function PerennialLogo() {
   return <div className="perennial-logo"><img src="/perennial-logo.svg" alt="" aria-hidden="true" /><span>PERENNIAL</span></div>;
 }
 
-function SearchIcon() {
-  return <svg className="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>;
-}
-
 type AppShellProps = { className?: string; children: ReactNode; title: string; subtitle?: string; headerActions?: ReactNode; hidePageHeading?: boolean; hideSidebarLogout?: boolean };
 
 export default function AppShell({ className = "", children, title, subtitle, headerActions, hidePageHeading = false, hideSidebarLogout = false }: AppShellProps) {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [dashboardCompanies, setDashboardCompanies] = useState<Company[]>([]);
-  const [selectedSectors, setSelectedSectors] = useState<string[]>(() => getCachedPreferences()?.sectors ?? []);
-  const [searchDataReady, setSearchDataReady] = useState(false);
-  const searchBoxRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const isLocalPreview = location.pathname === "/dashboard-preview"
     || location.pathname.startsWith("/company-preview/");
   const homePath = isLocalPreview ? "/dashboard-preview" : "/";
-  const companyRoute = "/company/";
   const user = useAuthUser();
   const { isWatched } = useWatchlist();
   const profileName = user?.full_name.trim() || user?.email || "Account";
@@ -53,53 +41,6 @@ export default function AppShell({ className = "", children, title, subtitle, he
   const initials = (nameParts.length > 1
     ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`
     : profileName.slice(0, 2)).toUpperCase();
-  const searchableCompanies = useMemo(() => {
-    const sectors = selectedSectors.length > 0 ? selectedSectors : topics;
-    return dashboardCompanies.filter((company) => sectors.includes(company.sector));
-  }, [dashboardCompanies, selectedSectors]);
-  const searchResults = query.trim() ? searchableCompanies.filter((company) => `${company.name} ${company.ticker} ${company.sector}`.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8) : [];
-
-  useEffect(() => {
-    const controller = new AbortController();
-    loadDashboardPayload(controller.signal).then((payload) => {
-      const companies = [...payload.affordable_growing, ...payload.popular_stable];
-      setDashboardCompanies(companies.filter((company, index) => companies.findIndex((item) => item.ticker === company.ticker) === index));
-      setSearchDataReady(true);
-    }).catch(() => {
-      setDashboardCompanies([]);
-      setSearchDataReady(true);
-    });
-
-    const loadSectorPreferences = () => {
-      if (!isAuthApiConfigured() || !getSessionToken()) {
-        setSelectedSectors([]);
-        return;
-      }
-      getPreferences().then((preferences) => setSelectedSectors(preferences.sectors)).catch(() => setSelectedSectors([]));
-    };
-    loadSectorPreferences();
-    window.addEventListener("perennial-auth-changed", loadSectorPreferences);
-
-    const handlePointerDown = (event: PointerEvent) => {
-      if (searchBoxRef.current && !searchBoxRef.current.contains(event.target as Node)) {
-        setIsSearchOpen(false);
-      }
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => {
-      controller.abort();
-      window.removeEventListener("perennial-auth-changed", loadSectorPreferences);
-      document.removeEventListener("pointerdown", handlePointerDown);
-    };
-  }, []);
-
-  const selectSearchResult = (company: Company) => {
-    setQuery(company.ticker);
-    setIsSearchOpen(false);
-    navigate(`${companyRoute}${encodeURIComponent(company.ticker)}`);
-  };
-
   const handleLogout = () => {
     void logout().catch(() => undefined).finally(() => {
       clearSession();
@@ -117,7 +58,7 @@ export default function AppShell({ className = "", children, title, subtitle, he
       </aside>
       {open && <button className="mobile-overlay" onClick={() => setOpen(false)} aria-label="Close menu" />}
       <main className="main-area">
-        <header className="topbar"><button className="menu-button" onClick={() => setOpen(true)} aria-label="Open menu">☰</button><div className="topbar-actions"><div className="search-box" ref={searchBoxRef}><SearchIcon /><input aria-label="Search stocks, tickers, events" value={query} onFocus={() => setIsSearchOpen(true)} onChange={(event) => { setQuery(event.target.value); setIsSearchOpen(true); }} placeholder="Search stocks, tickers, events (e.g. NVDA, RBLX)..." />{isSearchOpen && query.trim() && <div className="search-results" role="listbox">{searchResults.length > 0 ? searchResults.map((company) => <div className="search-result" key={company.ticker}><button className="search-result-main" type="button" onClick={() => selectSearchResult(company)}><strong>{company.name}</strong><span>{company.ticker} · {company.sector} · {company.price}</span></button>{isWatched(company.ticker) && <span className="search-watched">In Watchlist</span>}</div>) : <div className="search-empty" role="status">{searchDataReady ? "No companies in the dashboard for your selected sectors." : "Loading dashboard companies…"}</div>}</div>}</div><button className="profile-chip" onClick={() => navigate("/profile")}><span className="profile-avatar">{initials}</span><span className="profile-copy"><strong>{profileName}</strong><small>{user?.is_verified ? "Verified Investor" : "Investor"}</small></span><span className="profile-chevron">⌄</span></button></div></header>
+        <header className="topbar"><button className="menu-button" onClick={() => setOpen(true)} aria-label="Open menu">☰</button><div className="topbar-actions"><CompanySearch isWatched={isWatched} /><button className="profile-chip" onClick={() => navigate("/profile")}><span className="profile-avatar">{initials}</span><span className="profile-copy"><strong>{profileName}</strong><small>{user?.is_verified ? "Verified Investor" : "Investor"}</small></span><span className="profile-chevron">⌄</span></button></div></header>
         <div className="page-content">{!hidePageHeading && <div className="page-heading"><div className="page-heading-copy"><h1>{title}</h1>{subtitle && <p>{subtitle}</p>}</div>{headerActions}</div>}{children}</div>
       </main>
     </div>

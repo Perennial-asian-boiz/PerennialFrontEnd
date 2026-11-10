@@ -92,7 +92,17 @@ and distinct insider count. A missing signal is `—`; a reported zero remains
 zero. There is no Price or market-cap column.
 
 Company names and normalized sectors are joined by ticker from the existing
-`GET /api/watchlist` display adapter, shared with search and the saved watchlist.
+`GET /api/watchlist` display adapter, shared with the saved watchlist.
+
+The header search uses `GET /v1/securities?q=...&limit=50&offset=0` to find
+stored companies by name, ticker, or ticker alias prefix, including companies outside
+the user's selected sectors and the current dashboard publication. It accepts
+a single character (`N` matches names/tickers starting with N; `NV` narrows the
+list), debounces typing, cancels outdated requests, and loads
+additional pages in a scrollable dropdown. Arrow keys/Enter select a company;
+Escape dismisses the list. Failed searches offer a retry instead of appearing
+as an empty result. This requires the backend's global company search route;
+it does not fall back to filtering the dashboard or to sample companies.
 New tickers missing from that adapter are resolved through
 `GET /v1/securities/{symbol}`. Configure the backend with
 `DASHBOARD_DATA_MODE=publication` so its display metadata matches the publication.
