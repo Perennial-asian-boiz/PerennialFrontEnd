@@ -38,7 +38,7 @@ unused imports and variables fail the type check (`noUnusedLocals`).
 | `/` | Dashboard | Sector-filtered dashboard using the frontend dashboard JSON contract |
 | `/setup` | Onboarding — interests and risk comfort | Saved to the signed-in account through FastAPI |
 | `/confirmation` | Setup confirmation | Shows selected sectors and risk profile |
-| `/watchlist` | Watchlist | Account-owned tickers from the backend; temporary company metadata |
+| `/watchlist` | Watchlist | Account-owned tickers from the backend; temporary company metadata. A ticker is removed through `DELETE /v1/me/watchlist/{ticker}`, with Undo for 5 seconds |
 | `/company` | Company detail | Placeholder values |
 | `/why` | Why this company | Placeholder values |
 | `/insights` | Insights | Empty |
