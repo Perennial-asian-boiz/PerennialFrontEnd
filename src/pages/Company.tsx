@@ -5,6 +5,7 @@ import { FinancialsApiError, loadFinancials, type FinancialsResponse } from "../
 import AppShell, { Toast } from "../components/AppShell";
 import ScoreBreakdown from "../components/ScoreBreakdown";
 import ScoreCard from "../components/ScoreCard";
+import PriceBreakdown from "../components/PriceBreakdown";
 import PublicFloatMetric from "../components/PublicFloatMetric";
 import { useSecFilings } from "../components/useSecFilings";
 import type { PublicFloat } from "../lib/publicFloat";
@@ -84,7 +85,7 @@ export default function Company() {
       </section>
       <ScoreCard state={score} />
       <ScoreBreakdown state={score} />
-      <CompanyDetailSections />
+      <CompanyDetailSections symbol={security.symbol} />
       <WhyPanel state={score} filingsUrl={filingsUrl} />
       <FinancialsSection symbol={security.symbol} companyName={name} publicFloat={security.publicFloat ?? null} />
     </>}
@@ -92,25 +93,12 @@ export default function Company() {
   </AppShell>;
 }
 
-// Price and sentiment remain explicit placeholders until their API fields exist.
-function CompanyDetailSections() {
+// Sentiment remains an explicit placeholder until its API fields exist.
+function CompanyDetailSections({ symbol }: { symbol: string }) {
   const [sentimentChannel, setSentimentChannel] = useState<"news" | "social">("news");
 
   return <>
-    <section className="panel detail-data-card" aria-labelledby="price-breakdown-heading">
-      <div className="detail-data-heading">
-        <div><h2 id="price-breakdown-heading" className="detail-data-title">Price Breakdown</h2><p>Market price and valuation range</p></div>
-        <span className="detail-data-unavailable">Awaiting market-price data</span>
-      </div>
-      <div className="price-summary-grid">
-        <Metric label="Current price" value="Not available" />
-        <Metric label="Fair value range" value="Not available" />
-      </div>
-      <div className="range-placeholder" role="status">
-        <span>52-week range will appear when price history is available.</span>
-        <div className="range-placeholder-track" aria-hidden="true" />
-      </div>
-    </section>
+    <PriceBreakdown symbol={symbol} />
 
     <section className="panel detail-data-card" aria-labelledby="sentiment-pulse-heading">
       <div className="detail-data-heading">
@@ -254,10 +242,6 @@ function chartAxisMax(value: number) {
 
 function formatAxisAmount(value: number, unit: string) {
   return value === 0 ? "$0" : formatAmount({ value, unit });
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return <div className="detail-metric"><span>{label}</span><strong>{value}</strong></div>;
 }
 
 function SentimentBars({ channel }: { channel: "news" | "social" }) {
