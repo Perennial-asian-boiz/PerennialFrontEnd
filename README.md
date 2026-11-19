@@ -39,7 +39,7 @@ unused imports and variables fail the type check (`noUnusedLocals`).
 | `/setup` | Onboarding — interests and risk comfort | Saved to the signed-in account through FastAPI |
 | `/confirmation` | Setup confirmation | Shows selected sectors and risk profile |
 | `/watchlist` | Watchlist | Account-owned tickers from the backend; temporary company metadata |
-| `/company` | Company detail | Placeholder values |
+| `/company` | Company detail | Score, breakdown, why-panel, financials and Sentiment Pulse from the API; price placeholder |
 | `/why` | Why this company | Placeholder values |
 | `/insights` | Insights | Empty |
 | `/profile` | Profile and notification toggles | Verified identity and saved sectors |
@@ -134,6 +134,26 @@ The public `sec-company-ciks.json` index is derived from SEC's official
 so the browser needs no cross-origin SEC request or credentials. Numeric CIKs
 are required for EDGAR browse links; unknown tickers get no guessed link.
 Refresh this public mapping with `npm run refresh:sec-ciks`.
+
+### Sentiment Pulse (S3-02)
+
+The Company page's Sentiment Pulse card reads `GET /v1/securities/{symbol}/sentiment`
+(`src/api/sentiment.ts`, `useSentiment`, `SentimentPulse.tsx`), one request for both tabs.
+For the newest sentiment reading it shows the share of positive, neutral and negative items:
+News shares are weighted by source credibility and age, Social shares are plain counts.
+Percents are whole numbers that add up to 100. A tab with fewer than the API's `min_items`
+shows "Not enough coverage"; a company with no reading, or a reading tallied before the
+breakdown existed, shows "No sentiment data for this company yet."; a failed request shows
+Retry.
+
+Under the bars, the 30-day trend (AC2) reads `GET /v1/securities/{symbol}/sentiment/trend`
+(`src/api/sentimentTrend.ts`, `useSentimentTrend`, `SentimentTrend.tsx`): one bar per UTC day
+on a fixed −1 to +1 scale, green above the zero line, red below, and a faint dot for a day
+without a reading (never drawn as 0). It is the company's combined reading, the same on both
+tabs, with its own loading, error and Retry. Spec: the backend's
+`docs/technical-specs/SENTIMENT_PULSE.md`. The mock API serves both routes too (a fixture's
+`trend` lists daily values ending today): `ZZSA` (both tabs), `ZZBK` (social not enough coverage), `ZZNR` (no
+breakdown), any other mock ticker (no reading).
 
 ### Simple authentication client
 

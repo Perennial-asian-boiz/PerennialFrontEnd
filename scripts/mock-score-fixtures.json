@@ -1,9 +1,17 @@
 {
-  "_about": "GET /v1/securities/{symbol}/score bodies for the local mock API, in the backend #77 contract shape. One synthetic ticker per state the score card (S2-01) and why-panel (S2-03) must handle. Wording follows explain-v1 after backend #92 and #93.",
+  "_about": "GET /v1/securities/{symbol}/score bodies for the local mock API, in the backend #77 contract shape. One synthetic ticker per state the score card (S2-01) and why-panel (S2-03) must handle. Wording follows explain-v1 after backend #92 and #93. A security's optional \"sentiment\" is its GET /v1/securities/{symbol}/sentiment body without api_version and symbol (S3-02); without one the mock answers unavailable, no_reading. Its optional \"trend\" lists up to 30 daily values, oldest first, ending today (null: no reading).",
   "securities": {
     "ZZSA": {
       "name": "Sample Recommended Co",
       "sector": "Technology",
+      "trend": [0.12, 0.18, null, 0.25, 0.31, 0.22, -0.08, -0.15, null, null, 0.05, 0.14, 0.28, 0.35, 0.41, 0.33, -0.21, -0.34, -0.12, 0.02, null, 0.19, 0.26, 0.38, 0.29, 0.17, -0.06, 0.11, 0.24, 0.32],
+      "sentiment": {
+        "status": "ok", "tallied_on": "2026-11-17", "min_items": 3,
+        "news": {"status": "ok", "weighted": true, "count": 13, "first_at": "2026-11-10T14:02:00+00:00", "last_at": "2026-11-17T09:30:00+00:00",
+                 "counts": {"positive": 8, "neutral": 3, "negative": 2}, "shares": {"positive": 0.618, "neutral": 0.251, "negative": 0.131}},
+        "social": {"status": "ok", "weighted": false, "count": 6, "first_at": "2026-11-17T23:59:59+00:00", "last_at": "2026-11-17T23:59:59+00:00",
+                   "counts": {"positive": 2, "neutral": 3, "negative": 1}, "shares": {"positive": 0.3333, "neutral": 0.5, "negative": 0.1667}}
+      },
       "summary": "A synthetic company whose score is 74.3 and recommended, with three supporting reasons.",
       "score": {
         "status": "ok", "value": 74.3, "score_version": "score-v1", "as_of": "2026-11-05T17:02:11+00:00", "recommended": true,
@@ -35,6 +43,14 @@
     "ZZBK": {
       "name": "Sample Bank Corp",
       "sector": "Financials",
+      "trend": [null, null, null, -0.1, -0.22, -0.31, null, -0.4, -0.18, 0.0, 0.08, null, -0.05, -0.26],
+      "sentiment": {
+        "status": "ok", "tallied_on": "2026-11-17", "min_items": 3,
+        "news": {"status": "ok", "weighted": true, "count": 4, "first_at": "2026-10-30T14:02:00+00:00", "last_at": "2026-11-02T09:30:00+00:00",
+                 "counts": {"positive": 1, "neutral": 1, "negative": 2}, "shares": {"positive": 0.2, "neutral": 0.3, "negative": 0.5}},
+        "social": {"status": "not_enough_coverage", "weighted": false, "count": 1, "first_at": "2026-11-17T23:59:59+00:00", "last_at": "2026-11-17T23:59:59+00:00",
+                   "counts": {"positive": 1, "neutral": 0, "negative": 0}, "shares": null}
+      },
       "summary": "A synthetic bank: recommended, with bank-model reasons and a social-only sentiment reason.",
       "score": {
         "status": "ok", "value": 70.3, "score_version": "score-v1", "as_of": "2026-11-05T17:02:11+00:00", "recommended": true,
@@ -66,6 +82,7 @@
     "ZZNR": {
       "name": "Sample Not Recommended Inc",
       "sector": "Industrials",
+      "sentiment": {"status": "unavailable", "reason": "no_breakdown"},
       "summary": "A synthetic company with a score below 60: scored, but not recommended.",
       "score": {
         "status": "ok", "value": 42.6, "score_version": "score-v1", "as_of": "2026-11-05T17:02:11+00:00", "recommended": false,
