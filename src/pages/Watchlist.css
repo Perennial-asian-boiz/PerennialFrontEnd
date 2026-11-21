@@ -116,3 +116,10 @@
   .watchlist-shell .watchlist-table .company-logo { flex-shrink: 0; }
   .watchlist-shell .watchlist-table .sector-text { display: inline-block; max-width: 100%; overflow-wrap: normal; }
 }
+
+/* S3-06: a row whose removal is in flight, and the toast's Undo button. */
+.watchlist-row-removing { opacity: .5; }
+.watchlist-row-removing .trash-button { cursor: progress; }
+.toast-action { flex: 0 0 auto; margin-left: auto; padding: 6px 10px; border: 1px solid currentColor; border-radius: 5px; background: transparent; color: #1f5c31; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.toast-action:hover { background: rgba(39, 113, 61, .1); }
+.toast-action:focus-visible { outline: 2px solid #347b4c; outline-offset: 2px; }

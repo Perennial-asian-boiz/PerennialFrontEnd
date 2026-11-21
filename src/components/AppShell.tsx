@@ -75,7 +75,10 @@ export function TrashIcon() {
   return <svg className="trash-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16" /><path d="M10 11v6M14 11v6" /><path d="M6 7l1 13h10l1-13" /><path d="M9 7V4h6v3" /></svg>;
 }
 
-export function Toast({ type, message, onDone }: { type: "success" | "error"; message: string; onDone: () => void }) {
-  useEffect(() => { const timer = window.setTimeout(onDone, 3600); return () => window.clearTimeout(timer); }, [onDone]);
-  return <div className={`toast toast-${type}`} role="status"><span className="toast-icon">{type === "success" ? "✓" : "!"}</span><strong>{message}</strong></div>;
+export type ToastAction = { label: string; onAction: () => void };
+
+/** `duration` is how long the toast (and its action, such as S3-06's Undo) stays up. */
+export function Toast({ type, message, onDone, duration = 3600, action }: { type: "success" | "error"; message: string; onDone: () => void; duration?: number; action?: ToastAction }) {
+  useEffect(() => { const timer = window.setTimeout(onDone, duration); return () => window.clearTimeout(timer); }, [onDone, duration]);
+  return <div className={`toast toast-${type}`} role={type === "error" ? "alert" : "status"}><span className="toast-icon">{type === "success" ? "✓" : "!"}</span><strong>{message}</strong>{action && <button className="toast-action" type="button" onClick={action.onAction}>{action.label}</button>}</div>;
 }
