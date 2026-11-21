@@ -150,7 +150,13 @@ Under the bars, the 30-day trend (AC2) reads `GET /v1/securities/{symbol}/sentim
 (`src/api/sentimentTrend.ts`, `useSentimentTrend`, `SentimentTrend.tsx`): one bar per UTC day
 on a fixed −1 to +1 scale, green above the zero line, red below, and a faint dot for a day
 without a reading (never drawn as 0). It is the company's combined reading, the same on both
-tabs, with its own loading, error and Retry. Spec: the backend's
+tabs, with its own loading, error and Retry.
+
+On the News tab, between the bars and the trend, the top contributing articles (AC3) read
+`GET /v1/securities/{symbol}/sentiment/articles` (`src/api/sentimentArticles.ts`,
+`useSentimentArticles`, `TopArticles.tsx`): the 5 articles with the most weight in the reading,
+each with its headline linking to the original (http or https only), outlet and date, label,
+and its share of the reading's weight. It is hidden when News lacks coverage. Spec: the backend's
 `docs/technical-specs/SENTIMENT_PULSE.md`. The mock API serves both routes too (a fixture's
 `trend` lists daily values ending today): `ZZSA` (both tabs), `ZZBK` (social not enough coverage), `ZZNR` (no
 breakdown), any other mock ticker (no reading).

@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { loadSentiment, sentimentState, type SentimentState } from "../api/sentiment";
 import { loadSentimentTrend, sentimentTrendState, type SentimentTrendState } from "../api/sentimentTrend";
+import {
+  loadSentimentArticles,
+  sentimentArticlesState,
+  type SentimentArticlesState,
+} from "../api/sentimentArticles";
 
 // One request per company page and per retry; a result for another company, or for an
 // earlier attempt, is stale and shows as loading instead.
@@ -43,4 +48,9 @@ export function useSentiment(symbol: string): { state: SentimentState; retry: ()
 // GET /v1/securities/{symbol}/sentiment/trend (S3-02 AC2), with its own Retry.
 export function useSentimentTrend(symbol: string): { state: SentimentTrendState; retry: () => void } {
   return useRetryable(symbol, loadSentimentTrend, sentimentTrendState);
+}
+
+// GET /v1/securities/{symbol}/sentiment/articles (S3-02 AC3), with its own Retry.
+export function useSentimentArticles(symbol: string): { state: SentimentArticlesState; retry: () => void } {
+  return useRetryable(symbol, loadSentimentArticles, sentimentArticlesState);
 }

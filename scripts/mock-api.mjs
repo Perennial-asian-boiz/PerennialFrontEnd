@@ -8,7 +8,8 @@
 // Routes: GET /v1/watchlist (published ranks/signals), GET /api/watchlist
 // (company display metadata), GET /v1/securities/{symbol} (company
 // details), GET /v1/securities/{symbol}/score (backend #77's contract) and
-// GET /v1/securities/{symbol}/sentiment and /sentiment/trend (S3-02 Sentiment Pulse). Each ticker in
+// GET /v1/securities/{symbol}/sentiment, /sentiment/trend and /sentiment/articles (S3-02
+// Sentiment Pulse). Each ticker in
 // the fixtures file is one state; an unknown ticker is 404 unknown_security, as the API
 // does. The fixtures are re-read on every request, so edits show up without a restart.
 // MOCK_FIXTURES points at another fixtures file; MOCK_DELAY_MS slows every response.
@@ -102,12 +103,18 @@ async function route(path) {
       popular_stable: rows.slice(half),
     }];
   }
-  const match = path.match(/^\/v1\/securities\/([^/]+)(\/score|\/sentiment|\/sentiment\/trend)?$/);
+  const match = path.match(/^\/v1\/securities\/([^/]+)(\/score|\/sentiment|\/sentiment\/trend|\/sentiment\/articles)?$/);
   if (!match) return [404, { detail: "Not Found" }];
   const symbol = decodeURIComponent(match[1]).trim().toUpperCase();
   const entry = all[symbol];
   if (!entry) return [404, UNKNOWN];
   if (!match[2]) return [200, { api_version: "v1", security: security(symbol, entry) }];
+  if (match[2] === "/sentiment/articles") {
+    const sentiment = entry.sentiment ?? { status: "unavailable", reason: "no_reading" };
+    if (sentiment.status !== "ok") return [200, { api_version: "v1", symbol, status: "unavailable", reason: sentiment.reason }];
+    const articles = (entry.articles ?? []).slice(0, 5).map((article, index) => ({ rank: index + 1, ...article }));
+    return [200, { api_version: "v1", symbol, status: "ok", tallied_on: sentiment.tallied_on, count: sentiment.news.count, articles }];
+  }
   if (match[2] === "/sentiment/trend") return [200, { api_version: "v1", symbol, ...trend(entry.trend) }];
   if (match[2] === "/sentiment") {
     const sentiment = entry.sentiment ?? { status: "unavailable", reason: "no_reading" };

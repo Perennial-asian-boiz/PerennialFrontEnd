@@ -118,3 +118,17 @@ export function trendSummary(points: { date: string; value: number | null }[]): 
   return `${points.length}-day sentiment trend, ${range}: ${withReading.length} days with a reading, `
     + `${points.length - withReading.length} without.${tail}`;
 }
+
+// ── top articles (AC3) ──
+
+// "21%": an article's share of the reading's weight, whole percent ("<1%" for a sliver).
+export function shareText(share: number): string {
+  const percent = Math.round(share * 100);
+  return percent === 0 && share > 0 ? "<1%" : `${percent}%`;
+}
+
+// "Reuters · Nov 17"
+export function articleMeta(outlet: string, publishedAt: string): string {
+  const day = formatDay(publishedAt);
+  return [outlet.trim(), day].filter(Boolean).join(" · ");
+}

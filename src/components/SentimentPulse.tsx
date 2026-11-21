@@ -14,8 +14,10 @@ import {
   wholePercents,
 } from "../lib/sentimentFormat";
 import type { SentimentTrendState } from "../api/sentimentTrend";
+import type { SentimentArticlesState } from "../api/sentimentArticles";
 import SentimentTrend from "./SentimentTrend";
-import { useSentiment, useSentimentTrend } from "./useSentiment";
+import TopArticles from "./TopArticles";
+import { useSentiment, useSentimentArticles, useSentimentTrend } from "./useSentiment";
 
 // S3-02: the Company page's Sentiment Pulse card. One request serves both tabs' bars (piece 1);
 // the tab is local state, so switching never refetches. Opens on News; the page remounts the
@@ -24,6 +26,7 @@ import { useSentiment, useSentimentTrend } from "./useSentiment";
 export default function SentimentPulse({ symbol }: { symbol: string }) {
   const { state, retry } = useSentiment(symbol);
   const trend = useSentimentTrend(symbol);
+  const articles = useSentimentArticles(symbol);
   const [channel, setChannel] = useState<SentimentChannelName>("news");
   return <SentimentPulseView
     state={state}
@@ -32,6 +35,8 @@ export default function SentimentPulse({ symbol }: { symbol: string }) {
     onRetry={retry}
     trend={trend.state}
     onRetryTrend={trend.retry}
+    articles={articles.state}
+    onRetryArticles={articles.retry}
   />;
 }
 
@@ -42,9 +47,16 @@ type ViewProps = {
   onRetry: () => void;
   trend?: SentimentTrendState;
   onRetryTrend?: () => void;
+  articles?: SentimentArticlesState;
+  onRetryArticles?: () => void;
 };
 
-export function SentimentPulseView({ state, channel, onChannel, onRetry, trend, onRetryTrend }: ViewProps) {
+export function SentimentPulseView({
+  state, channel, onChannel, onRetry, trend, onRetryTrend, articles, onRetryArticles,
+}: ViewProps) {
+  // AC3's list belongs to the News reading: shown only when News has enough coverage.
+  const showArticles = articles && channel === "news" && state.kind === "reading"
+    && state.reading.news.status === "ok";
   return <section className="panel detail-data-card" aria-labelledby="sentiment-pulse-heading" aria-busy={state.kind === "loading"}>
     <div className="detail-data-heading">
       <div><h2 id="sentiment-pulse-heading" className="detail-data-title">Sentiment Pulse</h2><p>News and social sentiment</p></div>
@@ -54,6 +66,7 @@ export function SentimentPulseView({ state, channel, onChannel, onRetry, trend, 
       <TabButton channel="social" selected={channel} onChannel={onChannel}>Social</TabButton>
     </div>
     <SentimentBody state={state} channel={channel} onRetry={onRetry} />
+    {showArticles && <TopArticles state={articles} onRetry={onRetryArticles ?? (() => undefined)} />}
     {trend && <SentimentTrend state={trend} onRetry={onRetryTrend ?? (() => undefined)} />}
   </section>;
 }
