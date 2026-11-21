@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppShell, { CompanyBadge, Toast, TrashIcon, type ToastAction } from "../components/AppShell";
 import { useWatchlist } from "../components/watchlistStore";
@@ -31,7 +31,9 @@ const named = (tickers: string[]) => tickers.length === 1 ? tickers[0] : `${tick
 export default function Watchlist() {
   const navigate = useNavigate();
   const [toast, setToast] = useState<WatchlistToast | null>(null);
-  const [recentRemovals, setRecentRemovals] = useState<UndoableRemoval[]>([]);
+  // A ref, not state: two removals can be in flight at once, and each must add to the
+  // list the other left, not to the list as it was when its own row was clicked.
+  const recentRemovals = useRef<UndoableRemoval[]>([]);
   const { tickers, loading: watchlistLoading, remove, restore, isRemoving } = useWatchlist();
   const [dashboardCompanies, setDashboardCompanies] = useState<Company[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
@@ -110,16 +112,16 @@ export default function Watchlist() {
     if (isRemoving(ticker)) return;
     remove(ticker).then(
       (removal) => {
-        const live = withUndoable(recentRemovals, removal, Date.now());
-        setRecentRemovals(live);
+        const live = withUndoable(recentRemovals.current, removal, Date.now());
+        recentRemovals.current = live;
         showToast({ type: "success", message: `Removed ${named(live.map((entry) => entry.removal.ticker))} from your Watchlist`, undo: true });
       },
       () => showToast({ type: "error", message: `Couldn't remove ${ticker}. It is still on your Watchlist.` }),
     );
   };
   const undoRemovals = () => {
-    const live = undoable(recentRemovals, Date.now());
-    setRecentRemovals([]);
+    const live = undoable(recentRemovals.current, Date.now());
+    recentRemovals.current = [];
     setToast(null);
     void restoreAll(live, restore).then(({ restored, failed }) => {
       if (failed.length) showToast({ type: "error", message: `Couldn't restore ${failed.join(", ")}. Please add ${failed.length === 1 ? "it" : "them"} again.` });
