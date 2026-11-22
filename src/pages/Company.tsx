@@ -5,6 +5,7 @@ import { FinancialsApiError, loadFinancials, type FinancialsResponse } from "../
 import AppShell, { Toast } from "../components/AppShell";
 import ScoreBreakdown from "../components/ScoreBreakdown";
 import ScoreCard from "../components/ScoreCard";
+import PriceBreakdown from "../components/PriceBreakdown";
 import SentimentPulse from "../components/SentimentPulse";
 import PublicFloatMetric from "../components/PublicFloatMetric";
 import { useSecFilings } from "../components/useSecFilings";
@@ -93,24 +94,11 @@ export default function Company() {
   </AppShell>;
 }
 
-// Price stays an explicit placeholder until its API fields exist. Sentiment Pulse (S3-02) reads
+// Price Breakdown (S3-01) reads GET /v1/securities/{symbol}/price. Sentiment Pulse (S3-02) reads
 // GET /v1/securities/{symbol}/sentiment; the key remounts it on News for each company.
 function CompanyDetailSections({ symbol }: { symbol: string }) {
   return <>
-    <section className="panel detail-data-card" aria-labelledby="price-breakdown-heading">
-      <div className="detail-data-heading">
-        <div><h2 id="price-breakdown-heading" className="detail-data-title">Price Breakdown</h2><p>Market price and valuation range</p></div>
-        <span className="detail-data-unavailable">Awaiting market-price data</span>
-      </div>
-      <div className="price-summary-grid">
-        <Metric label="Current price" value="Not available" />
-        <Metric label="Fair value range" value="Not available" />
-      </div>
-      <div className="range-placeholder" role="status">
-        <span>52-week range will appear when price history is available.</span>
-        <div className="range-placeholder-track" aria-hidden="true" />
-      </div>
-    </section>
+    <PriceBreakdown symbol={symbol} />
 
     <SentimentPulse key={symbol} symbol={symbol} />
   </>;
@@ -244,10 +232,6 @@ function chartAxisMax(value: number) {
 
 function formatAxisAmount(value: number, unit: string) {
   return value === 0 ? "$0" : formatAmount({ value, unit });
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return <div className="detail-metric"><span>{label}</span><strong>{value}</strong></div>;
 }
 
 // As in Figma, a summary that opens with the company's name links the name to its source.
