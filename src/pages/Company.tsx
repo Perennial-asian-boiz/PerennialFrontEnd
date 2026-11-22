@@ -6,6 +6,7 @@ import AppShell, { Toast } from "../components/AppShell";
 import ScoreBreakdown from "../components/ScoreBreakdown";
 import ScoreCard from "../components/ScoreCard";
 import PriceBreakdown from "../components/PriceBreakdown";
+import SentimentPulse from "../components/SentimentPulse";
 import PublicFloatMetric from "../components/PublicFloatMetric";
 import { useSecFilings } from "../components/useSecFilings";
 import type { PublicFloat } from "../lib/publicFloat";
@@ -93,24 +94,13 @@ export default function Company() {
   </AppShell>;
 }
 
-// Sentiment remains an explicit placeholder until its API fields exist.
+// Price Breakdown (S3-01) reads GET /v1/securities/{symbol}/price. Sentiment Pulse (S3-02) reads
+// GET /v1/securities/{symbol}/sentiment; the key remounts it on News for each company.
 function CompanyDetailSections({ symbol }: { symbol: string }) {
-  const [sentimentChannel, setSentimentChannel] = useState<"news" | "social">("news");
-
   return <>
     <PriceBreakdown symbol={symbol} />
 
-    <section className="panel detail-data-card" aria-labelledby="sentiment-pulse-heading">
-      <div className="detail-data-heading">
-        <div><h2 id="sentiment-pulse-heading" className="detail-data-title">Sentiment Pulse</h2><p>News and social sentiment</p></div>
-      </div>
-      <div className="sentiment-tabs" role="group" aria-label="Sentiment source">
-        <button type="button" className={sentimentChannel === "news" ? "selected" : ""} aria-pressed={sentimentChannel === "news"} onClick={() => setSentimentChannel("news")}>News</button>
-        <button type="button" className={sentimentChannel === "social" ? "selected" : ""} aria-pressed={sentimentChannel === "social"} onClick={() => setSentimentChannel("social")}>Social</button>
-      </div>
-      <SentimentBars channel={sentimentChannel} />
-      <p className="detail-data-note sentiment-unavailable-note">Sentiment values are not available yet.</p>
-    </section>
+    <SentimentPulse key={symbol} symbol={symbol} />
   </>;
 }
 
@@ -242,21 +232,6 @@ function chartAxisMax(value: number) {
 
 function formatAxisAmount(value: number, unit: string) {
   return value === 0 ? "$0" : formatAmount({ value, unit });
-}
-
-function SentimentBars({ channel }: { channel: "news" | "social" }) {
-  const sentiments = [
-    { label: "Positive", className: "positive" },
-    { label: "Mix", className: "mixed" },
-    { label: "Negative", className: "negative" },
-  ];
-
-  return <div className="sentiment-bars" aria-label={`${channel === "news" ? "News" : "Social"} sentiment breakdown`}>
-    {sentiments.map(({ label, className }) => <div className={`sentiment-meter ${className}`} key={label}>
-      <div className="sentiment-meter-track" aria-hidden="true"><span /></div>
-      <div className="sentiment-meter-caption"><span>{label}</span><strong aria-label={`${label}: not available`}>—</strong></div>
-    </div>)}
-  </div>;
 }
 
 // As in Figma, a summary that opens with the company's name links the name to its source.
