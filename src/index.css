@@ -580,8 +580,18 @@ button, input { font: inherit; } button { cursor: pointer; }
 .detail-metric + .detail-metric { border-left: 1px solid #e5ebef; }
 .detail-metric > span { color: #829087; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
 .detail-metric > strong { color: #4f5b53; font-size: 15px; font-weight: 650; }
-.range-placeholder { display: grid; gap: 14px; margin-top: 22px; color: #8a978e; font-size: 13px; }
-.range-placeholder-track { height: 10px; border-radius: 99px; background: linear-gradient(90deg, #f0f3f1 0 38%, #e8eeea 38% 62%, #f0f3f1 62%); }
+.price-summary-grid-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.price-up { color: #167b5a; }
+.price-down { color: #b42318; }
+.price-range { display: grid; gap: 10px; margin-top: 22px; }
+.price-range-ends { display: flex; justify-content: space-between; gap: 16px; color: #829087; font-size: 12px; }
+.price-range-ends > span { display: flex; flex-direction: column; gap: 2px; }
+.price-range-ends > span:last-child { text-align: right; }
+.price-range-ends strong { color: #4f5b53; font-size: 15px; font-weight: 650; }
+.price-range-track { position: relative; height: 10px; border-radius: 99px; background: linear-gradient(90deg, #fde8e6, #f0f3f1 50%, #e3f8ef); }
+.price-range-marker { position: absolute; top: 50%; width: 14px; height: 14px; border: 2px solid #fff; border-radius: 50%; background: #167b5a; box-shadow: 0 1px 3px rgba(0, 0, 0, .2); transform: translate(-50%, -50%); }
+.price-source { margin: 16px 0 0; color: #829087; font-size: 12px; }
+@media (max-width: 650px) { .price-summary-grid-three { grid-template-columns: 1fr; } .price-summary-grid-three .detail-metric + .detail-metric { border-left: 0; border-top: 1px solid #e5ebef; } }
 .sentiment-tabs { display: flex; gap: 10px; margin: -3px 0 20px; }
 .sentiment-tabs button { min-width: 76px; padding: 7px 16px; border: 1px solid #168746; border-radius: 999px; background: #fff; color: #168746; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; transition: background-color .16s ease, color .16s ease, box-shadow .16s ease; }
 .sentiment-tabs button:hover { background: #edf8ee; }
