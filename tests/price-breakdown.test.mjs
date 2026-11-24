@@ -32,12 +32,19 @@ const ready = (price) => render({ kind: "ready", price });
 
 test("AC 1: the latest close, the day's change in dollars and percent, and the 52-week range", () => {
   const html = ready(OK);
-  assert.match(html, /Latest close<\/span><strong>\$182\.41/);
+  assert.match(html, /Current price<\/span><strong>\$182\.41/);
   assert.match(html, /−\$2\.17 \(−1\.18%\)/);
   assert.match(html, /class="price-down"/);
   assert.match(html, /52-week low<strong>\$63\.40/);
   assert.match(html, /52-week high<strong>\$207\.52/);
   assert.match(html, /dateTime="2025-11-21"/);
+});
+
+test("the card uses the Figma wording, and fair value reads N/A until Perennial computes one", () => {
+  for (const html of [ready(OK), ready(UNAVAILABLE), render({ kind: "error" })]) {
+    assert.match(html, /Latest market price vs\. fair value range/);
+    assert.match(html, /Fair value range<\/span><strong>N\/A</);
+  }
 });
 
 test("a rise is marked up with a plus sign", () => {
