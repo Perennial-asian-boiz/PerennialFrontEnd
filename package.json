@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "test": "node --test tests/auth.test.mjs tests/score.test.mjs tests/score-card.test.mjs tests/why-panel.test.mjs tests/score-breakdown-view.test.mjs tests/published-watchlist.test.mjs tests/company-sources.test.mjs tests/company-search.test.mjs tests/sentiment.test.mjs tests/sentiment-pulse.test.mjs tests/sentiment-trend.test.mjs tests/sentiment-articles.test.mjs tests/price-breakdown.test.mjs",
+    "test": "node --test tests/auth.test.mjs tests/score.test.mjs tests/score-card.test.mjs tests/why-panel.test.mjs tests/score-breakdown-view.test.mjs tests/published-watchlist.test.mjs tests/company-sources.test.mjs tests/company-search.test.mjs tests/sentiment.test.mjs tests/sentiment-pulse.test.mjs tests/sentiment-trend.test.mjs tests/sentiment-articles.test.mjs tests/price-breakdown.test.mjs tests/watchlist-removal.test.mjs",
     "preview": "vite preview",
     "mock-api": "node scripts/mock-api.mjs",
     "refresh:sec-ciks": "node scripts/update-sec-ciks.mjs"
