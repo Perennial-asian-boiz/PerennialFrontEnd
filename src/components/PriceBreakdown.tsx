@@ -3,8 +3,10 @@ import { loadPrice, type PriceResponse } from "../api/price";
 import { money, signedChange, tradingDay } from "../lib/priceFormat";
 
 // S3-01: the Company page's Price Breakdown, from GET /v1/securities/{symbol}/price.
-// Only prices the API serves are shown; with none, the card says "Price unavailable"
-// and never shows a number (AC 4).
+// Only prices the API serves are shown, and it serves only licensed providers' closes
+// (decision 118); with none, the card says "Price unavailable" and never shows a number
+// (AC 4). Labels follow the Figma card. The fair value range reads N/A until Perennial
+// has its own fair value calculation: no source gives one we may show.
 
 export type PriceState =
   | { kind: "loading" }
@@ -22,8 +24,8 @@ function Metric({ label, children }: { label: string; children: ReactNode }) {
 function Unavailable({ note }: { note: string }) {
   return <>
     <div className="price-summary-grid">
-      <Metric label="Latest close">Price unavailable</Metric>
-      <Metric label="Fair value range">Not available</Metric>
+      <Metric label="Current price">Price unavailable</Metric>
+      <Metric label="Fair value range">N/A</Metric>
     </div>
     <p className="detail-data-note price-unavailable-note" role="status">{note}</p>
   </>;
@@ -52,7 +54,7 @@ export function PriceBreakdownView({ state }: { state: PriceState }) {
 
   return <section className="panel detail-data-card" aria-labelledby="price-breakdown-heading">
     <div className="detail-data-heading">
-      <div><h2 id="price-breakdown-heading" className="detail-data-title">Price Breakdown</h2><p>Latest close and 52-week range</p></div>
+      <div><h2 id="price-breakdown-heading" className="detail-data-title">Price Breakdown</h2><p>Latest market price vs. fair value range</p></div>
       <span className={price && !price.stale ? "financial-chart-badge" : "detail-data-unavailable"}>{badge}</span>
     </div>
     {state.kind === "loading" ? <span className="loading-bar company-loading-line" aria-label="Loading price" />
@@ -61,14 +63,14 @@ export function PriceBreakdownView({ state }: { state: PriceState }) {
         ? <Unavailable note="No price from a licensed source is stored for this company yet." />
         : <>
           <div className="price-summary-grid price-summary-grid-three">
-            <Metric label="Latest close">{money(price.close, price.currency)}</Metric>
+            <Metric label="Current price">{money(price.close, price.currency)}</Metric>
             <Metric label="Day's change">
               {price.change === null || price.change_percent === null ? "Not available"
                 : <span className={price.change > 0 ? "price-up" : price.change < 0 ? "price-down" : undefined}>
                   {signedChange(price.change, price.change_percent, price.currency)}
                 </span>}
             </Metric>
-            <Metric label="Fair value range">Not available</Metric>
+            <Metric label="Fair value range">N/A</Metric>
           </div>
           <Range price={price} />
           <p className="price-source">
